@@ -1,0 +1,2 @@
+brew "poppler"
+brew "jq"
