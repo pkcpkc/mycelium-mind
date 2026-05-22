@@ -15,23 +15,28 @@ INBOX_DIR="./Vaults/$VAULT_NAME/inbox"
 ASSET_DIR_PARENT="./Vaults/$VAULT_NAME/wiki/assets"
 ASSET_DIR="$ASSET_DIR_PARENT/$(date "+%Y-%m-%d")"
 
-if [ -d "$ASSET_DIR" ]; then
-    # If the folder already exists today, move the contents
-    mv "$INBOX_DIR"/* "$ASSET_DIR"/ 2>/dev/null || true
-    rm -rf "$INBOX_DIR"
-else
-    # Otherwise atomically rename the folder
-    mv "$INBOX_DIR" "$ASSET_DIR" 2>/dev/null || true
-fi
+if [ -d "$INBOX_DIR" ] && [ "$(ls -A "$INBOX_DIR" 2>/dev/null)" ]; then
+    echo "Inbox contains files. Archiving to $ASSET_DIR..."
+    if [ -d "$ASSET_DIR" ]; then
+        # If the folder already exists today, move the contents
+        mv "$INBOX_DIR"/* "$ASSET_DIR"/ 2>/dev/null || true
+        rm -rf "$INBOX_DIR"
+    else
+        # Otherwise atomically rename the folder
+        mv "$INBOX_DIR" "$ASSET_DIR" 2>/dev/null || true
+    fi
 
-# Immediately recreate a fresh inbox directory
-mkdir -p "$INBOX_DIR"
+    # Immediately recreate a fresh inbox directory
+    mkdir -p "$INBOX_DIR"
 
-if [ -d "$ASSET_DIR" ] && [ -d "$INBOX_DIR" ]; then
-    echo "Success: $INBOX_DIR archived to $ASSET_DIR and recreated."
+    if [ -d "$ASSET_DIR" ] && [ -d "$INBOX_DIR" ]; then
+        echo "Success: $INBOX_DIR archived to $ASSET_DIR and recreated."
+    else
+        echo "Error: Failed to archive $INBOX_DIR"
+        exit 1
+    fi
 else
-    echo "Error: Failed to archive $INBOX_DIR"
-    exit 1
+    echo "Inbox is empty or does not exist. Skipping archiving."
 fi
 
 printf '\n[Hook] Post-processing finished.'

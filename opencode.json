@@ -1,0 +1,5 @@
+{
+  "plugin": [
+    "@pkcpkc/opencode-plugin-command-hooks"
+  ]
+}
