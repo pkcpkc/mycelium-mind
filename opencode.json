@@ -1,5 +1,6 @@
 {
+  "$schema": "https://opencode.ai/config.json",
   "plugin": [
-    "@pkcpkc/opencode-plugin-command-hooks"
+    "@pkcpkc/opencode-plugin-command-hooks@^0.2.0"
   ]
 }
