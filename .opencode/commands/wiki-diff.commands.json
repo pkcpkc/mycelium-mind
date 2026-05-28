@@ -1,0 +1,8 @@
+{
+  "pre": [],
+  "post": [
+    "wiki-lint $1",
+    "wiki-timeline $1",
+    "wiki-social-graph $1"
+  ]
+}

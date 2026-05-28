@@ -106,6 +106,9 @@ Mycelium Mind operates on a decoupled multi-vault architecture. Here is the repo
   │   │   ├── image-to-text.sh        <- Vision model runner for images
   │   │   ├── ocr-pdf.sh              <- PDF to images and OCR runner
   │   │   └── sanitize-filenames.sh   <- Inbox filename cleanup utility
+  │   ├── wiki-diff.md            <- Git diff integration command
+  │   ├── wiki-diff.commands.json <- Hook chain configuration (runs wiki-lint post-hook)
+  │   ├── wiki-diff.pre.sh        <- Parameter checker script
   │   ├── wiki-lint.md            <- Linter command
   │   ├── wiki-lint.pre.sh        <- Linter parameter checker
   │   ├── wiki-timeline.md        <- Timeline generation command
@@ -250,6 +253,7 @@ Each subcommand in the Mycelium Mind system is completely autonomous and can be 
 | :--- | :--- | :--- | :--- |
 | **`/wiki <VaultName>`** | `commands/wiki.md` | **Central Pipeline Orchestration**<br>Triggers the complete automated pipeline sequentially (lint, sync, timeline, and social graph compilation). | All vault files |
 | **`/wiki-sync <VaultName>`** | `commands/wiki-sync.md` | **Core Ingestion & Synthesis**<br>Performs OCR, Vision descriptions of images, creates/updates files under `summaries/`, `concepts/`, and `persons/`, and logs sources to `assets/`. | `wiki/summaries/`<br>`wiki/concepts/`<br>`wiki/persons/`<br>`wiki/assets/` |
+| **`/wiki-diff <VaultName>`** | `commands/wiki-diff.md` | **Git Diff Integration**<br>Checks the current git diff, processes recent changes since the last commit, and integrates them. Runs `/wiki-lint`, `/wiki-timeline`, and `/wiki-social-graph` as post-hooks. | `wiki/summaries/`<br>`wiki/concepts/`<br>`wiki/persons/` |
 | **`/wiki-lint <VaultName>`** | `commands/wiki-lint.md` | **Wiki Health Check & Auto-Repair**<br>Scans for broken wikilinks, orphaned pages, stale entries, or stubs. Asks before applying fixes. | Interactive report |
 | **`/wiki-timeline <VaultName>`** | `commands/wiki-timeline.md` | **Chronological Timeline Synthesis**<br>Scans all summaries, concepts, and biography pages, extracts all dates/events, sorts them chronologically. | `wiki/timeline.md` |
 | **`/wiki-social-graph <VaultName>`** | `commands/wiki-social-graph.md` | **Social Graph & Connection Map**<br>Extracts relationships (advisor, coworker, collaborator, etc.) to compile an interactive Mermaid diagram. | `wiki/social-graph.md` |
@@ -349,6 +353,17 @@ You can chain-execute commands modularly. Whenever a command `<name>` is run, th
       "wiki-lint $1"
     ],
     "post": []
+  }
+  ```
+- **`wiki-diff.commands.json` (Diff Ingestion Chain):**
+  ```json
+  {
+    "pre": [],
+    "post": [
+      "wiki-lint $1",
+      "wiki-timeline $1",
+      "wiki-social-graph $1"
+    ]
   }
   ```
 
