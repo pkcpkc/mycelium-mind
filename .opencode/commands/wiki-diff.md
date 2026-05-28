@@ -10,10 +10,10 @@ Vault Name: $1
 
 ## 2. Git Diff Analysis
 
-Below is the repository's git diff showing all changes done after the last commit:
+Below is the repository's git diff showing all changes done after the last commit inside the specific vault `Vaults/$1/`:
 
 ```diff
-!`git diff`
+!`git diff -- Vaults/$1/`
 ```
 
 ## 3. Integration & Synthesis Rules
