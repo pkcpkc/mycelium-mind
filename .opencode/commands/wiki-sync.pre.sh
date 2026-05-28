@@ -5,6 +5,10 @@ SCRIPT_DIR="$(dirname "$0")"
 SUB_SCRIPTS_DIR="$SCRIPT_DIR/wiki-sync"
 
 VAULT_NAME="$1"
+if [ -z "$VAULT_NAME" ]; then
+    echo "Error: Vault name parameter is required. Usage: /wiki-sync <VaultName>" >&2
+    exit 1
+fi
 
 run_sub_script() {
     local script="$1"

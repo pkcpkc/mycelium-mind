@@ -16,6 +16,7 @@ fi
 VAULT_NAME="$1"
 if [ -z "$VAULT_NAME" ]; then
     echo "Error: Vault name not provided."
+    echo "Usage: /wiki-sync <vault-name>"
     exit 1
 fi
 
@@ -26,8 +27,9 @@ if [ ! -d "$SOURCE_DIR" ]; then
 fi
 
 sanitize_name() {
-    # Remove characters that are invalid or troublesome in common filesystems.
-    printf '%s' "$1" | sed 's#[\\/:*?"<>|]##g'
+    # Remove characters that are invalid or troublesome in common filesystems,
+    # and replace all whitespaces with underscores.
+    printf '%s' "$1" | sed -e 's#[\\/:*?"<>|]##g' -e 's#[[:space:]][[:space:]]*#_#g'
 }
 
 unique_target() {

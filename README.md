@@ -1,50 +1,152 @@
-# MindVault
+# Mycelium Mind
 
-A fully offline, multi-vault wiki engine built on top of Obsidian, powered by local LLMs running on oMLX.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+Mycelium Mind is a fully offline, fully customizable, multi-vault wiki engine built on top of Obsidian, powered by local LLMs running on oMLX.
 
 Inspired by [karpathy's llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f).
 
-Implemented by [Paul Hackenberger](https://www.linkedin.com/in/paul-hackenberger/) and [Google Antigravity](https://antigravity.google/).
+Implemented using [Google Antigravity](https://antigravity.google/) and VS Code.  
 
-## Architecture
+The offline engine is powered by [OpenCode](https://opencode.ai/), [oMLX](https://omlx.ai/) and [Qwen3.6-35B-A3B-UD-MLX-4bit](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-UD-MLX-4bit).
+
+![Mycelium Mind Logo](assets/mycelium_mind_logo.jpeg)
+
+---
+
+## 1. Prerequisites & Quick Start
+
+Get your fully offline knowledge base up and running in minutes.
+
+### Sequential Setup Guide (Follow In Order)
+
+To ensure a seamless setup, install and configure the required tools in this exact sequence:
+
+1. **Step 1: Install Obsidian (Your UI)**
+   - Mycelium Mind compiles your files into standard Markdown vaults optimized for [Obsidian](https://obsidian.md/).
+   - **Action:** Download and install [Obsidian](https://obsidian.md/) on your local machine to view, search, and navigate your wiki.
+
+2. **Step 2: Install System Dependencies (CLI Tools)**
+   - Mycelium Mind requires `jq` (JSON command-line parser) and `poppler` (PDF rendering utilities).
+   - **Action:** Open your terminal in the repository root and run the following command to install them via Homebrew:
+     ```bash
+     brew bundle install
+     ```
+
+3. **Step 3: Install oMLX & Download Local Models (The AI Brain)**
+   - Mycelium Mind runs **100% offline** on your machine using local models.
+   - **Action:**
+     - Download and install [oMLX](https://omlx.ai/) (local model runner).
+     - Pull the designated models to your machine:
+       - **Text Model:** `Qwen3.6-35B` (Main LLM)
+       - **Vision Model:** `Gemma-4-31B-IT` (For image descriptions)
+       - **OCR Model:** `DeepSeek-OCR-2-bf16` (For extracting text from PDFs)
+     - Start the local server to expose the completions API endpoint.
+
+4. **Step 4: Install OpenCode (The Orchestrator)**
+   - Mycelium Mind runs inside [OpenCode](https://opencode.ai/), which handles executing the modular slash-commands and lifecycle plugins found in `.opencode/`.
+   - **Action:** Download and install [OpenCode](https://opencode.ai/).
+
+5. **Step 5: Configure the Environment & OpenCode Models**
+   - **Action A: Configure root `.env`:** Create a `.env` file at the repository root to link your local sub-models:
+     ```env
+     # Local oMLX / OpenAI-compatible endpoint
+     API_URL="http://localhost:8000/v1/chat/completions"
+     API_KEY="your-api-key"
+     
+     # Model configuration for OCR and Vision
+     OCR_MODEL_NAME="DeepSeek-OCR-2-bf16"
+     IMAGE_MODEL_NAME="gemma-4-31b-it-4bit"
+     ```
+   - **Action B: Configure OpenCode Main Model (`.opencode/models.yaml`):** OpenCode orchestrates commands using the primary Qwen text model. Create or update `.opencode/models.yaml` inside the `.opencode/` folder to target your local server:
+     ```yaml
+     # .opencode/models.yaml
+     default:
+       api_url: "http://localhost:8000/v1"
+       api_key: "your-api-key"
+       model: "Qwen3.6-35B-A3B-UD-MLX-4bit"
+     ```
+
+---
+
+### Ingestion Guide
+
+To initialize a brand new, empty personal vault and begin ingesting your documents:
+
+1. **Create Vault Structure:** Initialize your inbox and wiki folders (replace `<VaultName>` with your desired name, e.g., `Me`):
+   ```bash
+   mkdir -p Vaults/<VaultName>/inbox Vaults/<VaultName>/wiki
+   ```
+2. **Drop Raw Files:** Place raw documents, research papers (PDFs), diagrams (PNG/JPG), or meeting notes (TXT/MD) in the `Vaults/<VaultName>/inbox/` folder.
+3. **Execute Ingestion:** Open your terminal in the workspace root, open `opencode` and run the master orchestrator command:
+   ```bash
+   /wiki <VaultName>
+   ```
+4. **Explore in Obsidian:** Open the compiled `Vaults/<VaultName>/wiki` folder inside Obsidian to browse, search, and view your visual network graph!
+
+> [!TIP]
+> **Testing with the Example Wiki:** The repository comes pre-bundled with an example vault named `LLM-Wiki` under `Vaults/LLM-Wiki/`. You can use it to test the pipeline immediately without manual folder setup by dropping raw files into `Vaults/LLM-Wiki/inbox/` and running `/wiki LLM-Wiki`.
+
+## 2. Architecture & Directory Structure
+
+Mycelium Mind operates on a decoupled multi-vault architecture. Here is the repository and compiled vault layout:
 
 ```
 .opencode/
-  ├── commands/               <- Slash-commands (explicit actions)
-  │   ├── wiki-sync.md            <- Main AI processing logic (Multi-Vault)
-  │   ├── wiki-sync.pre.sh        <- Pre-hook: sanitize, OCR, image-to-text
-  │   ├── wiki-sync.post.sh       <- Post-hook: asset mapping & archiving
-  │   ├── wiki-sync/              <- Sub-scripts for pre-processing
-  │   │   ├── sanitize-filenames.sh
-  │   │   ├── ensure-folders.sh
-  │   │   ├── image-to-text.sh
-  │   │   └── ocr-pdf.sh
-  │   ├── wiki-lint.md            <- Wiki health check command
-  │   ├── wiki-report.md          <- Wiki report generator command
-  │   └── wiki-report.pre.sh      <- Pre-hook: ensure folders for reports
-  ├── skills/                 <- Skills (auto-triggered by context)
-  │   └── wiki-qa/SKILL.md       <- Retrieval-augmented Q&A
-  └── plugins/
-      └── commandHooks.ts        <- Lifecycle hooks (pre/post script runner)
+  ├── commands/               <- Slash-commands (independent, modular AI instructions)
+  │   ├── wiki.md                 <- Master pipeline orchestration
+  │   ├── wiki.commands.json      <- Orchestration chain (sync -> timeline -> social-graph)
+  │   ├── wiki.pre.sh             <- Orchestration helper script
+  │   ├── wiki-sync.md            <- Main ingestion prompt
+  │   ├── wiki-sync.commands.json <- Ingestion dependencies (lint first)
+  │   ├── wiki-sync.pre.sh        <- OCR, Vision parser runner
+  │   ├── wiki-sync.post.sh       <- Moves inbox sources to assets folder
+  │   ├── wiki-sync/              <- Shell sub-scripts for OCR and sanitization
+  │   │   ├── ensure-folders.sh       <- Ensures Vault directories exist
+  │   │   ├── image-to-text.sh        <- Vision model runner for images
+  │   │   ├── ocr-pdf.sh              <- PDF to images and OCR runner
+  │   │   └── sanitize-filenames.sh   <- Inbox filename cleanup utility
+  │   ├── wiki-lint.md            <- Linter command
+  │   ├── wiki-lint.pre.sh        <- Linter parameter checker
+  │   ├── wiki-timeline.md        <- Timeline generation command
+  │   ├── wiki-timeline.pre.sh    <- Timeline parameter checker
+  │   ├── wiki-social-graph.md    <- Social graph generation command
+  │   ├── wiki-social-graph.pre.sh <- Social graph parameter checker
+  │   ├── wiki-report.md          <- Cross-vault report generator
+  │   └── wiki-report.pre.sh      <- Report folder verification script
+  ├── skills/                 <- Auto-triggered skills
+  │   └── wiki-qa/
+  │       └── SKILL.md                <- Contextual RAG Q&A
+  ├── opencode.json           <- Local OpenCode settings & plugins declaration
+  ├── package.json            <- Node package definitions
+  └── package-lock.json       <- Fixed dependency tree
+opencode.json                 <- Project root OpenCode plugins config
 Vaults/                       <- Multi-Vault Management
-  ├── <VaultName>/
-  │   ├── inbox/                    <- Drop PDFs, images, text files here
-  │   └── wiki/                   <- Your Obsidian vault
-  │       ├── index.md                <- Map of Content
-  │       ├── timeline.md             <- Chronological timeline of all dates
-  │       ├── concepts/               <- Topic pages (entities, tools)
-  │       ├── persons/                <- Individuals and their related data
-  │       ├── summaries/              <- Processed knowledge entries
-  │       ├── reports/                <- On-demand generated thematic reports
-  │       └── assets/                 <- Moved inbox sources (e.g., assets/YYYY-MM-DD/)
+  ├── LLM-Wiki/                 <- Pre-bundled example vault (Zero-config Quick Start)
+  │   ├── inbox/                    <- Drop raw files here to ingest
+  │   └── wiki/                     <- Target Obsidian vault destination
+  └── <CustomVault>/            <- Any other custom vaults you create
 ```
 
+Inside each `wiki/` destination, the compiled knowledge base follows a strict structural schema:
+- `index.md`: Map of Content (Main Directory / Entry Point).
+- `timeline.md`: Master chronological timeline.
+- `social-graph.md`: Visual network map and relationship table.
+- `concepts/`: Topic, tool, and entity detail pages.
+- `persons/`: Biographies, affiliations, and relationships.
+- `summaries/`: Sourced knowledge synthesis cards.
+- `reports/`: Cross-vault thematic or Map of Content reports.
+- `assets/`: Structured archive of raw source files organized by date.
+
 ### Vault Data Relations
+
+The following diagram illustrates how the compiled pages in an Obsidian Vault inter-link and reference one another:
 
 ```mermaid
 flowchart TD
     index["index.md<br/><i>Map of Content</i>"]
     timeline["timeline.md<br/><i>Chronological Dates</i>"]
+    social_graph["social-graph.md<br/><i>Relationship Map</i>"]
     concepts["concepts/<br/><i>Topic Pages</i>"]
     persons["persons/<br/><i>Individuals</i>"]
     summaries["summaries/<br/><i>Knowledge Entries</i>"]
@@ -55,11 +157,16 @@ flowchart TD
     index -- "links to" --> summaries
     index -- "links to" --> persons
     index -- "links to" --> timeline
+    index -- "links to" --> social_graph
     index -- "links to" --> reports
 
     reports -- "synthesizes" --> concepts
     reports -- "synthesizes" --> summaries
     reports -- "synthesizes" --> persons
+
+    social_graph -- "maps connections from" --> persons
+    social_graph -- "maps connections from" --> summaries
+    social_graph -- "references" --> assets
 
     timeline -- "references" --> assets
     concepts -- "sourced from" --> assets
@@ -67,205 +174,253 @@ flowchart TD
     persons -- "sourced from" --> assets
 ```
 
-## Skills & Commands
+---
 
-MindVault uses two different mechanisms to interact with the AI. Understanding when each fires is key:
+## 3. Central Orchestration & Execution Flow
 
-### Commands (explicit — you type them)
+Mycelium Mind is fully driven by a **decoupled, modular slash-command architecture**. The central orchestrator is `/wiki`:
 
-Commands are **slash-commands** you invoke manually in opencode with `/command-name <VaultName>`. They trigger specific, well-defined workflows.
+```bash
+/wiki <VaultName>
+```
 
-| Command                                            | File                      | When to use                                                                                                                                                   |
-| -------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/wiki-sync <VaultName>`                           | `commands/wiki-sync.md`   | You've dropped new files into `Vaults/<VaultName>/inbox/` and want to process them into the vault. This is the main ingestion pipeline.                       |
-| `/wiki-lint <VaultName>`                           | `commands/wiki-lint.md`   | You want a health check — find broken `[[Wikilinks]]`, orphaned pages, stub articles, duplicates, or stale content. Reports issues first, asks before fixing. |
-| `/wiki-report vault1{,vault2...} <Report Inquiry>` | `commands/wiki-report.md` | You want to generate thematic reports across one or more vaults. Creates Map-of-Content pages in the target vault's `wiki/reports/` folder.                   |
+When you trigger `/wiki <VaultName>`, it doesn't run a single monolithic script. Instead, it acts as a central director, triggering a modular sequence of highly targeted, single-responsibility sub-commands in a strict sequential order through automated **Pre-Hooks** and **Post-Hooks**.
 
-### Skills (implicit — they activate automatically)
+### Sequential Pipeline Sequence
 
-Skills are **context-triggered**. The AI activates them automatically when your message matches their description. You don't need to type anything special.
+The sequence diagram below details the exact chronological execution path from the moment you run the `/wiki` command:
 
-| Skill        | File                      | Activates when…                                                                                                                                             |
-| ------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Wiki Q&A** | `skills/wiki-qa/SKILL.md` | You **ask a question** about your wiki content. Uses retrieval-augmented search across a vault to find answers, always citing sources with `[[Wikilinks]]`. |
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as "User in OpenCode"
+    participant WikiCmd as "/wiki Command"
+    participant PreHook as "Pre-Hook (wiki.pre.sh)"
+    participant PostHook as "Post-Hook Orchestration"
+    participant LintCmd as "/wiki-lint Command"
+    participant SyncCmd as "/wiki-sync Command"
+    participant SyncPre as "Pre-Hook (wiki-sync.pre.sh)"
+    participant SyncPost as "Post-Hook (wiki-sync.post.sh)"
+    participant TimelineCmd as "/wiki-timeline Command"
+    participant SocialCmd as "/wiki-social-graph Command"
 
-## How `/wiki-sync` Works
+    User->>WikiCmd: Run /wiki <VaultName>
+    rect rgb(30, 41, 59)
+        note right of WikiCmd: Master Orchestration Phase
+        WikiCmd->>PreHook: Execute pre-hook
+        PreHook-->>WikiCmd: Print planned execution sequence
+        WikiCmd-->>User: Inform that vault will be updated
+    end
 
-The core pipeline is the `/wiki-sync` command. When invoked in opencode with a vault name (e.g., `/wiki-sync Me`), it triggers a three-phase automated pipeline:
+    rect rgb(15, 23, 42)
+        note right of PostHook: Chain Execution (via wiki.commands.json)
+        
+        Note over LintCmd, SyncCmd: Step A: wiki-sync (Pre-hooked with wiki-lint)
+        PostHook->>SyncCmd: Trigger wiki-sync
+        SyncCmd->>LintCmd: Trigger pre-hook wiki-lint
+        LintCmd-->>SyncCmd: Scan & auto-repair wikilink structure
+        SyncCmd->>SyncPre: Run pre-processing (sanitization, OCR, Vision)
+        SyncPre-->>SyncCmd: Extracted markdown & descriptions
+        SyncCmd->>SyncCmd: Main AI synthesis & entry writing
+        SyncCmd->>SyncPost: Run post-processing
+        SyncPost-->>SyncCmd: Move inbox files to assets/YYYY-MM-DD
+        SyncCmd-->>PostHook: Sync completed
+        
+        Note over TimelineCmd: Step B: wiki-timeline
+        PostHook->>TimelineCmd: Trigger wiki-timeline
+        TimelineCmd->>TimelineCmd: Extract dates & generate timeline.md
+        TimelineCmd-->>PostHook: Timeline completed
+
+        Note over SocialCmd: Step C: wiki-social-graph
+        PostHook->>SocialCmd: Trigger wiki-social-graph
+        SocialCmd->>SocialCmd: Map connections & generate social-graph.md
+        SocialCmd-->>PostHook: Social Graph completed
+    end
+    
+    PostHook-->>User: Pipeline execution finished!
+```
+
+---
+
+## 4. The Command Pipeline & Tooling
+
+Each subcommand in the Mycelium Mind system is completely autonomous and can be run independently using its own slash-command:
+
+| Command | File | Description | Target Outputs |
+| :--- | :--- | :--- | :--- |
+| **`/wiki <VaultName>`** | `commands/wiki.md` | **Central Pipeline Orchestration**<br>Triggers the complete automated pipeline sequentially (lint, sync, timeline, and social graph compilation). | All vault files |
+| **`/wiki-sync <VaultName>`** | `commands/wiki-sync.md` | **Core Ingestion & Synthesis**<br>Performs OCR, Vision descriptions of images, creates/updates files under `summaries/`, `concepts/`, and `persons/`, and logs sources to `assets/`. | `wiki/summaries/`<br>`wiki/concepts/`<br>`wiki/persons/`<br>`wiki/assets/` |
+| **`/wiki-lint <VaultName>`** | `commands/wiki-lint.md` | **Wiki Health Check & Auto-Repair**<br>Scans for broken wikilinks, orphaned pages, stale entries, or stubs. Asks before applying fixes. | Interactive report |
+| **`/wiki-timeline <VaultName>`** | `commands/wiki-timeline.md` | **Chronological Timeline Synthesis**<br>Scans all summaries, concepts, and biography pages, extracts all dates/events, sorts them chronologically. | `wiki/timeline.md` |
+| **`/wiki-social-graph <VaultName>`** | `commands/wiki-social-graph.md` | **Social Graph & Connection Map**<br>Extracts relationships (advisor, coworker, collaborator, etc.) to compile an interactive Mermaid diagram. | `wiki/social-graph.md` |
+| **`/wiki-report <Vaults> <Query>`** | `commands/wiki-report.md` | **Thematic Cross-Vault Synthesis**<br>Discovers and synthesizes information across one or more separate vaults to write a themed report. | `wiki/reports/` |
+
+### Implicit Context Skills
+
+For conversational interaction with the vault, Mycelium Mind uses **Wiki Q&A**:
+- **File:** `.opencode/skills/wiki-qa/SKILL.md`
+- **Trigger:** Activates automatically when you ask a question about your wiki's knowledge. It performs retrieval-augmented search (RAG) and answers you using native Obsidian `[[Wikilinks]]` to cite sources.
+
+---
+
+## 5. Deep Dive: Ingestion Pipeline (`/wiki-sync`)
+
+While the central orchestrator is `/wiki`, the heaviest lifting of file ingestion is done by `/wiki-sync`. It runs a three-phase pipeline:
 
 ```mermaid
 flowchart LR
-    subgraph trigger["Trigger"]
-        A["/wiki-sync &lt;VaultName&gt;"]
-    end
-
     subgraph pre["Pre-processing (.pre.sh)"]
         direction TB
-        B["sanitize-filenames.sh\nRemove invalid characters,\nresolve collisions"]
-        B2["ensure-folders.sh\nCreate required\nfolder structure"]
-        C["image-to-text.sh\nVision model describes\nimages → .md"]
-        D["ocr-pdf.sh\nPDF → images (pdftoppm)\n→ OCR → concatenated .md"]
+        B["sanitize-filenames.sh\nRemove special chars"]
+        B2["ensure-folders.sh\nCreate directories"]
+        C["image-to-text.sh\nVision model describes images"]
+        D["ocr-pdf.sh\nPDF -> images -> OCR"]
         B --> B2 --> C --> D
     end
 
     subgraph ai["AI Processing (wiki-sync.md)"]
         direction TB
-        E["Read .md and .txt\nfiles from inbox/"]
-        F["Generate/update\nsummaries/, concepts/\n& persons/"]
-        G["Resolve contradictions\nwith callouts"]
-        H["Update timeline.md\n(Chronological order)"]
-        I["Update index.md\nwith new wikilinks"]
-        E --> F --> G --> H --> I
+        E["Read MD/TXT in inbox/"]
+        F["Create/update summaries/,\nconcepts/, & persons/"]
+        G["Add contradictions\nwarning callouts"]
+        I["Update index.md\nwith new Wikilinks"]
+        E --> F --> G --> I
     end
 
     subgraph post["Post-processing (.post.sh)"]
         direction TB
-        J["Move inbox/ contents to\nwiki/assets/YYYY-MM-DD/"]
+        J["Move inbox/ files to\nassets/YYYY-MM-DD/"]
     end
 
-    trigger --> pre --> ai --> post
+    pre --> ai --> post
 ```
 
-### Phase Details
+1. **Pre-processing (`wiki-sync.pre.sh`):**
+   - **`sanitize-filenames.sh`**: Strips illegal character formatting and spaces from raw inbox filenames.
+   - **`ensure-folders.sh`**: Instantiates a fresh vault structure if none exists.
+   - **`image-to-text.sh`**: Captures JPG/PNG files and instructs the local Gemma Vision model to generate granular descriptive summaries.
+   - **`ocr-pdf.sh`**: Utilizes `pdftoppm` to extract PDF pages as images and processes them via the local DeepSeek OCR model to output exact text documents.
+2. **AI Processing (`wiki-sync.md`):**
+   - The primary text LLM (`Qwen3.6-35B`) processes all inputs.
+   - Generates or appends incremental details to concepts, biographies, and knowledge cards.
+   - Flags overlapping/contradictory statements across different source files using native Obsidian warnings: `> [!warning] Contradiction Detected`.
+   - Populates `index.md` automatically, integrating new entries with native `[[Wikilinks]]`.
+3. **Post-processing (`wiki-sync.post.sh`):**
+   - Takes all successfully processed files in the `inbox/` directory and archives them under `wiki/assets/YYYY-MM-DD/` to preserve a clean inbox state.
 
-1. **Pre-processing** (`wiki-sync.pre.sh`) — runs automatically before the AI sees anything:
-   - **Sanitize filenames** — strips invalid characters (`\ / : * ? " < > |`), deduplicates names.
-   - **Ensure folders** — ensures the required directory structure exists.
-   - **Image-to-text** — sends images in `inbox/` to a vision model (Gemma) for semantic descriptions, saves as `image.png.md`.
-   - **OCR PDFs** — converts each PDF page to a 300 DPI image via `pdftoppm`, sends pages to an OCR model (DeepSeek-OCR), concatenates results into `document.pdf.md`, then cleans up the temp folder.
+---
 
-2. **AI Processing** (`wiki-sync.md`) — the LLM reads the extracted `.md`/`.txt` files and:
-   - Creates or updates summary pages in `wiki/summaries/`.
-   - Extracts entities and appends new data to `wiki/concepts/`.
-   - Extracts persons and appends new files to `wiki/persons/`.
-   - Handles contradictions with `> [!warning] Contradiction` callouts.
-   - Attributes every claim with `[source: <VaultName>/wiki/assets/YYYY-MM-DD/file.md]`.
-   - Updates `wiki/index.md` with new `[[Wikilinks]]`.
-   - Generates or updates `timeline.md`, extracting all dates mentioned and creating a chronologically ordered list with wikilinks to the source `.md` files.
+## 6. Automation Hooks & Declarative Modularity
 
-3. **Post-processing** (`wiki-sync.post.sh`) — runs automatically after the AI finishes:
-   - Moves the `inbox/` directory contents into `wiki/assets/YYYY-MM-DD/` and recreates a fresh, empty `inbox/` folder for the next batch. This effectively keeps all your binary assets and generated text natively within the specific vault, systematically organized by ingestion date.
+Mycelium Mind utilizes the **Command Hooks** plugin (`@pkcpkc/opencode-plugin-command-hooks`) to orchestrate complex execution chains. This plugin is loaded declaratively via `opencode.json` in the project root:
 
-## How `/wiki-report` Works
-
-The **Wiki Reporter** is designed to seamlessly span multiple vaults. When you trigger the `/wiki-report` command or ask to generate a report across one or more `<VaultName>`s, it kicks off a multi-vault discovery and integration process.
-
-```mermaid
-flowchart LR
-    subgraph trigger["Trigger"]
-        A["Ask to synthesize/connect across vaults"]
-    end
-
-    subgraph discovery["Discovery Phase"]
-        direction TB
-        B["Read index.md of all provided Vaults"]
-        C["Identify relevant Wikilinks"]
-        D["List files in concepts/ & summaries/"]
-        B --> C --> D
-    end
-
-    subgraph logic["Synthesis Logic"]
-        direction TB
-        E["Draft Conceptual Map"]
-        F["Compare/Contrast Sources"]
-        G["Construct Timeline"]
-        H["Create Map of Content (MOC)"]
-        E --> F --> G --> H
-    end
-
-    subgraph output["Output"]
-        direction TB
-        I["Save to TargetVault/wiki/reports/"]
-        J["Link back to concept pages"]
-        K["Highlight Emergent Ideas"]
-        I --> J --> K
-    end
-
-    trigger --> discovery --> logic --> output
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "@pkcpkc/opencode-plugin-command-hooks@^0.3.0"
+  ]
+}
 ```
 
-### Synthesis Workflow
+This setup enables fully automated shell execution points:
+- **Pre-hooks (`<command>.pre.sh`):** Runs prior to the primary AI command prompt execution (e.g. running OCR parsing).
+- **Post-hooks (`<command>.post.sh`):** Fires upon successful AI execution (e.g. moving processed files to archives).
 
-- **Target Vault:** The _first_ vault provided is treated as the target destination.
-- **Discovery:** The command reads the `index.md`, `timeline.md`, `concepts/`, `persons/`, and `summaries/` of _all_ provided vaults to surface themes.
-- **Synthesis:** Compares sources (highlighting agreements or disparities), creates chronological timelines for historical themes, and structures everything into a Map of Content (MOC).
-- **Output:** Saves the output to `Vaults/<TargetVaultName>/wiki/reports/`, ensuring every paragraph links back to at least two existing wiki concept pages, and highlighting "emergent" insights using `> [!abstract] Key Insight` callouts.
+### Chain-Executing via Declarative JSON (`*.commands.json`)
 
-### When to Use What
+You can chain-execute commands modularly. Whenever a command `<name>` is run, the hooks plugin checks for `<name>.commands.json` at `.opencode/commands/` and executes the designated lists:
 
-| You want to…                                   | Use                                           |
-| ---------------------------------------------- | --------------------------------------------- |
-| Process new PDFs/images/notes                  | `/wiki-sync <VaultName>`                      |
-| Check wiki health & consistency                | `/wiki-lint <VaultName>`                      |
-| Ask "What does my vault say about X?"          | Just ask — **Wiki Q&A** activates             |
-| "Generate a report across Vault A and Vault B" | `/wiki-report VaultA,VaultB <Report-Inquiry>` |
+- **`wiki.commands.json` (Orchestration Chain):**
+  ```json
+  {
+    "pre": [],
+    "post": [
+      "wiki-sync $1",
+      "wiki-timeline $1",
+      "wiki-social-graph $1"
+    ]
+  }
+  ```
+- **`wiki-sync.commands.json` (Ingestion Chain):**
+  ```json
+  {
+    "pre": [
+      "wiki-lint $1"
+    ],
+    "post": []
+  }
+  ```
 
-## Automation Hooks (Plugin)
+---
 
-The **Command Hooks** plugin (`.opencode/plugins/commandHooks.ts`) is what makes the pre/post scripts run automatically. It:
+## 7. Extending with Custom Commands
 
-- Intercepts `command.execute.before` events → runs `commands/<name>.pre.sh <args>`
-- Intercepts `command.executed` events → runs `commands/<name>.post.sh <args>`
-- Shows toast notifications for progress and success/failure
-- Logs execution results into the chat session for visibility
-- Writes detailed logs to `.opencode/plugins/commandHooks.log`
+Because commands are completely modular, you can easily create and register your own custom AI commands to generate specialized pages!
 
-This means any new command you create can have its own shell hooks — just add `<command-name>.pre.sh` or `<command-name>.post.sh` next to its `.md` file. They will automatically receive any arguments passed to the slash command (like `<VaultName>`).
+### Step A: Define your command prompt (`<command-name>.md`)
 
-## Models & Tools
+Create a new file in `.opencode/commands/wiki-custom-page.md` to instruct the AI:
 
-All of these run **fully offline** on your local machine:
+```markdown
+---
+description: Generates a custom analysis page for a specific vault. Usage: /wiki-custom-page <VaultName>
+---
 
-### Models
+# Wiki Custom Page Command
 
-| Model              | Role                                                       |
-| ------------------ | ---------------------------------------------------------- |
-| **Qwen3.6-35B**    | Main LLM for wiki processing, synthesis, Q&A, and linting. |
-| **Gemma-4-31B-IT** | Vision model for semantic image descriptions.              |
-| **DeepSeek-OCR-2** | OCR model for extracting text from document images.        |
+## Current Vault Context
+Vault: `../../Vaults/$1`
 
-### Tools
-
-| Tool                                            | Role                                                                            |
-| ----------------------------------------------- | ------------------------------------------------------------------------------- |
-| **[omlx](https://omlx.ai/)**                    | Local model server for running LLMs.                                            |
-| **[poppler](https://poppler.freedesktop.org/)** | PDF utilities (`pdftoppm` for PDF → image conversion).                          |
-| **[jq](https://jqlang.github.io/jq/)**          | Command-line JSON processor for API interactions.                               |
-| **[opencode](https://opencode.ai/)**            | AI coding assistant with commands, skills, and plugins loaded via `.opencode/`. |
-| **[Obsidian](https://obsidian.md/)**            | Knowledge base viewer and editor.                                               |
-
-### Installation
-
-Ensure you have the system dependencies installed:
-
-```bash
-brew bundle install
+## Execution Instructions
+When this command is triggered:
+1. Scan the `../../Vaults/$1/wiki/concepts/` directory.
+2. Synthesize a comprehensive glossary / cheatsheet page.
+3. Save the result to `../../Vaults/$1/wiki/custom-glossary.md`.
 ```
 
-## Configuration (`.env`)
+### Step B: Add Shell Hooks (Optional)
 
-All config lives in `.env` at the project root.
+If your command needs shell scripts (e.g. database updates, API fetching), add:
+- `.opencode/commands/wiki-custom-page.pre.sh`
+- `.opencode/commands/wiki-custom-page.post.sh`
 
-```env
-# Local model API endpoint
-API_URL="http://localhost:8000/v1/chat/completions"
-API_KEY="your-api-key"
+### Step C: Register in `wiki.commands.json`
 
-# Model names (main model configured in .opencode/models.yaml)
-OCR_MODEL_NAME="DeepSeek-OCR-2-bf16"
-IMAGE_MODEL_NAME="gemma-4-31b-it-4bit"
+To make your custom command run automatically as part of the master `/wiki` orchestrator, add it to the `"post"` array of `wiki.commands.json`:
+
+```json
+{
+  "pre": [],
+  "post": [
+    "wiki-sync $1",
+    "wiki-timeline $1",
+    "wiki-social-graph $1",
+    "wiki-custom-page $1"
+  ]
+}
 ```
 
-## Getting Started
+---
 
-1. Install system dependencies: `brew bundle install`
-2. Install a local model server (Ollama, vLLM, or MLX) and pull the required models.
-3. Fill in `.env` with your local server details.
-4. Create a new vault: `mkdir -p Vaults/Me/inbox Vaults/Me/wiki`
-5. Drop PDFs or images into `Vaults/Me/inbox/`.
-6. Run `/wiki-sync Me` in opencode to process your files.
-7. Open the `Vaults/Me/wiki` folder in Obsidian to explore your new knowledge vault.
+## 8. Models & Tools Reference
+
+All models and tools run **fully offline** on your local machine:
+
+### Brain Models (oMLX Hosted)
+- **Qwen3.6-35B-A3B-UD-MLX-4bit:** Main LLM for text synthesis, pipeline compilation, Q&A skills, and linter checks.
+- **Gemma-4-31B-IT:** Vision model for descriptive annotation of diagram and photo assets.
+- **DeepSeek-OCR-2-bf16:** Dedicated optical character recognition engine for PDF and document image text extraction.
+
+### Core CLI Tooling
+- **[oMLX](https://omlx.ai/):** Local hardware-accelerated model running server.
+- **[OpenCode](https://opencode.ai/):** Declarative AI coding engine and command environment.
+- **[poppler](https://poppler.freedesktop.org/):** System rendering utilities (`pdftoppm`) for compiling PDF files into high-fidelity image pages.
+- **[jq](https://jqlang.github.io/jq/):** JSON command-line parser.
+- **[Obsidian](https://obsidian.md/):** Frontend UI and graph renderer (Required to explore, search, and visually navigate your wiki).
+
+---
 
 ## Acknowledgements
 
-Thanks for inspiration to [Dan-Yoel Bittner](https://www.linkedin.com/in/dan-yoel-bitter-617a74157/) and [Rainer Kruschwitz](https://www.linkedin.com/in/kruschwitz/).
+Thanks for inspiration to [Paul Hackenberger](https://www.linkedin.com/in/paul-hackenberger/), [Dan-Yoel Bittner](https://www.linkedin.com/in/dan-yoel-bitter-617a74157/), and [Rainer Kruschwitz](https://www.linkedin.com/in/kruschwitz/).

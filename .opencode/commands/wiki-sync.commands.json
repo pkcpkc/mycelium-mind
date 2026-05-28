@@ -1,6 +1,6 @@
 {
   "pre": [
-    "/wiki-lint"
+    "wiki-lint $1"
   ],
   "post": []
 }

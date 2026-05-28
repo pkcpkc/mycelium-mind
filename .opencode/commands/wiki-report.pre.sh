@@ -4,7 +4,15 @@
 SCRIPT_DIR="$(dirname "$0")"
 SUB_SCRIPTS_DIR="$SCRIPT_DIR/wiki-sync"
 
-VAULT_NAME="${1%%,*}"
+VAULTS="$1"
+INQUIRY="$2"
+
+if [ -z "$VAULTS" ] || [ -z "$INQUIRY" ]; then
+    echo "Error: Both Vault name(s) and Report inquiry parameters are required. Usage: /wiki-report <Vaults> <Report-Inquiry>" >&2
+    exit 1
+fi
+
+VAULT_NAME="${VAULTS%%,*}"
 
 run_sub_script() {
     local script="$1"
