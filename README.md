@@ -436,6 +436,16 @@ All models and tools run **fully offline** on your local machine:
 
 ---
 
+## 9. Model Context Protocol (MCP) Integration
+
+Mycelium Mind can be exposed as a highly secure, high-fidelity **Memory Access Layer** for local and cloud AI assistants (such as Claude Desktop, Cursor, Cline, or Roo Code) using the Model Context Protocol (MCP).
+
+Exposing your compiled vault to other AI systems enables them to programmatically query your topic concepts, biography profiles, historical timelines, and cross-vault reports in a secure, completely path-free, and clean JSON format.
+
+For complete architectural details, configuration instructions (including **Single-Vault** and **Multi-Vault** isolation toggles), and build commands, see the dedicated [Mycelium Mind MCP README](file:///Users/pkc/Projects/mycelium-mind/mcp/README.md).
+
+---
+
 ## Acknowledgements
 
 Thanks for inspiration to [Paul Hackenberger](https://www.linkedin.com/in/paul-hackenberger/), [Dan-Yoel Bittner](https://www.linkedin.com/in/dan-yoel-bitter-617a74157/), and [Rainer Kruschwitz](https://www.linkedin.com/in/kruschwitz/).
