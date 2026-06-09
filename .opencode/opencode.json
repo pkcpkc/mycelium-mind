@@ -1,6 +1,36 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "tools": {
+    "rtk": false
+  },
   "plugin": [
-    "@pkcpkc/opencode-plugin-command-hooks@^0.2.5"
-  ]
+    "@pkcpkc/opencode-plugin-command-hooks@0.4.0"
+  ],
+  "mcp": {
+    "headroom": {
+      "type": "local",
+      "command": [
+        "./.venv/bin/headroom",
+        "mcp",
+        "serve"
+      ],
+      "enabled": true
+    },
+    "tokensave": {
+      "type": "local",
+      "command": [
+        "tokensave",
+        "serve"
+      ],
+      "enabled": true
+    },
+    "mycelium-mind": {
+      "type": "local",
+      "command": [
+        "node",
+        "./mcp/build/index.js"
+      ],
+      "enabled": true
+    }
+  }
 }

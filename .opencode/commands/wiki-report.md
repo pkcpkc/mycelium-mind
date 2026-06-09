@@ -6,10 +6,12 @@ description: Generate reports, syntheses, or thematic overviews across vault(s).
 
 This command explicitly triggers the report generation process to create comprehensive thematic overviews or Map of Content (MOC) pages.
 
+This command MUST follow the core directory layout, wikilink formatting, and source attribution rules defined in the `wiki-core` skill.
+
 # 1. Discovery Phase
 
-- Read `../../Vaults/$<VaultName>$/wiki/index.md` and `../../Vaults/<VaultName>/wiki/timeline.md` for _each_ vault in $1 to identify all relevant [[Wikilinks]] related to the report inquiry: "$2"
-- List the specific files in `../../Vaults/<VaultName>/wiki/concepts/`, `../../Vaults/<VaultName>/wiki/summaries/`, and `../../Vaults/<VaultName>/wiki/persons/` across all provided vaults that will form the basis of the synthesis.
+- Read the main `index.md` and `timeline.md` files for _each_ vault in $1 to identify all relevant [[Wikilinks]] related to the report inquiry: "$2"
+- List the specific files in the `concepts/`, `summaries/`, and `persons/` directories across all provided vaults that will form the basis of the synthesis.
 
 # 2. Synthesis Logic
 
@@ -19,8 +21,8 @@ This command explicitly triggers the report generation process to create compreh
 
 # 3. Output Format
 
-- Write the result to `../../Vaults/!`echo "a,b,c" | cut -d',' -f1`/wiki/reports/[Report-Name].md`
-- **Structural Requirement**: Every paragraph must link back to one or more existing wiki pages to prove inter-connectivity.
+- Write the result to the reports directory (e.g. `reports/[Report-Name].md`).
+- **Structural Requirement**: Every paragraph must link back to one or more existing wiki pages to prove inter-connectivity following the `wiki-core` wikilink format rule.
 - **Callouts**: Use Obsidian `> [!abstract] Key Insight` blocks to highlight "emergent" ideas (ideas that only appeared once you looked at all sources together).
 
 # 4. Optimization

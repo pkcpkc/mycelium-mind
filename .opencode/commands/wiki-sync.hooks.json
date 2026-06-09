@@ -1,0 +1,18 @@
+{
+  "commands": {
+    "pre": [
+      "wiki-lint $1"
+    ]
+  },
+  "scripts": {
+    "pre": [
+      "wiki-sync/sanitize-filenames.sh $1",
+      "wiki-sync/ensure-folders.sh $1",
+      "wiki-sync/image-to-text.sh $1",
+      "wiki-sync/ocr-pdf.sh $1"
+    ],
+    "post": [
+      "wiki-sync.post.sh $1"
+    ]
+  }
+}

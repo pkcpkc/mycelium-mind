@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "pre": [
+      "wiki-social-graph.pre.sh $1"
+    ]
+  }
+}

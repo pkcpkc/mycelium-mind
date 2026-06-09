@@ -1,3 +1,6 @@
 .env
 .DS_Store
 *.log
+.tokensave
+.venv
+node_modules

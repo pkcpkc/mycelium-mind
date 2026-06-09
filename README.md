@@ -322,48 +322,76 @@ Mycelium Mind utilizes the **Command Hooks** plugin (`@pkcpkc/opencode-plugin-co
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
-    "@pkcpkc/opencode-plugin-command-hooks@^0.3.0"
+    "@pkcpkc/opencode-plugin-command-hooks@^0.4.0"
   ]
 }
 ```
 
-This setup enables fully automated shell execution points:
-- **Pre-hooks (`<command>.pre.sh`):** Runs prior to the primary AI command prompt execution (e.g. running OCR parsing).
-- **Post-hooks (`<command>.post.sh`):** Fires upon successful AI execution (e.g. moving processed files to archives).
+This setup enables fully automated script and command sequences before and after commands run.
 
-### Chain-Executing via Declarative JSON (`*.commands.json`)
+### Chain-Executing via Declarative JSON (`*.hooks.json`)
 
-You can chain-execute commands modularly. Whenever a command `<name>` is run, the hooks plugin checks for `<name>.commands.json` at `.opencode/commands/` and executes the designated lists:
+Whenever a command `<name>` is run, the hooks plugin checks for `<name>.hooks.json` at `.opencode/commands/` and executes the configured commands and scripts sequentially in the following execution order:
 
-- **`wiki.commands.json` (Orchestration Chain):**
+1. **JSON Pre-commands (`commands.pre`):** Other OpenCode commands run before the main command.
+2. **Sequential Shell Pre-scripts (`scripts.pre`):** Shell scripts run before the main command.
+3. **Main Command:** The primary AI prompt / command executes.
+4. **Sequential Shell Post-scripts (`scripts.post`):** Shell scripts run after the main command.
+5. **JSON Post-commands (`commands.post`):** Other OpenCode commands run after the main command.
+
+- **`wiki.hooks.json` (Orchestration Chain):**
   ```json
   {
-    "pre": [],
-    "post": [
-      "wiki-sync $1",
-      "wiki-timeline $1",
-      "wiki-social-graph $1"
-    ]
+    "scripts": {
+      "pre": [
+        "wiki.pre.sh $1"
+      ]
+    },
+    "commands": {
+      "post": [
+        "wiki-sync $1",
+        "wiki-timeline $1",
+        "wiki-social-graph $1"
+      ]
+    }
   }
   ```
-- **`wiki-sync.commands.json` (Ingestion Chain):**
+- **`wiki-sync.hooks.json` (Ingestion Chain):**
   ```json
   {
-    "pre": [
-      "wiki-lint $1"
-    ],
-    "post": []
+    "commands": {
+      "pre": [
+        "wiki-lint $1"
+      ]
+    },
+    "scripts": {
+      "pre": [
+        "wiki-sync/sanitize-filenames.sh $1",
+        "wiki-sync/ensure-folders.sh $1",
+        "wiki-sync/image-to-text.sh $1",
+        "wiki-sync/ocr-pdf.sh $1"
+      ],
+      "post": [
+        "wiki-sync.post.sh $1"
+      ]
+    }
   }
   ```
-- **`wiki-diff.commands.json` (Diff Ingestion Chain):**
+- **`wiki-diff.hooks.json` (Diff Ingestion Chain):**
   ```json
   {
-    "pre": [],
-    "post": [
-      "wiki-lint $1",
-      "wiki-timeline $1",
-      "wiki-social-graph $1"
-    ]
+    "scripts": {
+      "pre": [
+        "wiki-diff.pre.sh $1"
+      ]
+    },
+    "commands": {
+      "post": [
+        "wiki-lint $1",
+        "wiki-timeline $1",
+        "wiki-social-graph $1"
+      ]
+    }
   }
   ```
 
@@ -396,23 +424,27 @@ When this command is triggered:
 
 ### Step B: Add Shell Hooks (Optional)
 
-If your command needs shell scripts (e.g. database updates, API fetching), add:
-- `.opencode/commands/wiki-custom-page.pre.sh`
-- `.opencode/commands/wiki-custom-page.post.sh`
+If your command needs shell scripts (e.g. database updates, API fetching), add them under `.opencode/commands/` and configure them in the command's `.hooks.json` file.
 
-### Step C: Register in `wiki.commands.json`
+### Step C: Register in `wiki.hooks.json`
 
-To make your custom command run automatically as part of the master `/wiki` orchestrator, add it to the `"post"` array of `wiki.commands.json`:
+To make your custom command run automatically as part of the master `/wiki` orchestrator, add it to the `"post"` array of `commands` in `wiki.hooks.json`:
 
 ```json
 {
-  "pre": [],
-  "post": [
-    "wiki-sync $1",
-    "wiki-timeline $1",
-    "wiki-social-graph $1",
-    "wiki-custom-page $1"
-  ]
+  "scripts": {
+    "pre": [
+      "wiki.pre.sh $1"
+    ]
+  },
+  "commands": {
+    "post": [
+      "wiki-sync $1",
+      "wiki-timeline $1",
+      "wiki-social-graph $1",
+      "wiki-custom-page $1"
+    ]
+  }
 }
 ```
 

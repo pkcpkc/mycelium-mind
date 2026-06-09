@@ -10,7 +10,7 @@ if [ -z "$VAULT_NAME" ]; then
 fi
 
 # Default target file path
-TARGET_FILE="$SCRIPT_DIR/wiki.commands.json"
+TARGET_FILE="$SCRIPT_DIR/wiki.hooks.json"
 
 # Parse and print the post node entries as a numbered list
-jq -r '.post[]' "$TARGET_FILE" | awk '{print NR ". " $0}'
+jq -r '.commands.post[]' "$TARGET_FILE" | awk '{print NR ". " $0}'

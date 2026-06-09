@@ -1,16 +1,21 @@
 # LLM-Wiki Index
 
-## Summaries
+## Persons
 
-_No summaries yet._
+- [[Andrej Karpathy]]
 
 ## Concepts
 
-_No concepts yet._
+- [[OpenAI]]
+- [[Tesla]]
+- [[Stanford University]]
+- [[Deep Learning]]
+- [[Large Language Models]]
+- [[Computer Vision]]
 
-## Persons
+## Summaries
 
-_No persons yet._
+- [[Andrej Karpathy]]
 
 ## Social Graph
 

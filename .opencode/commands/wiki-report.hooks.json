@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "pre": [
+      "wiki-report.pre.sh $1 \"$2\""
+    ]
+  }
+}

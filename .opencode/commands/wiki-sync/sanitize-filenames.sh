@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Change to project root
-cd "$(dirname "$0")/../../../" || exit 1
-
 printf "\n--- Filename Sanitization ---\n"
 
 # --- Load Environment Variables ---

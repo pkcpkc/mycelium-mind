@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "pre": [
+      "wiki-timeline.pre.sh $1"
+    ]
+  }
+}

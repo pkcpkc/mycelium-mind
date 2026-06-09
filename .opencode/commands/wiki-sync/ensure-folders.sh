@@ -13,8 +13,9 @@ fi
 VAULT_DIR="./Vaults/$VAULT_NAME"
 
 mkdir -p "$VAULT_DIR/wiki"
-mkdir -p "$VAULT_DIR/wiki/assets/$(date "+%Y-%m-%d")"
+mkdir -p "$VAULT_DIR/wiki/assets"
 mkdir -p "$VAULT_DIR/wiki/summaries"
 mkdir -p "$VAULT_DIR/wiki/concepts"
 mkdir -p "$VAULT_DIR/wiki/persons"
 mkdir -p "$VAULT_DIR/wiki/reports"
+mkdir -p "$VAULT_DIR/inbox"

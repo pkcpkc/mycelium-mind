@@ -15,22 +15,13 @@ INBOX_DIR="./Vaults/$VAULT_NAME/inbox"
 ASSET_DIR_PARENT="./Vaults/$VAULT_NAME/wiki/assets"
 ASSET_DIR="$ASSET_DIR_PARENT/$(date "+%Y-%m-%d")"
 
-if [ -d "$INBOX_DIR" ] && [ "$(ls -A "$INBOX_DIR" 2>/dev/null)" ]; then
+if [ -d "$INBOX_DIR" ] && [ -n "$(find "$INBOX_DIR" -maxdepth 1 -mindepth 1 ! -name ".DS_Store" ! -name ".gitkeep" 2>/dev/null)" ]; then
     echo "Inbox contains files. Archiving to $ASSET_DIR..."
-    if [ -d "$ASSET_DIR" ]; then
-        # If the folder already exists today, move the contents
-        mv "$INBOX_DIR"/* "$ASSET_DIR"/ 2>/dev/null || true
-        rm -rf "$INBOX_DIR"
-    else
-        # Otherwise atomically rename the folder
-        mv "$INBOX_DIR" "$ASSET_DIR" 2>/dev/null || true
-    fi
-
-    # Immediately recreate a fresh inbox directory
-    mkdir -p "$INBOX_DIR"
+    mkdir -p "$ASSET_DIR"
+    find "$INBOX_DIR" -maxdepth 1 -mindepth 1 ! -name ".DS_Store" ! -name ".gitkeep" -exec mv {} "$ASSET_DIR"/ \;
 
     if [ -d "$ASSET_DIR" ] && [ -d "$INBOX_DIR" ]; then
-        echo "Success: $INBOX_DIR archived to $ASSET_DIR and recreated."
+        echo "Success: $INBOX_DIR archived to $ASSET_DIR."
     else
         echo "Error: Failed to archive $INBOX_DIR"
         exit 1

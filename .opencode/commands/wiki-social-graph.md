@@ -8,18 +8,24 @@ description: Create a beautiful social graph and detailed connection map of all 
 
 Vault Name: $1
 
+## Execution Rules
+
+This command MUST follow the core directory layout, wikilink formatting, and source attribution rules defined in the `wiki-core` skill.
+
 ## Execution Instructions
 
-When this command is triggered, perform a systematic analysis of the `../../Vaults/$1/wiki` directory to map out all persons and their connections:
+When this command is triggered, perform a systematic analysis of the wiki vault to map out all persons and their connections:
 
 ### 1. Data Gathering Phase
+
 - **Target Directories & Files:**
-  - Read `../../Vaults/$1/wiki/index.md` (particularly the `## Persons` section) to locate listed individuals.
-  - Read all files inside the `../../Vaults/$1/wiki/persons/` directory.
-  - Read all files inside the `../../Vaults/$1/wiki/summaries/` directory.
+  - Read the main index.md (particularly the `## Persons` section) to locate listed individuals.
+  - Read all files inside the persons/ directory.
+  - Read all files inside the summaries/ directory.
 - **Extraction:** Identify every person and any mentioned connections (e.g., student-advisor, coworker, classmate, collaborator, mentor, employer, or any interpersonal connections, feelings, or actions mentioned).
 
 ### 2. Synthesis and Diagram Generation
+
 - **Mermaid Diagram:**
   - Build a visually clean, no styles, Mermaid flowchart (`flowchart TD` or `flowchart LR`).
   - **Syntax Rules (CRITICAL to avoid rendering failures):**
@@ -30,18 +36,20 @@ When this command is triggered, perform a systematic analysis of the `../../Vaul
 - **Detailed Connection Registry:**
   - Below the diagram, write a well-formatted Markdown table detailing the connections.
   - **Columns:** `Person A`, `Connection`, `Person B`, `Description & Context`.
-  - Use Obsidian wikilinks to reference the persons' files (e.g., `[[persons/Andrej Karpathy\|Andrej Karpathy]]` or standard `[[Fei-Fei Li]]` if a person file is in the root or another directory).
+  - Use Obsidian wikilinks to reference the persons' files, ensuring you follow the `wiki-core` wikilink format rule.
 
 ### 3. File Creation and Updates
+
 - **social-graph.md Creation:**
-  - Create the file `../../Vaults/$1/wiki/social-graph.md` with:
+  - Create the file `Vaults/$1/wiki/social-graph.md` with:
     - `# Social Graph` main title.
     - The generated `mermaid` codeblock.
     - The detailed connection table/registry.
-    - **Attribution:** Append `([source](<assets/!`date "+%Y-%m-%d"`/file.md>))` to every extracted claim. Use a normal Markdown link for source files, not an Obsidian wikilink. Do not emit source references as `[[...]]`, `[source: ...]`, or `[[1|...]]`; those create broken wiki links or reversed aliases.
+    - **Attribution:** Append the source reference to every extracted claim following the `wiki-core` source format rule.
 - **Index Update:**
-  - Read `../../Vaults/$1/wiki/index.md`.
+  - Read the main index.md.
   - Update the file to add a new `## Social Graph` section just before `## Timeline` (or at the bottom if `## Timeline` is not found):
+
     ```markdown
     ## Social Graph
 

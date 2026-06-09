@@ -6,7 +6,7 @@ description: Run the complete wiki pipeline (lint, sync, timeline, and social gr
 
 ## Current Vault Context
 
-Vault: `../../Vaults/$1`
+Vault: `./Vaults/$1`
 
 ## Pipeline Execution
 
