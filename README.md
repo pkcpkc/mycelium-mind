@@ -119,6 +119,69 @@ All subcommands run independently in OpenCode:
 
 ---
 
+## 🔗 Hook-Based Modularity & Pipeline Extension
+
+Mycelium Mind is designed around **single-responsibility, decoupled commands** that build on top of each other. This is orchestrated via the Command Hooks plugin (`@pkcpkc/opencode-plugin-command-hooks`), which executes sequential shell scripts and OpenCode commands before and after a main command executes.
+
+Because commands are completely modular, you can easily extend the ingestion pipeline with new LLM-driven features (e.g. generating custom category indices, extracting semantic structures, or running topic-specific syntheses).
+
+### Case Study: Adding a `/wiki-companies` Command
+Suppose we want to automatically scan all ingested text, identify mentioned companies, and compile a dedicated profile page for each under `wiki/companies/`.
+
+#### Step A: Define the Command Prompt (`.opencode/commands/wiki-companies.md`)
+Create a prompt instructing the LLM on how to extract and format company pages:
+```markdown
+---
+description: Scans summaries and concepts to identify companies and compile profile pages under companies/. Usage: /wiki-companies <VaultName>
+---
+# Wiki Companies Command
+
+## Context
+Vault Name: $1
+
+## Instructions
+1. Scan `./Vaults/$1/wiki/summaries/` and `./Vaults/$1/wiki/concepts/`.
+2. Extract all mentioned business entities or companies.
+3. For each unique company, write or update `./Vaults/$1/wiki/companies/[Company Name].md` containing:
+   - `# [Company Name]`
+   - **Founders & Core Leadership**
+   - **Key Products/Technologies**
+   - **Context & Operations** (Synthesized from citations)
+   - Source attributions following the `wiki-core` standard.
+```
+
+#### Step B: Declare Hooks (`.opencode/commands/wiki-companies.hooks.json`)
+Configure the pre-script to ensure the target directory exists and the post-script to auto-stage and commit the new files using the Git helper:
+```json
+{
+  "scripts": {
+    "pre": [
+      "mkdir -p ./Vaults/$1/wiki/companies"
+    ],
+    "post": [
+      "bash .opencode/commands/git-commit-helper.sh $1 wiki-companies 'Extracted and compiled company profile pages' 'Vaults/$1/wiki/companies'"
+    ]
+  }
+}
+```
+
+#### Step C: Append to the Master Pipeline (`.opencode/commands/wiki.hooks.json`)
+To make this new company extraction execute automatically whenever you run `/wiki <VaultName>`, simply append it to the post-commands array in the master hooks file:
+```json
+{
+  "commands": {
+    "post": [
+      "wiki-sync $1",
+      "wiki-timeline $1",
+      "wiki-social-graph $1",
+      "wiki-companies $1"
+    ]
+  }
+}
+```
+
+---
+
 ## 🔌 Model Context Protocol (MCP) Integration
 
 Mycelium Mind exposes your vaults programmatically to other LLM interfaces (Claude Desktop, Cursor, Cline, Roo Code) via MCP. 
