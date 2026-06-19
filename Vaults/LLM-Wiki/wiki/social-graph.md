@@ -1,61 +1,109 @@
 # Social Graph
 
-## Connection Map
+A map of interpersonal connections among individuals in the LLM-Wiki vault.
+
+## Mermaid Flowchart
 
 ```mermaid
-flowchart RL
+flowchart LR
     AK["Andrej Karpathy"]
     FFL["Fei-Fei Li"]
-    DK["Daphne Koller"]
     AN["Andrew Ng"]
+    JJ["Justin Johnson"]
+    RS["Richard Socher"]
+    QVL["Quoc V. Le"]
+    CDM["Christopher D. Manning"]
+    DK["Daphne Koller"]
     ST["Sebastian Thrun"]
     VK["Vladlen Koltun"]
-    MvP["Michiel van de Panne"]
     GH["Geoff Hinton"]
-    KK["Koray Kavukcuoglu"]
+    MvP["Michiel van de Panne"]
     VM["Vlad Mnih"]
-    JJ["Justin Johnson"]
-    TS["Tim Salimans"]
-    DKP["Diederik P. Kingma"]
+    KK["Koray Kavukcuoglu"]
     PA["Pieter Abbeel"]
-    NB["Nathan Benaich"]
-    JH["Jensen Huang"]
+    AJ["Armand Joulin"]
+    OR["Olga Russakovsky"]
+    JD["Jia Deng"]
+    HS["Hao Su"]
+    JH["Jonathan Hernandez"]
+    PL["Percy Liang"]
+    TS["Tianlin Shi"]
+    LF["Linxi Fan"]
 
-    AK -- "PhD advisor" --> FFL
-    AK -- "worked with (PhD rotation)" --> DK
-    AK -- "worked with (PhD rotation)" --> AN
-    AK -- "worked with (PhD rotation)" --> ST
-    AK -- "worked with (first year)" --> VK
-    AK -- "supervisor (MSc)" --> MvP
-    AK -- "attended classes by" --> GH
-    AK -- "worked with (DeepMind)" --> KK
-    AK -- "worked with (DeepMind)" --> VM
-    AK -- "collaborated with" --> JJ
-    AK -- "co-author (PixelCNN++)" --> TS
-    AK -- "co-author (PixelCNN++)" --> DKP
-    AK -- "podcast guest" --> PA
-    AK -- "summit with" --> NB
-    AK -- "keynote collaboration" --> JH
+    AK -- "PhD advised by" --> FFL
+    AK -- "PhD rotation advisor" --> DK
+    AK -- "PhD rotation advisor" --> AN
+    AK -- "PhD rotation advisor" --> ST
+    AK -- "PhD rotation advisor" --> VK
+    AK -- "attended class of" --> GH
+    AK -- "MSc advised by" --> MvP
+    AK -- "interned with" --> VM
+    AK -- "interned with" --> KK
+    AK -- "co-author on" --> AJ
+    AK -- "co-author on" --> FFL
+    AK -- "co-author on" --> JJ
+    AK -- "co-author on" --> RS
+    AK -- "co-author on" --> QVL
+    AK -- "co-author on" --> CDM
+    AK -- "co-author on" --> AN
+    AK -- "co-author on" --> TS
+    AK -- "co-author on" --> LF
+    AK -- "co-author on" --> JH
+    AK -- "co-author on" --> PL
+    AK -- "guest on podcast with" --> PA
+    FFL -- "co-author on" --> AJ
+    FFL -- "co-author on" --> JJ
+    FFL -- "co-author on" --> RS
+    FFL -- "co-author on" --> QVL
+    FFL -- "co-author on" --> CDM
+    FFL -- "co-author on" --> AN
+    FFL -- "co-author on" --> OR
+    FFL -- "co-author on" --> JD
+    FFL -- "co-author on" --> HS
+    OR -- "co-author on" --> JD
+    OR -- "co-author on" --> HS
+    RS -- "co-author on" --> QVL
+    RS -- "co-author on" --> CDM
+    RS -- "co-author on" --> AN
+    QVL -- "co-author on" --> CDM
+    QVL -- "co-author on" --> AN
+    CDM -- "co-author on" --> AN
+    VM -- "interned with" --> KK
+    JJ -- "co-author on" --> FFL
 ```
 
 ## Connection Registry
 
 | Person A | Connection | Person B | Description & Context |
 |----------|-----------|----------|----------------------|
-| [[Andrej Karpathy]] | PhD advisor | [[Fei-Fei Li]] | Fei-Fei Li was Andrej Karpathy's PhD advisor at Stanford Vision Lab. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | worked with (PhD rotation) | [[Daphne Koller]] | Worked with Daphne Koller during PhD rotation program at Stanford. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | worked with (PhD rotation) | [[Andrew Ng]] | Worked with Andrew Ng during PhD rotation program at Stanford. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | worked with (PhD rotation) | [[Sebastian Thrun]] | Worked with Sebastian Thrun during PhD rotation program at Stanford. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | worked with (first year) | [[Vladlen Koltun]] | Worked with Vladlen Koltun during first year rotation at Stanford. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | supervisor (MSc) | [[Michiel van de Panne]] | Michiel van de Panne supervised Andrej Karpathy's MSc work at University of British Columbia on learning controllers for physically-simulated figures. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | attended classes by | [[Geoff Hinton]] | Attended Geoff Hinton's class and reading groups at University of Toronto, which sparked Andrej Karpathy's early interest in deep learning. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | worked with (DeepMind) | [[Koray Kavukcuoglu]] | Worked with Koray Kavukcuoglu at DeepMind in 2015 on deep reinforcement learning. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | worked with (DeepMind) | [[Vlad Mnih]] | Worked with Vlad Mnih at DeepMind on deep reinforcement learning. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | collaborated with | [[Justin Johnson]] | Collaborated with Justin Johnson on dense captioning work (DenseCap). ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | co-author (PixelCNN++) | [[Tim Salimans]] | Co-authored PixelCNN++ paper (ICLR 2017). ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | co-author (PixelCNN++) | [[Diederik P. Kingma]] | Co-authored PixelCNN++ paper (ICLR 2017). ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | podcast guest | [[Pieter Abbeel]] | Guest on Robot Brains podcast with Pieter Abbeel (2021). ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | summit with | [[Nathan Benaich]] | Presented at 2017 RE·WORK Summit with Nathan Benaich. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | keynote collaboration | [[Jensen Huang]] | NVIDIA GTC Keynote collaboration with Jensen Huang (2015). ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | founding member / returning lead | [[OpenAI]] | Founding member of OpenAI (2015), returned in 2025 to build team for midtraining and synthetic data generation. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
-| [[Andrej Karpathy]] | Director of AI | [[Tesla]] | Director of AI at Tesla (2017+), led computer vision team for Autopilot and Tesla Optimus. ([source](assets/2026-06-09/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | PhD advised by | [[Fei-Fei Li]] | Karpathy's PhD thesis "Connecting Images and Natural Language" (2016) was advised by Fei-Fei Li at Stanford Vision Lab. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | PhD rotation advisor | [[Daphne Koller]] | Koller was one of Karpathy's advisors during his PhD rotation program at Stanford. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | PhD rotation advisor | [[Andrew Ng]] | Ng was one of Karpathy's advisors during his PhD rotation program at Stanford. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | PhD rotation advisor | [[Sebastian Thrun]] | Thrun was one of Karpathy's advisors during his PhD rotation program at Stanford. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | PhD rotation advisor | [[Vladlen Koltun]] | Koltun was one of Karpathy's advisors during his PhD rotation program at Stanford. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | attended class of | [[Geoff Hinton]] | Karpathy attended Hinton's class and reading groups at University of Toronto during his BSc (2005-2009). ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | MSc advised by | [[Michiel van de Panne]] | Van de Panne was Karpathy's MSc advisor at UBC (2009-2011); they worked on machine learning for agile robotics. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | interned with | [[Vlad Mnih]] | Karpathy interned at DeepMind in 2015 on the deep reinforcement learning team with Mnih. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | interned with | [[Koray Kavukcuoglu]] | Karpathy interned at DeepMind in 2015 with Kavukcuoglu on the deep reinforcement learning team. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Vlad Mnih]] | interned with | [[Koray Kavukcuoglu]] | Both interned together at DeepMind in 2015 on the deep reinforcement learning team. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | co-author on | [[Fei-Fei Li]] | Co-authored DenseCap (CVPR 2016), Visualizing Recurrent Networks (ICLR 2016), Deep Visual-Semantic Alignments (CVPR 2015), ImageNet Challenge (JCV 2015), and Deep Fragment Embeddings (NIPS 2014). ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Fei-Fei Li]] | co-author on | [[Armand Joulin]] | Co-authored "Deep Fragment Embeddings for Bidirectional Image-Sentence Mapping" (NIPS 2014). ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | co-author on | [[Justin Johnson]] | Co-authored DenseCap (CVPR 2016), Visualizing Recurrent Networks (ICLR 2016), Deep Visual-Semantic Alignments (CVPR 2015), and NeuralTalk2. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Justin Johnson]] | co-author on | [[Fei-Fei Li]] | Co-authored DenseCap, Visualizing Recurrent Networks, and Deep Visual-Semantic Alignments. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | co-author on | [[Richard Socher]] | Co-authored "Grounded Compositional Semantics for Finding and Describing Images with Sentences" (TACL 2013). ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Richard Socher]] | co-author on | [[Quoc V. Le]] | Co-authored "Grounded Compositional Semantics" (TACL 2013) with Karpathy, Manning, and Ng. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Richard Socher]] | co-author on | [[Christopher D. Manning]] | Co-authored "Grounded Compositional Semantics" (TACL 2013) with Karpathy, Le, and Ng. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Richard Socher]] | co-author on | [[Andrew Ng]] | Co-authored "Grounded Compositional Semantics" (TACL 2013) with Karpathy, Le, and Manning. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Quoc V. Le]] | co-author on | [[Christopher D. Manning]] | Co-authored "Grounded Compositional Semantics" (TACL 2013) with Karpathy, Socher, and Ng. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Quoc V. Le]] | co-author on | [[Andrew Ng]] | Co-authored "Grounded Compositional Semantics" (TACL 2013) with Karpathy, Socher, and Manning. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Christopher D. Manning]] | co-author on | [[Andrew Ng]] | Co-authored "Grounded Compositional Semantics" (TACL 2013) with Karpathy, Socher, and Le. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | co-author on | [[Andrew Ng]] | Co-authored "Grounded Compositional Semantics" (TACL 2013). ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | co-author on | [[Tianlin Shi]] | Co-authored "World of Bits" (ICML 2017) with Fan, Hernandez, and Liang. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Tianlin Shi]] | co-author on | [[Linxi Fan]] | Co-authored "World of Bits" (ICML 2017) with Karpathy, Hernandez, and Liang. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Linxi Fan]] | co-author on | [[Jonathan Hernandez]] | Co-authored "World of Bits" (ICML 2017) with Karpathy, Shi, and Liang. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Jonathan Hernandez]] | co-author on | [[Percy Liang]] | Co-authored "World of Bits" (ICML 2017) with Karpathy, Shi, and Fan. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Percy Liang]] | co-author on | [[Tianlin Shi]] | Co-authored "World of Bits" (ICML 2017) with Karpathy, Fan, and Hernandez. ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Olga Russakovsky]] | co-author on | [[Jia Deng]] | Co-authored the ImageNet Large Scale Visual Recognition Challenge paper (JCV 2015). ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Olga Russakovsky]] | co-author on | [[Hao Su]] | Co-authored the ImageNet Large Scale Visual Recognition Challenge paper (JCV 2015). ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Jia Deng]] | co-author on | [[Hao Su]] | Co-authored the ImageNet Large Scale Visual Recognition Challenge paper (JCV 2015). ([source](wiki/summaries/Andrej_Karpathy.md)) |
+| [[Andrej Karpathy]] | guest on podcast with | [[Pieter Abbeel]] | Appeared on the Robot Brains podcast with Abbeel in 2021. ([source](wiki/summaries/Andrej_Karpathy.md)) |
