@@ -7,8 +7,11 @@
   "commands": {
     "post": [
       "wiki-sync $1",
+      "wiki-persons $1",
       "wiki-timeline $1",
-      "wiki-social-graph $1"
+      "wiki-social-graph $1",
+      "wiki-post-pr $1"
     ]
   }
 }
+

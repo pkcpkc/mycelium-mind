@@ -1,5 +1,5 @@
 ---
-description: Run the complete wiki pipeline (lint, sync, timeline, and social graph). Usage: /wiki <VaultName>
+description: Run the complete wiki pipeline (lint, sync, persons, timeline, and social graph). Usage: /wiki <VaultName>
 ---
 
 # Wiki Orchestration Command

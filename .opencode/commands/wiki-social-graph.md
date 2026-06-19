@@ -47,8 +47,8 @@ When this command is triggered, perform a systematic analysis of the wiki vault 
     - The detailed connection table/registry.
     - **Attribution:** Append the source reference to every extracted claim following the `wiki-core` source format rule.
 - **Index Update:**
-  - Read the main index.md.
-  - Update the file to add a new `## Social Graph` section just before `## Timeline` (or at the bottom if `## Timeline` is not found):
+  - Read `Vaults/$1/wiki/index.md`.
+  - Update the file to update or add a `## Social Graph` section:
 
     ```markdown
     ## Social Graph

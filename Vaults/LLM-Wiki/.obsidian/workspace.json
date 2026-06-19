@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "wiki/social-graph.md",
+                "file": "wiki/persons/Tianlin Shi.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "social-graph"
+              "title": "Tianlin Shi"
             }
           }
         ]
@@ -182,27 +182,39 @@
   },
   "active": "c44ce654f26b7123",
   "lastOpenFiles": [
-    "wiki/timeline.md",
-    "wiki/assets/2026-06-09/Andrej_Karpathy.md",
-    "wiki/summaries/Andrej Karpathy.md",
-    "wiki/concepts/Computer Vision.md",
-    "wiki/social-graph.md",
+    "wiki/persons/Linxi Fan.md",
+    "wiki/persons/Percy Liang.md",
+    "wiki/persons/Tianlin Shi.md",
     "wiki/persons/Andrej Karpathy.md",
+    "wiki/persons/Quoc V. Le.md",
+    "wiki/persons/Koray Kavukcuoglu.md",
+    "wiki/persons/Daphne Koller.md",
+    "wiki/persons/Jia Deng.md",
+    "wiki/persons/Justin Johnson.md",
+    "wiki/timeline.md",
+    "wiki/social-graph.md",
+    "wiki/assets/2026-06-09/Andrej_Karpathy.md",
+    "wiki/persons/Fei-Fei Li.md",
+    "wiki/summaries/Andrej_Karpathy.md",
+    "wiki/persons/Richard Socher.md",
+    "wiki/persons/Vlad Mnih.md",
+    "wiki/persons/Vladlen Koltun.md",
+    "wiki/summaries/Andrej Karpathy.md",
+    "wiki/concepts/OpenAI.md",
+    "wiki/persons/Geoff Hinton.md",
+    "wiki/concepts/Recurrent.md",
+    "wiki/concepts/Computer Vision.md",
     "wiki/assets/2026-06-09",
     "wiki/index.md",
     "wiki/concepts/Large Language Models.md",
     "wiki/concepts/Deep Learning.md",
     "wiki/concepts/Stanford University.md",
-    "wiki/concepts/Tesla.md",
-    "wiki/concepts/OpenAI.md",
     "wiki/summaries",
     "wiki/reports",
     "wiki/persons",
     "wiki/concepts",
     "wiki/assets",
     "wiki",
-    "wiki/persons/Andrej_Karpathy.md",
-    "inbox/Andrej_Karpathy.md",
     "wiki/assets/2026-06-05/Andrej_Karpathy.pdf",
     "inbox/Andrej_Karpathy/9.png",
     "inbox/Andrej_Karpathy/8.png",
@@ -215,18 +227,6 @@
     "inbox/Andrej_Karpathy/1.png",
     "inbox/Andrej_Karpathy/0.png",
     "inbox/Andrej_Karpathy",
-    "inbox/Andrej_Karpathy.pdf",
-    "wiki/assets/2026-06-04/Elon_Musk.md",
-    "inbox/Elon_Musk.md",
-    "inbox/Elon Musk.md",
-    "wiki/summaries/Andrej Karpathy - Wikipedia.md",
-    "wiki/persons/Fei-Fei Li.md",
-    "wiki/persons/Elon Musk.md",
-    "wiki/concepts/Anthropic.md",
-    "wiki/concepts/Large Language Model.md",
-    "wiki/concepts/Eureka Labs.md",
-    "wiki/concepts/Neural Networks.md",
-    "wiki/concepts/Vibe Coding.md",
-    "wiki/concepts/Natural Language Processing.md"
+    "inbox/Andrej_Karpathy.pdf"
   ]
 }

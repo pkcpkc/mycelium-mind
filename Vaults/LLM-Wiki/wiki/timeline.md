@@ -1,94 +1,82 @@
 # LLM-Wiki Timeline
 
+A master chronological timeline of all events mentioned in the wiki vault.
+
+## 2005–2009
+
+- [[Andrej Karpathy]] earns a BSc at the University of Toronto, double majoring in computer science and physics with a minor in math. He first gets into deep learning by attending [[Geoff Hinton]]'s class and reading groups.
+
+## 2009–2011
+
+- [[Andrej Karpathy]] earns an MSc at the University of British Columbia, working with [[Michiel van de Panne]] on learning controllers for physically-simulated figures (machine learning for agile robotics in simulation).
+- [[Andrej Karpathy]] does an internship at Google Brain working on unsupervised learning from videos.
+
 ## 2011
 
-- Andrej Karpathy completes PhD at Stanford University. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy interns at Google Brain on unsupervised learning from videos. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Publication: "Locomotion Skills for Simulated Quadrupeds" (SIGGRAPH 2011). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-
-## 2012
-
-- Publication: "Emergence of Object-Selective Features in Unsupervised Feature Learning" (NIPS 2012). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy competes against ConvNet on ImageNet classification. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- Karpathy's MSc period continues at UBC.
 
 ## 2013
 
-- Publication: "Grounded Compositional Semantics for Finding and Describing Images with Sentences" (TACL 2013). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy interns at Google Research on large-scale supervised learning. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] does an internship at Google Research working on large-scale supervised learning on YouTube videos.
+- [[Andrej Karpathy]], [[Richard Socher]], [[Quoc V. Le]], [[Christopher D. Manning]], and [[Andrew Ng]] publish "Grounded Compositional Semantics for Finding and Describing Images with Sentences" (TACL 2013).
 
 ## 2014
 
-- Publication: "Deep Fragment Embeddings for Bidirectional Image-Sentence Mapping" (NIPS 2014). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Publication: "Large-Scale Video Classification with Convolutional Neural Networks" (CVPR 2014 Oral). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy's visual recognition research at Stanford (2014-2015). ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]], [[Armand Joulin]], and [[Fei-Fei Li]] publish "Deep Fragment Embeddings for Bidirectional Image-Sentence Mapping" (NIPS 2014).
+- [[Andrej Karpathy]], [[George Toderici]], [[Sanketh Shetty]], [[Thomas Leung]], [[Rahul Sukthankar]], and [[Fei-Fei Li]] publish "Large-Scale Video Classification with Convolutional Neural Networks" (CVPR 2014, Oral).
 
 ## 2015
 
-- Publication: "Deep Visual-Semantic Alignments for Generating Image Descriptions" (CVPR 2015 Oral). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Publication: "ImageNet Large Scale Visual Recognition Challenge" (JCV 2015). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy joins OpenAI as research scientist and founding member. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy interns at DeepMind on deep reinforcement learning. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- NVIDIA GTC Keynote with [[Jensen Huang]]. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy begins teaching Stanford CS 231n (150 students). ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] joins OpenAI as a founding member.
+- [[Andrej Karpathy]] interns at DeepMind on the deep reinforcement learning team with [[Vlad Mnih]] and [[Koray Kavukcuoglu]].
+- [[Fei-Fei Li]], [[Olga Russakovsky]], [[Jia Deng]], [[Hao Su]], [[Jonathan Krause]], [[Sanjeev Satheesh]], [[Sean Ma]], [[Zhiheng Huang]], [[Andrej Karpathy]], [[Aditya Khosla]], [[Michael Bernstein]], and [[Alexander C. Berg]] publish the ImageNet Large Scale Visual Recognition Challenge paper (JCV 2015).
+- [[Andrej Karpathy]] and [[Fei-Fei Li]] publish "Deep Visual-Semantic Alignments for Generating Image Descriptions" (CVPR 2015, Oral).
+- CS231n enrolls 150 students at Stanford.
 
 ## 2016
 
-- Publication: "Connecting Images and Natural Language" (PhD thesis). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Publication: "DenseCap: Fully Convolutional Localization Networks for Dense Captioning" (CVPR 2016 Oral). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Publication: "Visualizing and Understanding Recurrent Networks" (ICLR 2016 Workshop). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy teaches Stanford CS 231n (330 students). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Bay Area Deep Learning School: CNNs. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Deep Learning Workshop @ CVPR. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- RE·WORK Deep Learning Summit. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] completes his PhD thesis "Connecting Images and Natural Language" at Stanford, advised by [[Fei-Fei Li]].
+- [[Justin Johnson]], [[Andrej Karpathy]], and [[Fei-Fei Li]] publish "DenseCap: Fully Convolutional Localization Networks for Dense Captioning" (CVPR 2016, Oral).
+- [[Justin Johnson]], [[Andrej Karpathy]], and [[Fei-Fei Li]] publish "Visualizing and Understanding Recurrent Networks" (ICLR 2016 Workshop).
+- CS231n enrolls 330 students at Stanford.
 
 ## 2017
 
-- Publication: "World of Bits: An Open-Domain Platform for Web-Based Agents" (ICML 2017). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Publication: "PixelCNN++: A PixelCNN Implementation with Discretized Logistic Mixture Likelihood" (ICLR 2017). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Publication: "Software 2.0" blog post (Nov 2017). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy becomes Director of AI at Tesla. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy teaches Stanford CS 231n (750 students). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- 2017 RE·WORK Summit with [[Nathan Benaich]]. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- 2017 "Heroes of Deep Learning" with [[Andrew Ng]]. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]], [[Linxi Fan]], [[Tianlin Shi]], [[Jonathan Hernandez]], and [[Percy Liang]] publish "World of Bits: An Open-Domain Platform for Web-Based Agents" (ICML 2017).
+- [[Andrej Karpathy]] and others publish "PixelCNN++: A PixelCNN Implementation with Discretized Logistic Mixture Likelihood and Other Modifications" (ICLR 2017).
+- CS231n enrolls 750 students at Stanford.
 
 ## 2018
 
-- Building the Software 2.0 stack @ Spark-AI. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] presents "Building the Software 2.0 stack" at Spark-AI.
 
 ## 2019
 
-- Tesla Autonomy Day. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Publication: "A Recipe for Training Neural Networks" blog post (Apr 2019). ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Multi-Task Learning in the Wilderness @ ICML. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- PyTorch at Tesla @ PyTorch DevCon. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] presents "Multi-Task Learning in the Wilderness" at ICML.
+- [[Andrej Karpathy]] presents "PyTorch at Tesla" at PyTorch DevCon.
 
 ## 2020
 
-- AI for Full Self-Driving @ ScaledML. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] presents "AI for Full Self-Driving" at ScaledML.
 
 ## 2021
 
-- Tesla AI Day presenting Full Self-Driving work. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Robot Brains podcast with [[Pieter Abbeel]]. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] presents "Tesla AI Day" and "AI for Full Self-Driving" at CVPR.
+- [[Andrej Karpathy]] appears on the Robot Brains podcast with [[Pieter Abbeel]].
 
 ## 2022
 
-- Lex Fridman podcast. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] appears on the Lex Fridman podcast.
 
 ## 2023
 
-- State of GPT @ Microsoft Build. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Andrej Karpathy creates Neural Networks: Zero to Hero lecture series on LLMs. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] presents "State of GPT" at Microsoft Build.
 
 ## 2024
 
-- GPU Mode. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- UC Berkeley AI Hackathon. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- No Priors podcast. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Multiple LLM educational videos published (2024-2025). ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] presents at GPU Mode, UC Berkeley AI Hackathon, No Priors podcast.
 
 ## 2025
 
-- Andrej Karpathy returns to OpenAI, builds team for midtraining and synthetic data generation. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- Dwarlesh podcast. ([source](assets/2026-06-09/Andrej_Karpathy.md))
-- YC AI Startup School. ([source](assets/2026-06-09/Andrej_Karpathy.md))
+- [[Andrej Karpathy]] appears on Dwarlesh podcast discussing "LLMs are a different kind of intelligence."
+- [[Andrej Karpathy]] presents at YC AI Startup School.

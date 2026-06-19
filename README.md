@@ -27,10 +27,14 @@ To ensure a seamless setup, install and configure the required tools in this exa
    - **Action:** Download and install [Obsidian](https://obsidian.md/) on your local machine to view, search, and navigate your wiki.
 
 2. **Step 2: Install System Dependencies (CLI Tools)**
-   - Mycelium Mind requires `jq` (JSON command-line parser) and `poppler` (PDF rendering utilities).
+   - Mycelium Mind requires `jq` (JSON command-line parser), `poppler` (PDF rendering utilities), and `gh` (GitHub CLI) for automated PR creation.
    - **Action:** Open your terminal in the repository root and run the following command to install them via Homebrew:
      ```bash
      brew bundle install
+     ```
+   - **Auth Note:** Ensure you are authenticated with the GitHub CLI so that PRs can be opened:
+     ```bash
+     gh auth login
      ```
 
 3. **Step 3: Install oMLX & Download Local Models (The AI Brain)**
@@ -464,6 +468,7 @@ All models and tools run **fully offline** on your local machine:
 - **[OpenCode](https://opencode.ai/):** Declarative AI coding engine and command environment.
 - **[poppler](https://poppler.freedesktop.org/):** System rendering utilities (`pdftoppm`) for compiling PDF files into high-fidelity image pages.
 - **[jq](https://jqlang.github.io/jq/):** JSON command-line parser.
+- **[gh (GitHub CLI)](https://cli.github.com/):** For pushing pipeline branches and opening PRs automatically.
 - **[Obsidian](https://obsidian.md/):** Frontend UI and graph renderer (Required to explore, search, and visually navigate your wiki).
 
 ---

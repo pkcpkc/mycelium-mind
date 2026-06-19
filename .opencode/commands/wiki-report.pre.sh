@@ -16,3 +16,4 @@ VAULT_NAME="${VAULTS%%,*}"
 
 # Ensure folder structure exists
 bash "$SUB_SCRIPTS_DIR/ensure-folders.sh" "$VAULT_NAME"
+mkdir -p "$SCRIPT_DIR/../../Vaults/$VAULT_NAME/wiki/reports"

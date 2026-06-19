@@ -16,7 +16,6 @@ This command MUST follow the core directory layout, wikilink formatting, and sou
 - **Wikilinks Format**: Check that all [[Wikilinks]] targeting files follow the `wiki-core` wikilink format rule. Flag any links containing folder prefixes as errors.
 - **Source Attribution Formatting**: Check that all source attributions follow the `wiki-core` source format rule. Flag any occurrences containing double quotes `"` or angle brackets `<` and `>` as errors.
 - **Index Sync**: Ensure every file in the vault is listed in the root `index.md`.
-- **Timeline Sync**: Ensure dates mentioned across wiki files are correctly cataloged and chronologically ordered in the root `timeline.md`.
 
 ## 2. Content Quality Audit
 

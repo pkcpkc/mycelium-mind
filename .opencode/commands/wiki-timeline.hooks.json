@@ -2,6 +2,10 @@
   "scripts": {
     "pre": [
       "wiki-timeline.pre.sh $1"
+    ],
+    "post": [
+      "wiki-timeline.post.sh $1"
     ]
   }
 }
+

@@ -2,6 +2,10 @@
   "scripts": {
     "pre": [
       "wiki-social-graph.pre.sh $1"
+    ],
+    "post": [
+      "wiki-social-graph.post.sh $1"
     ]
   }
 }
+

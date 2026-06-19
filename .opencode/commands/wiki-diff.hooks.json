@@ -6,6 +6,7 @@
   },
   "commands": {
     "post": [
+      "wiki-persons $1",
       "wiki-lint $1",
       "wiki-timeline $1",
       "wiki-social-graph $1"

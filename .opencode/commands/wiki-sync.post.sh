@@ -1,13 +1,17 @@
 #!/bin/bash
 
+# Resolve script directory absolutely
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 # Change to project root
-cd "$(dirname "$0")/../../" || exit 1
+cd "$SCRIPT_DIR/../../" || exit 1
 
 VAULT_NAME="$1"
 if [ -z "$VAULT_NAME" ]; then
     echo "Error: Vault name not provided."
     exit 1
 fi
+
 
 echo "[Hook] Starting post-processing for wiki-sync (Vault: $VAULT_NAME)..."
 
@@ -30,4 +34,14 @@ else
     echo "Inbox is empty or does not exist. Skipping archiving."
 fi
 
+# Invoke the git-commit-helper.sh script to stage and commit
+if [ -f "$SCRIPT_DIR/git-commit-helper.sh" ]; then
+    bash "$SCRIPT_DIR/git-commit-helper.sh" "$VAULT_NAME" "wiki-sync" "Processed inbox files and updated summaries/concepts/index" \
+        "Vaults/$VAULT_NAME/wiki/summaries" \
+        "Vaults/$VAULT_NAME/wiki/concepts" \
+        "Vaults/$VAULT_NAME/wiki/index.md" \
+        "Vaults/$VAULT_NAME/wiki/assets"
+fi
+
 printf '\n[Hook] Post-processing finished.'
+

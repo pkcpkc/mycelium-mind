@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "pre": [
+      "wiki-persons.pre.sh $1"
+    ],
+    "post": [
+      "wiki-persons.post.sh $1"
+    ]
+  }
+}
+
