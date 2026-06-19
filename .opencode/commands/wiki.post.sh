@@ -44,26 +44,32 @@ if [ "$COMMITS_COUNT" -eq 0 ]; then
     echo "[Git] Workspace reset back to '$ORIG_BRANCH'."
     exit 0
 fi
-
+PUSH_SUCCESS=true
 echo "[Git] Pushing sync branch to remote..."
-git push origin HEAD
+if ! git push origin HEAD; then
+    echo "[Git Warning] Failed to push branch to remote."
+    PUSH_SUCCESS=false
+fi
 
-echo "[Git] Creating Pull Request on GitHub..."
-if PR_URL=$(gh pr create --title "wiki: sync $VAULT_NAME - $(date "+%Y-%m-%d")" \
-                        --body "Automated wiki sync pipeline execution for vault $VAULT_NAME." \
-                        --base "$ORIG_BRANCH" \
-                        --head "$CURRENT_BRANCH" 2>&1); then
-    echo "--------------------------------------------------------"
-    echo "Successfully created Pull Request:"
-    echo "$PR_URL"
-    echo "--------------------------------------------------------"
-else
-    echo "[Git Warning] Failed to create Pull Request via gh CLI: $PR_URL"
+if [ "$PUSH_SUCCESS" = true ]; then
+    echo "[Git] Creating Pull Request on GitHub..."
+    if PR_URL=$(gh pr create --title "wiki: sync $VAULT_NAME - $(date "+%Y-%m-%d")" \
+                            --body "Automated wiki sync pipeline execution for vault $VAULT_NAME." \
+                            --base "$ORIG_BRANCH" \
+                            --head "$CURRENT_BRANCH" 2>&1); then
+        echo "--------------------------------------------------------"
+        echo "Successfully created Pull Request:"
+        echo "$PR_URL"
+        echo "--------------------------------------------------------"
+    else
+        echo "[Git Warning] Failed to create Pull Request via gh CLI: $PR_URL"
+    fi
 fi
 
 # Switch back to original branch and clean tracking file
 echo "[Git] Returning workspace to original branch '$ORIG_BRANCH'..."
-git checkout "$ORIG_BRANCH"
+git checkout "$ORIG_BRANCH" || git checkout main
 rm -f "$TRACKING_FILE"
 
 printf '\n[Hook] Wiki orchestration post-processing finished.'
+

@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "pre": [
+      "bash .opencode/commands/wiki-publish.sh $1"
+    ]
+  }
+}
