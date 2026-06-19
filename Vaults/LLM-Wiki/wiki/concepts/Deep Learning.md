@@ -1,21 +1,24 @@
 # Deep Learning
 
-Deep learning is a subset of machine learning using neural networks with multiple layers. Andrej Karpathy's PhD work focused on convolutional and recurrent neural networks and their applications in computer vision, natural language processing, and their intersection. He has created extensive educational content on deep learning and LLMs.
+Deep learning is a subset of machine learning that uses multi-layered neural networks to learn representations of data. It has become the dominant approach in artificial intelligence, particularly for tasks like computer vision, natural language processing, and speech recognition.
 
-## Key Concepts
+## Key Architectures
 
-- **Convolutional Neural Networks (CNNs)** - Used in computer vision, ImageNet competition
-- **Recurrent Neural Networks (RNNs)** - Used in language modeling, char-rnn project
-- **Transformer Models** - Foundation of modern LLMs
-- **Backpropagation** - Core training algorithm, covered in Karpathy's spelled-out intro series
+- **Convolutional Neural Networks (CNNs)** — widely used for image recognition and computer vision tasks. Popularized by [[Fei-Fei Li]]'s work on ImageNet and the Stanford CS231n course taught by [[Andrej Karpathy]].
+- **Recurrent Neural Networks (RNNs)** — designed for sequential data, including variants like LSTMs and GRUs. Used in [[char-rnn]] and language modeling.
+- **PixelCNN / PixelRNN** — autoregressive models for image generation, extended in PixelCNN++ with discretized logistic mixture likelihood.
+- **Transformer models** — foundation for modern [[LLMs]], though not explicitly detailed in the Karpathy source material.
 
-## Key People
+## Applications
 
-- [[Andrej Karpathy]] - Researcher and educator in deep learning
-- [[Geoff Hinton]] - Influenced Karpathy's early interest during University of Toronto
+- Computer vision: image classification, object detection, image captioning (e.g., [[NeuralTalk2]], [[ConvNetJS]])
+- Natural language processing: language modeling, text generation
+- Reinforcement learning: [[DeepMind]] research on deep reinforcement learning
 
-## Timeline
+## Backpropagation
 
-- **2012**: Karpathy competed against ConvNet on ImageNet.
-- **2015-2017**: Karpathy taught Stanford CS 231n on CNNs.
-- **2023+**: Karpathy created Neural Networks: Zero to Hero lecture series on LLMs.
+Backpropagation (reverse-mode autodiff) is the core algorithm for training neural networks. [[Andrej Karpathy]] created educational resources explaining it in detail, including "The spelled-out intro to neural networks and backpropagation" and [[micrograd]], a tiny scalar-valued autograd engine.
+
+## Sources
+
+([source](inbox/Andrej_Karpathy.md))

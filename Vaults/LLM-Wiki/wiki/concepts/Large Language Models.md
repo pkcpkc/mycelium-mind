@@ -1,18 +1,16 @@
 # Large Language Models
 
-Large Language Models (LLMs) are AI models trained on vast text datasets capable of generating human-like text. Andrej Karpathy has created multiple educational tracks on LLMs including "Deep Dive into LLMs", "How I Use LLMs", and "Intro to Large Language Models". He also created the "Building makemore" series covering building language models from scratch.
+Large Language Models (LLMs) are artificial intelligence models trained on vast amounts of text data to understand and generate human language. They represent a significant advancement in natural language processing and have applications ranging from chatbots to code generation.
 
-## Key People
+## Overview
 
-- [[Andrej Karpathy]] - Creator of educational content on LLMs from scratch implementations
+[[Andrej Karpathy]] has created educational content on LLMs including "Intro to Large Language Models" (1M views) and "Let's build GPT: from scratch, in code, spelled out" (3.5M views). He has also discussed how LLMs represent "a different kind of intelligence."
 
-## Key Concepts
+## Related Concepts
 
-- **GPT** - Covered in Karpathy's "Let's build GPT" series
-- **Backpropagation** - Fundamental training algorithm
-- **Autodiff** - Covered in micrograd project
+- [[Deep Learning]]
+- [[Natural Language Processing]]
 
-## Timeline
+## Sources
 
-- **2023**: State of GPT talk at Microsoft Build.
-- **2024-2025**: Multiple LLM educational videos published.
+([source](inbox/Andrej_Karpathy.md))
