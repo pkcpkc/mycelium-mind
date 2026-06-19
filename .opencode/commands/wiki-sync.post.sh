@@ -34,6 +34,40 @@ else
     echo "Inbox is empty or does not exist. Skipping archiving."
 fi
 
+# Create or update the index.md file of all concepts
+CONCEPTS_DIR="Vaults/$VAULT_NAME/wiki/concepts"
+if [ -d "$CONCEPTS_DIR" ]; then
+    echo "[Hook] Creating/updating index.md in $CONCEPTS_DIR..."
+    INDEX_FILE="$CONCEPTS_DIR/index.md"
+    echo "# Concepts Index" > "$INDEX_FILE"
+    echo "" >> "$INDEX_FILE"
+    
+    # Find all .md files in the concepts folder, exclude index.md itself, sort them, and format as wiki links
+    find "$CONCEPTS_DIR" -maxdepth 1 -name "*.md" ! -name "index.md" | \
+        sed 's|.*/||; s/\.md$//' | \
+        sort -f | \
+        while read -r name; do
+            echo "- [[$name]]" >> "$INDEX_FILE"
+        done
+fi
+
+# Create or update the index.md file of all summaries
+SUMMARIES_DIR="Vaults/$VAULT_NAME/wiki/summaries"
+if [ -d "$SUMMARIES_DIR" ]; then
+    echo "[Hook] Creating/updating index.md in $SUMMARIES_DIR..."
+    INDEX_FILE="$SUMMARIES_DIR/index.md"
+    echo "# Summaries Index" > "$INDEX_FILE"
+    echo "" >> "$INDEX_FILE"
+    
+    # Find all .md files in the summaries folder, exclude index.md itself, sort them, and format as wiki links
+    find "$SUMMARIES_DIR" -maxdepth 1 -name "*.md" ! -name "index.md" | \
+        sed 's|.*/||; s/\.md$//' | \
+        sort -f | \
+        while read -r name; do
+            echo "- [[$name]]" >> "$INDEX_FILE"
+        done
+fi
+
 # Invoke the git-commit-helper.sh script to stage and commit
 if [ -f "$SCRIPT_DIR/git-commit-helper.sh" ]; then
     bash "$SCRIPT_DIR/git-commit-helper.sh" "$VAULT_NAME" "wiki-sync" "Processed inbox files and updated summaries/concepts/index" \

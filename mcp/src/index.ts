@@ -132,6 +132,7 @@ export async function findInboundLinks(wikiDir: string, targetName: string): Pro
       const files = await fs.readdir(dirPath);
       for (const file of files) {
         if (!file.endsWith(".md")) continue;
+        if (file === "index.md") continue;
         const filePath = path.join(dirPath, file);
         const rawContent = await fs.readFile(filePath, "utf-8");
         const outlinks = sanitizeWikilinks(rawContent);
@@ -204,6 +205,7 @@ export async function listNoteTitles(wikiDir: string, subfolder: string): Promis
 
     for (const file of files) {
       if (!file.endsWith(".md")) continue;
+      if (file === "index.md") continue;
       const filePath = path.join(dirPath, file);
       const rawText = await fs.readFile(filePath, "utf-8");
       const parsed = matter(rawText);
