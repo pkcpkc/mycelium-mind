@@ -9,10 +9,12 @@
       "wiki-sync/ensure-folders.sh $1",
       "wiki-sync/sanitize-filenames.sh $1",
       "wiki-sync/image-to-text.sh $1",
-      "wiki-sync/ocr-pdf.sh $1"
+      "wiki-sync/ocr-pdf.sh $1",
+      "wiki-sync/wiki-sync-loop.sh $1 $2"
     ],
     "post": [
-      "wiki-sync.post.sh $1"
+      "wiki-sync.post.sh $1 $2"
     ]
   }
 }
+
