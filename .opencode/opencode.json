@@ -4,7 +4,7 @@
     "rtk": false
   },
   "plugin": [
-    "@pkcpkc/opencode-plugin-command-hooks@0.4.0"
+    "@pkcpkc/opencode-plugin-command-hooks@^0.4.0"
   ],
   "mcp": {
     "headroom": {
