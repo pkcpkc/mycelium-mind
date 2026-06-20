@@ -12,10 +12,7 @@ All wiki vaults are stored under `./Vaults/<VaultName>/wiki/` and follow this pa
 
 - **Root Directory:** `./Vaults/<VaultName>/wiki/`
 - **Main Index:** `index.md` (root index page)
-- **Timeline:** `timeline.md` (root timeline page)
-- **Social Graph:** `social-graph.md` (root social graph page)
 - **Concepts Directory:** `concepts/` (e.g. `./Vaults/<VaultName>/wiki/concepts/<ConceptName>.md`)
-- **Persons Directory:** `persons/` (e.g. `./Vaults/<VaultName>/wiki/persons/<PersonName>.md`)
 - **Summaries Directory:** `summaries/` (e.g. `./Vaults/<VaultName>/wiki/summaries/<SummaryName>.md`)
 - **Reports Directory:** `reports/` (e.g. `./Vaults/<VaultName>/wiki/reports/<ReportName>.md`)
 - **Assets Directory:** `assets/` (e.g. `./Vaults/<VaultName>/wiki/assets/YYYY-MM-DD/`)

@@ -1,32 +1,15 @@
-# Andrej Karpathy
+# Andrej Karpathy — Summary
 
-**Andrej Karpathy** is an AI researcher and educator known for his work in deep learning, computer vision, and large language models.
+Andrej Karpathy is an AI researcher and educator [[OpenAI]], [[Stanford]], [[Tesla Autopilot]]. He was a founding member of [[OpenAI]] in 2015 and later served as the Director of AI at Tesla, where he led the computer vision team for [[Tesla Autopilot]] and Tesla Optimus [[Tesla]]. Karpathy is best known for creating educational content on AI, including the popular YouTube lecture series [[Neural Networks: Zero to Hero]] and the viral "Let's build GPT" tutorial series [[YouTube]].
 
-## Career Highlights
+During his PhD at [[Stanford]], Karpathy advised by [[Fei-Fei Li]] focused on convolutional and recurrent neural networks applied to computer vision and natural language processing [[Stanford]]. He designed and taught CS 231n: Convolutional Neural Networks for Visual Recognition, which grew from 150 to 750 students between 2015 and 2017 [[CS 231n]]. [Source: Andrej_Karpathy.md]
 
-Karpathy was a founding member of [[OpenAI]] in 2015, returning later to lead a team focused on midtraining and synthetic data generation. He served as Director of AI at [[Tesla Autopilot]], where he led the computer vision team for Tesla's autonomous driving systems and briefly worked on [[Tesla Optimus]].
+Karpathy held research positions at [[Google Brain]] (2011), [[Google Research]] (2013), and [[DeepMind]] (2015) before returning to [[OpenAI]] to build a team focused on midtraining and synthetic data generation. [Source: Andrej_Karpathy.md]
 
-## Education
+He earned his MSc at the [[University of British Columbia]] working with [[Michiel van de Panne]] on learning controllers for simulated figures, and his BSc at the [[University of Toronto]], where he attended [[Geoff Hinton]]'s classes and became interested in deep learning. [Source: Andrej_Karpathy.md]
 
-Karpathy earned his PhD from Stanford University, where he studied under [[Fei-Fei Li]] in the Stanford Vision Lab. His doctoral research focused on convolutional and recurrent neural networks and their applications in computer vision, natural language processing, and their intersection. During his PhD he also worked with [[Daphne Koller]], [[Andrew Ng]], [[Sebastian Thrun]], and [[Vladlen Koltun]].
+Karpathy has created several notable open-source projects including [[micrograd]] (a scalar-valued autograd engine), [[char-rnn]] (a character-level language model), [[arxiv-sanity]] (an Arxiv paper discovery tool), [[neuraltalk2]] (an image captioning project), and [[ConvNetJS]] (a deep learning library written in JavaScript). [Source: Andrej_Karpathy.md]
 
-He holds an MSc from the University of British Columbia (2009) and a BSc in computer science and physics with a minor in math from the University of Toronto (2005), where he first encountered deep learning through [[Geoff Hinton]]'s teachings.
+His PhD thesis, "Connecting Images and Natural Language" (2016), produced influential work on dense captioning [[DenseCap]], image-sentence mapping [[Deep Visual-Semantic Alignments]], and visual-semantic alignments. He competed against an early ConvNet on [[ImageNet]] categorization, earning the nickname "reference human" for ImageNet. [Source: Andrej_Karpathy.md]
 
-## Internships
-
-Karpathy completed internships at [[Google Brain]] (2011), [[Google Research]] (2013), and [[DeepMind]] (2015).
-
-## Teaching
-
-He designed and taught Stanford's first deep learning course, [[CS231n: Convolutional Neural Networks for Visual Recognition]], which grew from 150 students in 2015 to 750 by 2017. He runs a popular YouTube channel with educational videos on AI and LLMs, including the Zero to Hero series.
-
-## Key Contributions
-
-- [[Software 2.0]]: Framework for building AI systems using data and learning algorithms rather than explicit programming
-- [[Neural Talk 2]]: Early image captioning system using deep learning
-- [[ConvNetJS]]: Deep learning library written in JavaScript
-- Co-authored research on [[ImageNet]], [[DenseCap]], and other computer vision milestones
-
-## Sources
-
-[source: Andrej Karpathy personal website](https://karpathy.github.io)
+Karpathy's notable publications include work on World of Bits (ICML 2017), PixelCNN++ (ICLR 2017), DenseCap (CVPR 2016 Oral), and Deep Fragment Embeddings (NIPS 2014). [Source: Andrej_Karpathy.md]

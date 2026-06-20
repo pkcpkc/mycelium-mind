@@ -32,11 +32,4 @@ if [ -d "$PERSONS_DIR" ]; then
         done
 fi
 
-# Invoke the git-commit-helper.sh script to stage and commit
-if [ -f "$SCRIPT_DIR/git-commit-helper.sh" ]; then
-    bash "$SCRIPT_DIR/git-commit-helper.sh" "$VAULT_NAME" "wiki-persons" "Updated individual bio pages and persons index" \
-        "Vaults/$VAULT_NAME/wiki/persons" \
-        "Vaults/$VAULT_NAME/wiki/index.md"
-fi
-
 printf '\n[Hook] Persons post-processing finished.'

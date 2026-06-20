@@ -151,15 +151,12 @@ Vault Name: $1
 ```
 
 #### Step B: Declare Hooks (`.opencode/commands/wiki-companies.hooks.json`)
-Configure the pre-script to ensure the target directory exists and the post-script to auto-stage and commit the new files using the Git helper:
+Configure the pre-script to ensure the target directory exists:
 ```json
 {
   "scripts": {
     "pre": [
       "mkdir -p ./Vaults/$1/wiki/companies"
-    ],
-    "post": [
-      "bash .opencode/commands/git-commit-helper.sh $1 wiki-companies 'Extracted and compiled company profile pages' 'Vaults/$1/wiki/companies'"
     ]
   }
 }

@@ -1,3 +1,16 @@
 # Persons Index
 
-- [[Andrej_Karpathy]]
+- [[Andrej Karpathy]]
+- [[Andrew Ng]]
+- [[Daphne Koller]]
+- [[Elon Musk]]
+- [[Fei-Fei Li]]
+- [[Geoff Hinton]]
+- [[Greg Brockman]]
+- [[Hao Su]]
+- [[Ilya Sutskever]]
+- [[Jia Deng]]
+- [[Michiel van de Panne]]
+- [[Olga Russakovsky]]
+- [[Sam Altman]]
+- [[Sebastian Thrun]]

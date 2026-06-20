@@ -3,46 +3,44 @@
 ## Persons
 
 - [[Andrej Karpathy]]
-- [[Fei-Fei Li]]
 - [[Andrew Ng]]
-- [[Justin Johnson]]
-- [[Richard Socher]]
-- [[Quoc V. Le]]
-- [[Christopher D. Manning]]
 - [[Daphne Koller]]
-- [[Sebastian Thrun]]
-- [[Vladlen Koltun]]
+- [[Elon Musk]]
+- [[Fei-Fei Li]]
 - [[Geoff Hinton]]
-- [[Michiel van de Panne]]
-- [[Vlad Mnih]]
-- [[Koray Kavukcuoglu]]
-- [[Pieter Abbeel]]
-- [[Armand Joulin]]
-- [[Olga Russakovsky]]
-- [[Jia Deng]]
+- [[Greg Brockman]]
 - [[Hao Su]]
-- [[Jonathan Hernandez]]
-- [[Percy Liang]]
-- [[Tianlin Shi]]
-- [[Linxi Fan]]
+- [[Ilya Sutskever]]
+- [[Jia Deng]]
+- [[Michiel van de Panne]]
+- [[Olga Russakovsky]]
+- [[Sam Altman]]
+- [[Sebastian Thrun]]
 
 ## Concepts
 
-- [[Deep Learning]]
-- [[Computer Vision]]
-- [[Large Language Models]]
+- [[CS_231n]]
+- [[ConvNetJS]]
+- [[DeepMind]]
+- [[Google_Brain]]
 - [[ImageNet]]
-- [[Natural Language Processing]]
-- [[Convolutional Neural Networks]]
-- [[Recurrent Neural Networks]]
-- [[Backpropagation]]
+- [[Large_Language_Model]]
+- [[Neural_Networks_Zero_to_Hero]]
 - [[OpenAI]]
-- [[Tesla Autopilot]]
+- [[Stanford]]
+- [[Tesla_Autopilot]]
+- [[arxiv-sanity]]
+- [[char-rnn]]
+- [[micrograd]]
 
-## Social Graph
+## Summaries
 
-- [[social-graph|Social Graph]] - Interactive social graph and detailed connection map of the individuals in this vault.
+- [[Andrej_Karpathy]]
 
 ## Timeline
 
 - [[timeline]]
+
+## Social Graph
+
+- [[social-graph|Social Graph]] - Interactive social graph and detailed connection map of the individuals in this vault.

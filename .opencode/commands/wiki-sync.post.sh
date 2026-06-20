@@ -90,14 +90,5 @@ if [ -d "$SUMMARIES_DIR" ]; then
         done
 fi
 
-# Invoke the git-commit-helper.sh script to stage and commit
-if [ -f "$SCRIPT_DIR/git-commit-helper.sh" ]; then
-    bash "$SCRIPT_DIR/git-commit-helper.sh" "$VAULT_NAME" "wiki-sync" "Processed inbox files and updated summaries/concepts/index" \
-        "Vaults/$VAULT_NAME/wiki/summaries" \
-        "Vaults/$VAULT_NAME/wiki/concepts" \
-        "Vaults/$VAULT_NAME/wiki/index.md" \
-        "Vaults/$VAULT_NAME/wiki/assets"
-fi
-
 printf '\n[Hook] Post-processing finished.'
 
