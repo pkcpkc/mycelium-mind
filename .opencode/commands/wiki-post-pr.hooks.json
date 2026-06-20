@@ -1,7 +1,0 @@
-{
-  "scripts": {
-    "pre": [
-      "wiki.post.sh $1"
-    ]
-  }
-}

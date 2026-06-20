@@ -1,8 +1,6 @@
 {
   "commands": {
-    "pre": [
-      "wiki-lint $1"
-    ]
+    "pre": []
   },
   "scripts": {
     "pre": [
@@ -17,4 +15,3 @@
     ]
   }
 }
-

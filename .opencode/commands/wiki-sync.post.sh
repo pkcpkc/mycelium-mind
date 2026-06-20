@@ -91,4 +91,3 @@ if [ -d "$SUMMARIES_DIR" ]; then
 fi
 
 printf '\n[Hook] Post-processing finished.'
-
