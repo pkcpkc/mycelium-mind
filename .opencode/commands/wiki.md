@@ -10,6 +10,4 @@ Vault: `./Vaults/$1`
 
 ## Pipeline Execution
 
-Inform the user, that the vault will be updated.
-
-DONT DO ANYTHING ELSE! DONT EXECUTE COMMANDS!
+Inform the user, that the vault will be updated, but dont do anything!

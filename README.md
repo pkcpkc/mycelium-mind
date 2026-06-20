@@ -59,8 +59,7 @@ Mycelium Mind uses a modular, hook-driven architecture. The `/wiki <VaultName>` 
 
 ```mermaid
 flowchart TD
-    user["User runs /wiki &lt;VaultName&gt;"] --> checkout["Git branch created: wiki/&lt;VaultName&gt;-sync-..."]
-    checkout --> lint["/wiki-lint (checks & repairs wikilinks)"]
+    user["User runs /wiki &lt;VaultName&gt;"] --> lint["/wiki-lint (checks & repairs wikilinks)"]
     lint --> pre["Pre-processing:
     - sanitize-filenames.sh
     - ensure-folders.sh
@@ -72,18 +71,15 @@ flowchart TD
         spawn["opencode run --command 'wiki-sync' &lt;VaultName&gt; &lt;FileName&gt;"]
         spawn --> ai["AI Processing:
         - Read single file
-        - Write concepts/summaries/persons
+        - Write topics/summaries
         - Citation & conflict check"]
         ai --> archive["Post-processing:
-        - Move file to assets/
-        - git commit changes"]
+        - Move file to assets/"]
     end
     
     loop -- "Yes (For each file)" --> spawn
     archive --> loop
-    loop -- "No (Finished)" --> timeline["/wiki-timeline (compiles timeline.md)"]
-    timeline --> social["/wiki-social-graph (compiles social-graph.md)"]
-    social --> done["Pipeline Finished!"]
+    loop -- "No (Finished)" --> done["Pipeline Finished!"]
 ```
 
 ---
@@ -93,10 +89,7 @@ flowchart TD
 Inside your compiled `Vaults/<VaultName>/wiki/` vault, Mycelium Mind maintains a strict schema:
 
 * `index.md` — The Map of Content (entry directory).
-* `timeline.md` — Global sorted timeline of events.
-* `social-graph.md` — Mermaid relationship chart of all persons.
-* `concepts/` — Topic and concept notes.
-* `persons/` — Biographies and affiliations.
+* `topics/` — Topic and concept notes.
 * `summaries/` — Synthesis cards for raw documents.
 * `reports/` — Cross-vault thematic syntheses (compiled via `/wiki-report`).
 * `assets/` — Archive of raw documents sorted by date of ingestion (`assets/YYYY-MM-DD/`).
@@ -109,12 +102,9 @@ All subcommands run independently in OpenCode:
 
 | Command | Target Output | Description |
 | :--- | :--- | :--- |
-| `/wiki <Vault>` | Whole vault | Runs the entire pipeline sequentially (Branching, Linting, Syncing, Timeline, Social-Graph). |
-| `/wiki-sync <Vault> [File]` | `summaries/`, `concepts/`, `persons/` | OCR/Vision extracts document content, and the LLM synthesizes entries. Passing `[File]` syncs only that single file. |
-| `/wiki-diff <Vault>` | Selective updates | Checks unstaged Git changes in the vault, processing only recent manual modifications. |
+| `/wiki <Vault>` | Whole vault | Runs the entire pipeline sequentially (Linting, Syncing). |
+| `/wiki-sync <Vault> [File]` | `summaries/`, `topics/` | OCR/Vision extracts document content, and the LLM synthesizes entries. Passing `[File]` syncs only that single file. |
 | `/wiki-lint <Vault>` | Interactive audit | Checks for broken wikilinks, orphaned pages, or stubs. |
-| `/wiki-timeline <Vault>` | `timeline.md` | Extracts dates and compiles them chronologically. |
-| `/wiki-social-graph <Vault>`| `social-graph.md` | Scrapes entity relationships and builds the Mermaid chart. |
 | `/wiki-report <Vaults> <Q>` | `reports/` | Synthesizes a thematic study across multiple vaults. |
 
 ---
@@ -132,7 +122,7 @@ Suppose we want to automatically scan all ingested text, identify mentioned comp
 Create a prompt instructing the LLM on how to extract and format company pages:
 ```markdown
 ---
-description: Scans summaries and concepts to identify companies and compile profile pages under companies/. Usage: /wiki-companies <VaultName>
+description: Scans summaries and topics to identify companies and compile profile pages under companies/. Usage: /wiki-companies <VaultName>
 ---
 # Wiki Companies Command
 
@@ -140,7 +130,7 @@ description: Scans summaries and concepts to identify companies and compile prof
 Vault Name: $1
 
 ## Instructions
-1. Scan `./Vaults/$1/wiki/summaries/` and `./Vaults/$1/wiki/concepts/`.
+1. Scan `./Vaults/$1/wiki/summaries/` and `./Vaults/$1/wiki/topics/`.
 2. Extract all mentioned business entities or companies.
 3. For each unique company, write or update `./Vaults/$1/wiki/companies/[Company Name].md` containing:
    - `# [Company Name]`
@@ -169,8 +159,6 @@ To make this new company extraction execute automatically whenever you run `/wik
   "commands": {
     "post": [
       "wiki-sync $1",
-      "wiki-timeline $1",
-      "wiki-social-graph $1",
       "wiki-companies $1"
     ]
   }

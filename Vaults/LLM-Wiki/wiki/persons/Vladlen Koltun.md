@@ -1,12 +1,14 @@
 # Vladlen Koltun
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- Professor, University of Washington
-- Fellow, Microsoft Research
+- Researcher at [[Stanford University]]
+- Computer vision and machine learning researcher
 
 ## Biography & Context
 
-Vladlen Koltun is a computer vision researcher and professor. Andrej Karpathy worked with him during the first-year rotation program while pursuing his PhD at Stanford University.
+[[Vladlen Koltun]] was one of [[Andrej Karpathy]]'s mentors during his first-year rotation program at [[Stanford University]] (2011–2017). He worked with Karpathy alongside [[Andrew Ng]], [[Daphne Koller]], [[Sebastian Thrun]], and himself during this period.
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+Karpathy also worked with [[Vladlen Koltun]] during his PhD rotation year at Stanford.
+
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))

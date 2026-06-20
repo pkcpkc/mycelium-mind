@@ -1,13 +1,14 @@
 # Sebastian Thrun
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- Co-Founder, Udacity
-- Founder, Kitty Hawk
-- Professor (former), Stanford University
+- Professor at [[Stanford University]]
+- Pioneer in autonomous vehicles and AI education
 
 ## Biography & Context
 
-Sebastian Thrun is a pioneer in artificial intelligence and robotics. He was one of the faculty members Andrej Karpathy worked with during the first-year rotation program while pursuing his PhD at Stanford University. Thrun is well known for co-teaching the popular Stanford AI course with Andrew Ng, founding Udacity, and leading Google's self-driving car project.
+[[Sebastian Thrun]] was one of [[Andrej Karpathy]]'s mentors during his first-year rotation program at [[Stanford University]] (2011–2017). He worked with Karpathy alongside [[Andrew Ng]], [[Daphne Koller]], and [[Vladlen Koltun]] during this period.
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+Thrun is known for his work in AI education and autonomous vehicle research at Stanford.
+
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))

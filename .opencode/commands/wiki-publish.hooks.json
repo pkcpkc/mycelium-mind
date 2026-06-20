@@ -1,7 +1,7 @@
 {
   "scripts": {
     "pre": [
-      "bash .opencode/commands/wiki-publish.sh $1"
+      "wiki-publish/wiki-publish.sh $1 $2"
     ]
   }
 }

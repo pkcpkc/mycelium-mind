@@ -37,7 +37,7 @@ jobs:
 
       - name: Build static site
         run: |
-          bash .opencode/commands/wiki-publish.sh LLM-Wiki
+          bash .opencode/commands/wiki-publish/wiki-publish.sh LLM-Wiki
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

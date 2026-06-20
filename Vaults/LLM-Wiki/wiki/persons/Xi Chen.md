@@ -1,11 +1,12 @@
 # Xi Chen
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- Research Scientist, Google DeepMind
+- Machine learning researcher
+- Co-author on PixelCNN++ paper
 
 ## Biography & Context
 
-Xi Chen is a machine learning researcher known for work on variational inference and generative models. He collaborated with Andrej Karpathy, Tim Salimans, Diederik P. Kingma, and Yaroslav Bulatov on "PixelCNN++" (ICLR 2017).
+[[Xi Chen]] was a co-author with [[Andrej Karpathy]] on the *PixelCNN++: A PixelCNN Implementation with Discretized Logistic Mixture Likelihood and Other Modifications* paper (ICLR 2017). Other co-authors on this paper included [[Diederik P. Kingma]], [[Yaroslav Bulatov]], and [[Tim Salimans]].
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))

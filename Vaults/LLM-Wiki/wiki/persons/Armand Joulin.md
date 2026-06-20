@@ -1,11 +1,12 @@
 # Armand Joulin
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- Research Scientist, Meta AI (FAIR)
+- Researcher
+- Co-author on Deep Fragment Embeddings paper
 
 ## Biography & Context
 
-Armand Joulin is a computer vision and natural language processing researcher at Meta AI. He collaborated with Andrej Karpathy and Li Fei-Fei on "Deep Fragment Embeddings for Bidirectional Image-Sentence Mapping" (NIPS 2014).
+[[Armand Joulin]] was a co-author with [[Andrej Karpathy]] and [[Fei-Fei Li]] on the paper *Deep Fragment Embeddings for Bidirectional Image-Sentence Mapping* (NIPS 2014). This work explored bidirectional mapping between images and sentences.
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))

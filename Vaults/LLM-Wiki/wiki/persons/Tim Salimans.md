@@ -1,12 +1,12 @@
 # Tim Salimans
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- Co-Founder, OpenAI
-- Principal Research Scientist (former), OpenAI
+- Machine learning researcher
+- Co-author on PixelCNN++ paper
 
 ## Biography & Context
 
-Tim Salimans is a machine learning researcher and co-founder of OpenAI. He collaborated with Andrej Karpathy on "PixelCNN++: A PixelCNN Implementation with Discretized Logistic Mixture Likelihood and Other Modifications" (ICLR 2017), alongside Xi Chen, Diederik P. Kingma, and Yaroslav Bulatov.
+[[Tim Salimans]] was a co-author with [[Andrej Karpathy]] on the *PixelCNN++: A PixelCNN Implementation with Discretized Logistic Mixture Likelihood and Other Modifications* paper (ICLR 2017). Other co-authors on this paper included [[Diederik P. Kingma]], [[Xi Chen]], and [[Yaroslav Bulatov]].
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))

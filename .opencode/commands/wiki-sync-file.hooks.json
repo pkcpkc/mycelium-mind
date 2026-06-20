@@ -1,0 +1,11 @@
+{
+  "commands": {
+    "pre": []
+  },
+  "scripts": {
+    "pre": [],
+    "post": [
+      "wiki-sync-file.post.sh $1 $2"
+    ]
+  }
+}

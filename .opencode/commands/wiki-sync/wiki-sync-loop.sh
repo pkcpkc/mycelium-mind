@@ -5,18 +5,10 @@ cd "$(dirname "$0")/../../../" || exit 1
 PROJECT_ROOT="$(pwd)"
 
 VAULT_NAME="$1"
-SPECIFIC_FILE="$2"
 
 if [ -z "$VAULT_NAME" ]; then
     echo "Error: Vault name not provided."
     exit 1
-fi
-
-# If a specific file is provided, we are in a child process.
-# We do not run the loop to avoid infinite recursion.
-if [ -n "$SPECIFIC_FILE" ]; then
-    echo "[Loop] Specific file specified ($SPECIFIC_FILE). Skipping loop."
-    exit 0
 fi
 
 INBOX_DIR="./Vaults/$VAULT_NAME/inbox"
@@ -47,7 +39,7 @@ echo "$FILES" | while read -r file; do
     
     echo "[Loop] Starting new context for file: $filename"
     # Execute the child opencode command synchronously
-    opencode run --dangerously-skip-permissions --command "wiki-sync" "$VAULT_NAME" "$filename"
+    opencode run --command "wiki-sync-file" "$VAULT_NAME" "$filename"
     echo "[Loop] Completed processing for file: $filename"
 done
 

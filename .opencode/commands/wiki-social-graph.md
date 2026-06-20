@@ -27,7 +27,7 @@ When this command is triggered, perform a systematic analysis of the wiki vault 
 ### 2. Synthesis and Diagram Generation
 
 - **Mermaid Diagram:**
-  - Build a visually clean, no styles, Mermaid flowchart (`flowchart TD` or `flowchart LR`).
+  - Build a visually clean, no styles, Mermaid flowchart (`flowchart LR`).
   - **Syntax Rules (CRITICAL to avoid rendering failures):**
     - Use short, uppercase alphanumeric IDs for each node based on the person's initials or a simple key (e.g., `AK` for Andrej Karpathy, `FFL` for Fei-Fei Li). Do not use spaces or special characters in node IDs.
     - Provide the person's full name as a label wrapped in double quotes (e.g., `AK["Andrej Karpathy"]`).
@@ -56,7 +56,9 @@ When this command is triggered, perform a systematic analysis of the wiki vault 
     - [[social-graph|Social Graph]] - Interactive social graph and detailed connection map of the individuals in this vault.
     ```
 
-## Local Model Optimization
+## Optimization
 
 - **Consistency:** Ensure connection verbs match context from biography files.
 - **Readability:** Keep the Mermaid graph organized and clear. If a node has many connections, space out the layout.
+
+!`cat .opencode/commands/wiki-sync/wiki-rules.md`

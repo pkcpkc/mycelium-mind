@@ -1,45 +1,56 @@
-# LLM-Wiki
+# LLM Wiki
 
-Welcome to the LLM-Wiki vault — a knowledge base for AI-related topics, people, and events.
+A curated knowledge base about large language models, deep learning, and key figures in the field.
 
-## Summaries
-
-- [[Andrej_Karpathy]]
-
-## Concepts
-
-- [[Andrej_Karpathy]]
-
-See also: [[Concepts Index|Concepts Index]]
-
-## Persons
+## People
 
 - [[Andrej Karpathy]]
 - [[Fei-Fei Li]]
 - [[Geoff Hinton]]
 - [[Andrew Ng]]
-- [[Daphne Koller]]
-- [[Sebastian Thrun]]
-- [[Vladlen Koltun]]
-- [[Michiel van de Panne]]
-- [[Koray Kavukcuoglu]]
-- [[Vlad Mnih]]
 - [[Justin Johnson]]
-- [[Pieter Abbeel]]
-- [[Jensen Huang]]
-- [[Diederik P. Kingma]]
-- [[Tim Salimans]]
-- [[Xi Chen]]
-- [[Armand Joulin]]
-- [[Richard Socher]]
-- [[Christopher D. Manning]]
-- [[Quoc V. Le]]
-- [[Percy Liang]]
 
-## Timeline
+## Organizations
 
-- [[Timeline]]
+- [[OpenAI]]
+- [[Tesla]]
+- [[Stanford University]]
+- [[Google Brain]]
+- [[DeepMind]]
+- [[University of Toronto]]
+- [[University of British Columbia]]
+
+## Concepts
+
+- [[Deep Learning]]
+- [[Large Language Models]]
+- [[Computer Vision]]
+- [[Natural Language Processing]]
+- [[Convolutional Neural Networks]]
+- [[ImageNet]]
+
+## Courses
+
+- [[CS231n]]
+
+## Frameworks & Libraries
+
+- [[PyTorch]]
+- [[Torch]]
+- [[ConvNetJS]]
+
+## Projects
+
+- [[Zero to Hero]]
+- [[Char-RNN]]
+- [[Micrograd]]
+- [[NeuralTalk2]]
+- [[arxiv-sanity]]
 
 ## Social Graph
 
-- [[Social Graph]] - Interactive social graph and detailed connection map of the individuals in this vault.
+- [[social-graph|Social Graph]] - Interactive social graph and detailed connection map of the individuals in this vault.
+
+## Timeline
+
+- [[timeline|Timeline]] - Master chronological timeline of all events in this vault.

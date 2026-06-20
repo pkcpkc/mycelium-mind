@@ -1,12 +1,12 @@
 # Diederik P. Kingma
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- Co-Founder, Stability AI
-- Research Scientist (former), DeepMind
+- Machine learning researcher
+- Co-creator of Adam optimizer and variational autoencoders
 
 ## Biography & Context
 
-Diederik P. Kingma is a machine learning researcher known for contributions including Adam optimizer, Variational Autoencoders (VAEs), and Batch Normalization. He co-authored the PixelCNN++ paper (ICLR 2017) with Andrej Karpathy, Tim Salimans, Xi Chen, and Yaroslav Bulatov.
+[[Diederik P. Kingma]] was a co-author with [[Andrej Karpathy]] on the *PixelCNN++: A PixelCNN Implementation with Discretized Logistic Mixture Likelihood and Other Modifications* paper (ICLR 2017). Other co-authors on this paper included [[Xi Chen]], [[Yaroslav Bulatov]], and [[Tim Salimans]].
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))

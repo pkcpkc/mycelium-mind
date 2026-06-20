@@ -1,12 +1,12 @@
 # Quoc V. Le
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- Research Scientist, Google Brain
-- Co-Founder, Mosaic ML (former)
+- Machine learning researcher at [[Google]]
+- Co-author on Grounded Compositional Semantics paper
 
 ## Biography & Context
 
-Quoc V. Le is a machine learning researcher known for his work on deep learning, including contributions to language models and neural architecture search. He collaborated with Andrej Karpathy, Richard Socher, Christopher D. Manning, and Andrew Ng on "Grounded Compositional Semantics for Finding and Describing Images with Sentences" (TACL 2013).
+[[Quoc V. Le]] was a co-author with [[Andrej Karpathy]], [[Richard Socher]], [[Christopher D. Manning]], and [[Andrew Y. Ng]] on the paper *Grounded Compositional Semantics for Finding and Describing Images with Sentences* (TACL 2013). This work bridged computer vision and NLP through compositional semantics for image description.
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))

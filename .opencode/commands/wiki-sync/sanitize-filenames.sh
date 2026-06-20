@@ -25,8 +25,8 @@ fi
 
 sanitize_name() {
     # Remove characters that are invalid or troublesome in common filesystems,
-    # and replace all whitespaces with underscores.
-    printf '%s' "$1" | sed -e 's#[\\/:*?"<>|]##g' -e 's#[[:space:]][[:space:]]*#_#g'
+    # and replace all whitespaces with hyphens.
+    printf '%s' "$1" | sed -e 's#[\\/:*?"<>|]##g' -e 's#[[:space:]][[:space:]]*#-#g'
 }
 
 unique_target() {

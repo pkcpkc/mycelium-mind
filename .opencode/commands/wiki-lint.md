@@ -1,5 +1,5 @@
 ---
-description: Use this command to perform a health check on the wiki. It identifies broken links, orphaned pages, duplicate entities, and content gaps. Trigger it with "/wiki-lint <VaultName>".
+description: Use this command to perform a health check on the wiki. It identifies broken links, orphaned pages, duplicate topics, and content gaps. Trigger it with "/wiki-lint <VaultName>".
 ---
 
 # Wiki Linter Command
@@ -9,31 +9,20 @@ If the directory does not exist, don't do anything.
 
 This command MUST follow the Wiki Core rules defined in `AGENTS.md` (directory layout, wikilink formatting, and source attribution).
 
-## 1. Structural Audit
+## Structural Audit
 
-- **Orphan Check**: Find files in the `./Vaults/$1/wiki/concepts/`, `./Vaults/$1/wiki/summaries/`, or `./Vaults/$1/wiki/persons/` directories that have no incoming [[Wikilinks]] from other pages.
+- **Orphan Check**: Find files in `./Vaults/$1/wiki` that have no incoming [[Wikilinks]] from other pages.
 - **Broken Links**: Identify [[Wikilinks]] that point to files that do not exist.
-- **Wikilinks Format**: Check that all [[Wikilinks]] targeting files follow the `AGENTS.md` wikilink format rule. Flag any links containing folder prefixes as errors.
-- **Source Attribution Formatting**: Check that all source attributions follow the `AGENTS.md` source attribution rule. Flag any occurrences containing double quotes `"` or angle brackets `<` and `>` as errors.
-- **Index Sync**: Ensure every file in the vault is listed in the root `index.md`.
+- **Wikilinks Format**: Check that all [[Wikilinks]] targeting files follow the `AGENTS.md` wikilink format rule.
 
-## 2. Content Quality Audit
+## Content Quality Audit
 
 - **Stub Detection**: List pages with fewer than 3 sentences (excluding headers).
-- **Duplicate Detection**: Flag potential duplicate entities (e.g., "AI" vs. "Artificial Intelligence" or "LLM" vs. "Large Language Model").
-- **Missing Definitions**: Scan summaries for capitalized terms or names that are not yet turned into pages in the `concepts/` directories.
+- **Duplicate Detection**: Flag potential duplicate topics (e.g., "AI" vs. "Artificial Intelligence" or "LLM" vs. "Large Language Model").
+- **Missing Definitions**: Scan summaries for capitalized terms or names that are not yet turned into pages in the `topics/` directories.
 
-## 3. Consistency Check
+## Consistency Check
 
 - **Contradiction Search**: Look for "Conflict" callouts or pages with conflicting metadata.
 
-## Execution Workflow
-
-1. **Thought Phase**: Use `<thought>` to plan the scan.
-2. **Report Phase**: Present a categorized list of "Issues Found."
-3. **Proposal**: Ask: "Would you like me to auto-fix the broken links or merge the identified duplicates?"
-
-## Optimization
-
-- Leverage the large context window to compare multiple files for thematic duplication.
-- Use reasoning to suggest _where_ an orphan page should be linked based on its content.
+!`cat .opencode/commands/wiki-sync/wiki-rules.md`

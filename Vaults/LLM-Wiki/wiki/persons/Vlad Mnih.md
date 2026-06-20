@@ -1,12 +1,14 @@
 # Vlad Mnih
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- Research Scientist, DeepMind
-- Professor, University of Toronto (former)
+- Research Scientist at [[DeepMind]]
+- PhD researcher at [[University of Toronto]]
 
 ## Biography & Context
 
-Vlad Mnih is a machine learning researcher known for his work on deep reinforcement learning, including the development of Deep Q-Networks (DQN). Andrej Karpathy interned at DeepMind in 2015, working on deep reinforcement learning with Mnih and Koray Kavukcuoglu.
+[[Vlad Mnih]] is a researcher known for his work on deep reinforcement learning. He was one of [[Andrej Karpathy]]'s collaborators during Karpathy's 2015 internship at [[DeepMind]], where they worked on deep reinforcement learning together.
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+Karpathy's experience at DeepMind in reinforcement learning complemented his earlier work at [[Google Brain]] (2011) on unsupervised learning from videos and his PhD research at [[Stanford University]] on computer vision and natural language processing.
+
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))

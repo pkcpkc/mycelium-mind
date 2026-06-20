@@ -1,13 +1,15 @@
 # Daphne Koller
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- Co-Founder, insitro
-- Co-Founder, Coursera
-- Professor (former), Stanford University
+- Professor at [[Stanford University]]
+- Co-founder of [[Coursera]]
+- Co-founder of [[Baidu]] Research
 
 ## Biography & Context
 
-Daphne Koller is a computer scientist and AI researcher. Andrej Karpathy worked with her during the first-year rotation program while pursuing his PhD at Stanford University. Koller is known for her work in machine learning, probabilistic graphical models, and her role in popularizing online education through Coursera.
+[[Daphne Koller]] was one of [[Andrej Karpathy]]'s mentors during his first-year rotation program at [[Stanford University]] (2011–2017). She worked with Karpathy alongside [[Andrew Ng]] and [[Sebastian Thrun]] during this period.
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+Koller co-founded [[Coursera]] with [[Andrew Ng]], bringing university-level courses online. She also co-founded [[DeepLearning.AI]] and played a significant role in AI education and entrepreneurship.
+
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))

@@ -1,12 +1,12 @@
 # Pieter Abbeel
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- Co-Founder, Covariant
-- Professor, UC Berkeley
+- Professor at [[University of California, Berkeley]]
+- Reinforcement learning and robotics researcher
 
 ## Biography & Context
 
-Pieter Abbeel is a robotics and machine learning researcher at UC Berkeley. He was a guest on the Robot Brains podcast with Andrej Karpathy in 2021. Abbeel is known for his work in reinforcement learning, robotics, and co-founding Covariant.
+[[Pieter Abbeel]] is listed among the notable collaborators of [[Andrej Karpathy]]. While specific collaborative details are not extensively documented in available sources, Abbeel is a well-known figure in reinforcement learning and robotics research.
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))

@@ -1,22 +1,43 @@
 # Andrej Karpathy
 
-## Affiliations / Roles
+## Affiliations/Roles
 
-- AI Researcher, Educator, and Entrepreneur
-- Founding Member, OpenAI (2015; returned 2023)
-- Director of AI, Tesla (led computer vision for Autopilot and Optimus)
-- Research Scientist, Stanford University (designed and taught CS 231n)
+- AI researcher, educator, and entrepreneur
+- Former Director of AI at [[Tesla]] (2016–2022)
+- Founding member of [[OpenAI]] (2015); returned 2024
+- Former research scientist at [[Google Brain]] (2011) and [[Google Research]] (2013)
+- Research intern at [[DeepMind]] (2015)
 
 ## Biography & Context
 
-Andrej Karpathy is an AI researcher and educator known for pioneering work in computer vision, deep learning education, and large language models. He was a founding member of OpenAI in 2015 and later served as Director of AI at Tesla, where he led the computer vision team for Autopilot and briefly Tesla Optimus. At Tesla he handled all in-house data labeling, neural network training, and deployment on Tesla's custom inference chip.
+[[Andrej Karpathy]] is an AI researcher, educator, and entrepreneur known for his work in computer vision, deep learning, and large language models. He earned his PhD from [[Stanford University]] in 2017, advised by [[Fei-Fei Li]], with his thesis titled *Connecting Images and Natural Language*. During his PhD he designed and taught [[CS231n]], the first deep learning class at Stanford, which grew from 150 to 750 students between 2015 and 2017.
 
-Karpathy earned his PhD in Computer Science from Stanford University in 2011, advised by Fei-Fei Li, with research focused on convolutional and recurrent neural networks applied to computer vision and natural language processing. During his PhD he also worked with Daphne Koller, Andrew Ng, Sebastian Thrun, and Vladlen Koltun through Stanford's rotation program. He holds an MSc from the University of British Columbia (2009–2011), where he worked with Michiel van de Panne on learning controllers for physically-simulated figures, and a BSc from the University of Toronto (2005–2009), double majoring in computer science and physics with a minor in math. His first exposure to deep learning came through Geoff Hinton's classes and reading groups at Toronto.
+Karpathy previously earned an MSc from the [[University of British Columbia]] (2009–2011) and a BSc from the [[University of Toronto]] (2005–2009) with double majors in computer science and physics. His exposure to [[Geoff Hinton]]'s classes and reading groups at Toronto sparked his interest in deep learning.
 
-His educational contributions include CS 231n: Convolutional Neural Networks for Visual Recognition at Stanford, which grew from 150 students in 2015 to 750 in 2017, becoming one of Stanford's largest classes. He produces educational AI content on YouTube, including the "Zero to Hero" series building LLMs from scratch.
+At [[Tesla]], Karpathy served as Director of AI, leading the computer vision team for Autopilot and briefly for Tesla Optimus. His team handled all in-house data labeling, neural network training, and deployment on Tesla's custom inference chip.
 
-His open-source projects include ConvNetJS (a JavaScript deep learning library), micrograd (a tiny autograd engine), char-rnn (character-level language models), arxiv-sanity (research paper discovery platform), neuraltalk2 (image captioning), and ulogme (privacy-first productivity tracker).
+He returned to [[OpenAI]] in 2024, building a new team working on midtraining and synthetic data generation.
 
-At OpenAI he returned in 2023 to build a team focused on midtraining and synthetic data generation.
+Karpathy is widely known for his educational YouTube lectures on AI and deep learning. His YouTube content runs in parallel tracks: a technical track ([[Zero to Hero]] series covering LLMs and neural networks from scratch) and a general audience track including *Deep Dive into LLMs*, *How I Use LLMs*, and *Intro to Large Language Models*. His most-viewed lectures include "Let's build GPT: from scratch, in code, spelled out" (3.5M views), "The spelled-out intro to neural networks and backpropagation" (1.2M views), and "Intro to Large Language Models" (1M views).
 
-([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))
+He is also recognized for his influential blog posts, notably *The Unreasonable Effectiveness of Recurrent Neural Networks* (2015) and *Software 2.0* (2017).
+
+For the latest, he spends most of his time on X/Twitter and GitHub.
+
+### Personal Notes
+
+Karpathy is a sci-fi fan and an accomplished speedcuber (solves Rubik's Cube in ~17 seconds; created popular YouTube tutorials). His personal website is built with pure HTML and CSS, no frameworks.
+
+## Notable Collaborators
+
+[[Fei-Fei Li]], [[Geoff Hinton]], [[Andrew Ng]], [[Justin Johnson]], [[Vlad Mnih]], [[Daphne Koller]], [[Sebastian Thrun]], [[Vladlen Koltun]], [[Michiel van de Panne]], [[Pieter Abbeel]], [[Koray Kavukcuoglu]]
+
+## Key Projects
+
+[[Micrograd]] · [[Char-RNN]] · [[NeuralTalk2]] · [[ConvNetJS]] · [[arxiv-sanity]] · [[Zero to Hero]] · [[CS231n]]
+
+## Research Areas
+
+[[Computer Vision]] · [[Deep Learning]] · [[Convolutional Neural Networks]] · [[Natural Language Processing]] · [[Large Language Models]] · [[Reinforcement Learning]] · [[ImageNet]]
+
+(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
