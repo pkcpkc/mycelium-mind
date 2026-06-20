@@ -20,7 +20,7 @@ Below is the repository's git diff showing all changes done after the last commi
 
 Your goal is to parse the git diff above, identify all changes (additions, modifications, and deletions) made since the last commit, and integrate them into the wiki vault.
 
-This command MUST follow the core directory layout, wikilink formatting, and source attribution rules defined in the `wiki-core` skill.
+This command MUST follow the Wiki Core rules defined in `AGENTS.md` (directory layout, wikilink formatting, and source attribution).
 
 ## Execution Workflow
 

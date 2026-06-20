@@ -10,7 +10,7 @@ Vault Name: $1
 
 ## Execution Rules
 
-This command MUST follow the core directory layout, wikilink formatting, and source attribution rules defined in the `wiki-core` skill.
+This command MUST follow the Wiki Core rules defined in `AGENTS.md` (directory layout, wikilink formatting, and source attribution).
 
 ## Execution Instructions
 
@@ -22,7 +22,7 @@ When this command is triggered, compile a master chronological timeline in `./Va
   - Read all files inside the persons/ directory.
   - Read all files inside the concepts/ directory.
   - Read all files inside the summaries/ directory.
-- **Extraction:** Extract every date, year, or specific time period mentioned in these files, along with the event description and the source attribution. Format the source attribution following the `wiki-core` source format rule.
+- **Extraction:** Extract every date, year, or specific time period mentioned in these files, along with the event description and the source attribution. Format the source attribution following the `AGENTS.md` source attribution rule.
 
 ### 2. Timeline Compilation
 
@@ -32,7 +32,7 @@ When this command is triggered, compile a master chronological timeline in `./Va
   ```markdown
   ## [Year/Date]
 
-  - [Event Description] ([source](assets/YYYY-MM-DD/file.md))
+  - [Event Description] ([file.md](assets/YYYY-MM-DD/file.md))
   ```
 
 ### 3. Verification

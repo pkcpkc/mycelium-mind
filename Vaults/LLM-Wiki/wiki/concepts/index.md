@@ -1,15 +1,3 @@
 # Concepts Index
 
-- [[arxiv-sanity]]
-- [[char-rnn]]
-- [[ConvNetJS]]
-- [[CS_231n]]
-- [[DeepMind]]
-- [[Google_Brain]]
-- [[ImageNet]]
-- [[Large_Language_Model]]
-- [[micrograd]]
-- [[Neural_Networks_Zero_to_Hero]]
-- [[OpenAI]]
-- [[Stanford]]
-- [[Tesla_Autopilot]]
+- [[Andrej_Karpathy]]

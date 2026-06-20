@@ -6,7 +6,7 @@ description: Generate reports, syntheses, or thematic overviews across vault(s).
 
 This command explicitly triggers the report generation process to create comprehensive thematic overviews or Map of Content (MOC) pages.
 
-This command MUST follow the core directory layout, wikilink formatting, and source attribution rules defined in the `wiki-core` skill.
+This command MUST follow the Wiki Core rules defined in `AGENTS.md` (directory layout, wikilink formatting, and source attribution).
 
 # 1. Discovery Phase
 
@@ -22,7 +22,7 @@ This command MUST follow the core directory layout, wikilink formatting, and sou
 # 3. Output Format
 
 - Write the result to the reports directory (e.g. `reports/[Report-Name].md`).
-- **Structural Requirement**: Every paragraph must link back to one or more existing wiki pages to prove inter-connectivity following the `wiki-core` wikilink format rule.
+- **Structural Requirement**: Every paragraph must link back to one or more existing wiki pages to prove inter-connectivity following the `AGENTS.md` wikilink format rule.
 - **Callouts**: Use Obsidian `> [!abstract] Key Insight` blocks to highlight "emergent" ideas (ideas that only appeared once you looked at all sources together).
 
 # 4. Optimization

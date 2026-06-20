@@ -10,7 +10,7 @@ Vault Name: $1
 
 ## Execution Rules
 
-This command MUST follow the core directory layout, wikilink formatting, and source attribution rules defined in the `wiki-core` skill.
+This command MUST follow the Wiki Core rules defined in `AGENTS.md` (directory layout, wikilink formatting, and source attribution).
 
 ## Execution Instructions
 
@@ -33,7 +33,7 @@ For each unique individual identified:
   - **Title:** `# [Person Name]`
   - **Section - Affiliations/Roles:** Bulleted list of their roles, titles, or affiliations mentioned.
   - **Section - Biography & Context:** Synthesize a cohesive narrative of their contributions, work, and events they are involved in.
-  - **Attribution:** Append the source reference to every extracted claim following the `wiki-core` source format rule.
+  - **Attribution:** Append the source reference to every extracted claim following the `AGENTS.md` source attribution rule.
   - **Obsidian Warning Callouts:** If there are conflicting claims about a person, highlight the contradiction using:
     > [!warning] Contradiction
     > [Brief description of contradiction]. [Cite both sources].

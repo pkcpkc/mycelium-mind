@@ -1,15 +1,15 @@
 # Fei-Fei Li
 
-## Affiliations & Roles
+## Affiliations / Roles
 
 - Professor, Stanford University
-- Lead, Stanford Vision Lab
-- AI researcher in computer vision and natural language processing
+- Co-Director, Stanford Human-Centered AI (HAI) Institute
+- Chief AI/ML Advisor, White House (2018–2019)
 
 ## Biography & Context
 
-Fei-Fei Li is a prominent AI researcher and professor at Stanford University, where she leads the Stanford Vision Lab, a research group focused on computer vision and artificial intelligence. ([Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+Fei-Fei Li is a pioneering computer vision researcher and professor at Stanford University. She served as the PhD advisor of Andrej Karpathy, whose thesis on connecting images and natural language was co-authored with her. She supervised Karpathy's work on deep visual-semantic alignment for generating image descriptions, dense captioning, and large-scale video classification.
 
-She served as the PhD advisor of Andrej Karpathy at Stanford, where his research focused on convolutional and recurrent neural networks applied to computer vision and natural language processing. ([Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+Li is well known for her work on the ImageNet Large Scale Visual Recognition Challenge (ILSVRC), which helped catalyze the modern deep learning revolution. She co-authored the ImageNet paper published in JCV 2015 with Olga Russakovsky, Jia Deng, Hao Su, Jonathan Krause, and others.
 
-Fei-Fei Li is widely recognized for her leadership in advancing computer vision research and for mentoring numerous researchers who have become prominent figures in the AI field. ([Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+([Andrej Karpathy personal website](assets/2026-06-20/Andrej_Karpathy.md))

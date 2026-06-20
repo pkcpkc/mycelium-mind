@@ -147,7 +147,7 @@ Vault Name: $1
    - **Founders & Core Leadership**
    - **Key Products/Technologies**
    - **Context & Operations** (Synthesized from citations)
-   - Source attributions following the `wiki-core` standard.
+   - Source attributions following the `AGENTS.md` Wiki Core standard.
 ```
 
 #### Step B: Declare Hooks (`.opencode/commands/wiki-companies.hooks.json`)

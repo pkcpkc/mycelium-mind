@@ -10,7 +10,7 @@ Vault Name: $1
 
 ## Execution Rules
 
-This command MUST follow the core directory layout, wikilink formatting, and source attribution rules defined in the `wiki-core` skill.
+This command MUST follow the Wiki Core rules defined in `AGENTS.md` (directory layout, wikilink formatting, and source attribution).
 
 ## Execution Instructions
 
@@ -36,7 +36,7 @@ When this command is triggered, perform a systematic analysis of the wiki vault 
 - **Detailed Connection Registry:**
   - Below the diagram, write a well-formatted Markdown table detailing the connections.
   - **Columns:** `Person A`, `Connection`, `Person B`, `Description & Context`.
-  - Use Obsidian wikilinks to reference the persons' files, ensuring you follow the `wiki-core` wikilink format rule.
+  - Use Obsidian wikilinks to reference the persons' files, ensuring you follow the `AGENTS.md` wikilink format rule.
 
 ### 3. File Creation and Updates
 
@@ -45,7 +45,7 @@ When this command is triggered, perform a systematic analysis of the wiki vault 
     - `# Social Graph` main title.
     - The generated `mermaid` codeblock.
     - The detailed connection table/registry.
-    - **Attribution:** Append the source reference to every extracted claim following the `wiki-core` source format rule.
+    - **Attribution:** Append the source reference to every extracted claim following the `AGENTS.md` source attribution rule.
 - **Index Update:**
   - Read `Vaults/$1/wiki/index.md`.
   - Update the file to update or add a `## Social Graph` section:
