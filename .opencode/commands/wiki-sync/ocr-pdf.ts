@@ -2,6 +2,7 @@ import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { updateStatus, cleanStatus } from '../status-helper.ts';
 
 console.log("\n--- OCR Analysis ---");
 
@@ -43,11 +44,15 @@ if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
 }
 
 (async () => {
+  const files = fs.readdirSync(sourceDir);
+  const pdfFiles = files.filter(file => path.extname(file).toLowerCase() === '.pdf');
+
   // 1. Convert PDFs to images
   console.log("Converting PDFs to images");
-  const files = fs.readdirSync(sourceDir);
-  for (const file of files) {
-    if (path.extname(file).toLowerCase() !== '.pdf') continue;
+  let pdfIdx = 0;
+  for (const file of pdfFiles) {
+    pdfIdx++;
+    updateStatus(`[wiki-sync] Converting PDF to images: ${file}`, `${pdfIdx}/${pdfFiles.length}`);
 
     const pdfPath = path.join(sourceDir, file);
     const folderName = path.join(sourceDir, path.basename(file, '.pdf'));
@@ -78,80 +83,96 @@ if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
     .map(f => path.join(sourceDir, f))
     .filter(f => fs.statSync(f).isDirectory());
 
+  let totalImages = 0;
+  const subdirImages: { subdir: string; images: string[] }[] = [];
   for (const subdir of subdirs) {
     const pageImages = fs.readdirSync(subdir)
       .filter(f => ['.png', '.jpg', '.jpeg'].includes(path.extname(f).toLowerCase()))
       .sort((a, b) => parseInt(a) - parseInt(b)); // Sort numerically
+    
+    // We only process images that don't have .md yet
+    const imagesToProcess = pageImages.filter(imgName => !fs.existsSync(path.join(subdir, `${imgName}.md`)));
+    if (imagesToProcess.length > 0) {
+      totalImages += imagesToProcess.length;
+      subdirImages.push({ subdir, images: imagesToProcess });
+    }
+  }
 
-    for (const imgName of pageImages) {
-      const imgPath = path.join(subdir, imgName);
-      const mdFile = `${imgPath}.md`;
+  if (totalImages > 0) {
+    let imageIdx = 0;
+    for (const { subdir, images } of subdirImages) {
+      const folderBasename = path.basename(subdir);
+      for (const imgName of images) {
+        imageIdx++;
+        const imgPath = path.join(subdir, imgName);
+        const mdFile = `${imgPath}.md`;
 
-      if (fs.existsSync(mdFile)) continue;
+        updateStatus(`[wiki-sync] OCRing: ${folderBasename}/${imgName}`, `${imageIdx}/${totalImages}`);
+        console.log(`OCRing: ${imgPath}`);
 
-      console.log(`OCRing: ${imgPath}`);
+        const ext = path.extname(imgName).toLowerCase();
+        const format = ext === '.jpg' ? 'jpeg' : ext.slice(1);
+        const base64Img = fs.readFileSync(imgPath).toString('base64');
 
-      const ext = path.extname(imgName).toLowerCase();
-      const format = ext === '.jpg' ? 'jpeg' : ext.slice(1);
-      const base64Img = fs.readFileSync(imgPath).toString('base64');
-
-      const payload = {
-        model: ocrModelName,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Perform OCR on this image and return the text."
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:image/${format};base64,${base64Img}`
+        const payload = {
+          model: ocrModelName,
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: "Perform OCR on this image and return the text."
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: `data:image/${format};base64,${base64Img}`
+                  }
                 }
-              }
-            ]
-          }
-        ]
-      };
+              ]
+            }
+          ]
+        };
 
-      try {
-        const response = await fetch(apiUrl!, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        try {
+          const response = await fetch(apiUrl!, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = (await response.json()) as any;
+          const content = data?.choices?.[0]?.message?.content;
+          if (content && content.trim()) {
+            fs.writeFileSync(mdFile, content);
+            console.log(`Success: Created ${mdFile}`);
+          } else {
+            console.error(`Failed to OCR ${imgPath}: empty response`);
+          }
+        } catch (e: any) {
+          console.error(`Failed to OCR ${imgPath}:`, e.message);
         }
-        const data = (await response.json()) as any;
-        const content = data?.choices?.[0]?.message?.content;
-        if (content && content.trim()) {
-          fs.writeFileSync(mdFile, content);
-          console.log(`Success: Created ${mdFile}`);
-        } else {
-          console.error(`Failed to OCR ${imgPath}: empty response`);
-        }
-      } catch (e: any) {
-        console.error(`Failed to OCR ${imgPath}:`, e.message);
       }
     }
   }
 
   // 3. Concatenate and cleanup
   console.log("\nConcatenating and cleaning up PDF folders");
-  for (const file of fs.readdirSync(sourceDir)) {
-    if (path.extname(file).toLowerCase() !== '.pdf') continue;
-
+  let concatIdx = 0;
+  for (const file of pdfFiles) {
+    concatIdx++;
     const baseName = path.basename(file, '.pdf');
     const folderName = path.join(sourceDir, baseName);
     const outputMd = path.join(sourceDir, `${baseName}.md`);
 
     if (fs.existsSync(folderName) && fs.statSync(folderName).isDirectory()) {
+      updateStatus(`[wiki-sync] Concatenating PDF results: ${file}`, `${concatIdx}/${pdfFiles.length}`);
       console.log(`Concatenating results from ${folderName} into ${outputMd}`);
       
       const mdFiles = fs.readdirSync(folderName)
@@ -173,4 +194,6 @@ if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
       }
     }
   }
+
+  cleanStatus();
 })();

@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "headroom-ai": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.0"
   }
 }

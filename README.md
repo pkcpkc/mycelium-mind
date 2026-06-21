@@ -88,7 +88,22 @@ default:
   model: "Qwen3.6-35B-A3B-UD-MLX-4bit"
 ```
 
-### 3. Drop & Process Files
+### 3. Pipeline Configuration (`mycelium-mind.json`)
+You can configure the pipeline batch sizes for processing concepts and persons by creating a `mycelium-mind.json` file in the project root:
+
+```json
+{
+  "batchSizes": {
+    "concepts": 5,
+    "persons": 5
+  }
+}
+```
+
+* **`batchSizes.concepts`**: Number of concept entities processed in a single LLM invocation (default: `5`).
+* **`batchSizes.persons`**: Number of person entities processed in a single LLM invocation (default: `5`).
+
+### 4. Drop & Process Files
 1. Create your vault folder structure:
    ```bash
    mkdir -p Vaults/LLM-Wiki/inbox Vaults/LLM-Wiki/wiki
@@ -126,8 +141,8 @@ All subcommands run independently in OpenCode:
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `/wiki-sync` | `inbox/` (binary + text) | `inbox/` (converted text) | None (pure shell) | ✅ | Pre-processes inbox files (OCR, vision, filename sanitation). |
 | `/wiki-summaries` | `inbox/*.md,*.txt` | `summaries/`, `assets/` | 1 per inbox file | ✅ | Generates OKF Summary cards from inbox files. |
-| `/wiki-concepts` | `summaries/` (frontmatter) | `concepts/` | 1 per batch of ~5 | ✅ | Extracts and generates Concept cards from summaries. |
-| `/wiki-persons` | `summaries/` (frontmatter) | `persons/` | 1 per person entity | ✅ | Extracts and generates Person biography cards from summaries. |
+| `/wiki-concepts` | `summaries/` (frontmatter) | `concepts/` | 1 per batch (configurable) | ✅ | Extracts and generates Concept cards from summaries. |
+| `/wiki-persons` | `summaries/` (frontmatter) | `persons/` | 1 per batch (configurable) | ✅ | Extracts and generates Person biography cards from summaries. |
 | `/wiki-social-graph` | `persons/` | `social-graph.md` | 1 (single pass) | ✅ | Generates a Mermaid social graph and connection map of persons. |
 | `/wiki-timeline` | `summaries/` | `timeline.md` | 1 (single pass) | ✅ | Compiles a chronological timeline of events from summaries. |
 | `/wiki-indices` | `wiki/*` (frontmatter) | `* /index.md` | None (pure shell) | ✅ | Generates OKF folder-level index.md files for progressive disclosure. |

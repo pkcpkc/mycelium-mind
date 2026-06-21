@@ -2,6 +2,7 @@ import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { updateStatus, cleanStatus } from './status-helper.ts';
 
 const vaultName = argv[2];
 if (!vaultName) {
@@ -77,12 +78,42 @@ if (newEntities.length === 0) {
   exit(0);
 }
 
-console.log(`[wiki-persons] Processing ${newEntities.length} new/changed persons...`);
-
-for (const entity of newEntities) {
-  console.log(`[wiki-persons] Starting new context for person: ${entity}`);
-  execSync(`opencode run --command "wiki-person-file" "${vaultName}" "${entity}"`, { stdio: 'inherit' });
-  console.log(`[wiki-persons] Completed processing for person: ${entity}`);
+const configPath = path.resolve(process.cwd(), 'mycelium-mind.json');
+let personBatchSize = 5;
+if (fs.existsSync(configPath)) {
+  try {
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    if (config.batchSizes && typeof config.batchSizes.persons === 'number') {
+      personBatchSize = config.batchSizes.persons;
+    }
+  } catch (e: any) {
+    console.warn("[wiki-persons] Warning: Could not parse mycelium-mind.json, using default batch size of 5.");
+  }
 }
 
+console.log(`[wiki-persons] Processing ${newEntities.length} new/changed persons in batches of ${personBatchSize}...`);
+
+let idx = 0;
+let batch: string[] = [];
+for (const entity of newEntities) {
+  batch.push(entity);
+  if (batch.length >= personBatchSize) {
+    idx += batch.length;
+    updateStatus(`[wiki-persons] Processing persons batch`, `${idx}/${newEntities.length}`);
+    const argsStr = batch.map(e => `"${e}"`).join(' ');
+    console.log(`[wiki-persons] Processing batch: ${batch.join(', ')}`);
+    execSync(`opencode run --command "wiki-person-batch" "${vaultName}" ${argsStr}`, { stdio: 'inherit' });
+    batch = [];
+  }
+}
+
+if (batch.length > 0) {
+  idx += batch.length;
+  updateStatus(`[wiki-persons] Processing final persons batch`, `${idx}/${newEntities.length}`);
+  const argsStr = batch.map(e => `"${e}"`).join(' ');
+  console.log(`[wiki-persons] Processing final batch: ${batch.join(', ')}`);
+  execSync(`opencode run --command "wiki-person-batch" "${vaultName}" ${argsStr}`, { stdio: 'inherit' });
+}
+
+cleanStatus();
 console.log("[wiki-persons] Finished processing all persons.");

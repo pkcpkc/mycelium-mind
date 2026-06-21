@@ -1,0 +1,6 @@
+{
+  "batchSizes": {
+    "concepts": 10,
+    "persons": 8
+  }
+}

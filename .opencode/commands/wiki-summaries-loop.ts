@@ -2,6 +2,7 @@ import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { updateStatus, cleanStatus } from './status-helper.ts';
 
 const vaultName = argv[2];
 if (!vaultName) {
@@ -32,10 +33,14 @@ if (files.length === 0) {
 console.log("[wiki-summaries] Found files to process in inbox:");
 console.log(files.join('\n'));
 
+let idx = 0;
 for (const file of files) {
+  idx++;
+  updateStatus(`[wiki-summaries] Summarizing inbox file: ${file}`, `${idx}/${files.length}`);
   console.log(`[wiki-summaries] Starting new context for file: ${file}`);
   execSync(`opencode run --command "wiki-summary-file" "${vaultName}" "${file}"`, { stdio: 'inherit' });
   console.log(`[wiki-summaries] Completed processing for file: ${file}`);
 }
 
+cleanStatus();
 console.log("[wiki-summaries] Finished processing all files.");

@@ -1,5 +1,0 @@
-# Mycelium Mind
-
-## Timeline
-
-- [[timeline]]

@@ -1,6 +1,7 @@
 import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { updateStatus, cleanStatus } from '../status-helper.ts';
 
 console.log("--- Semantic Image Analysis ---");
 
@@ -46,16 +47,26 @@ console.log(`Interpreting inbox images with image model: ${imageModelName}`);
 (async () => {
   const files = fs.readdirSync(sourceDir);
   const imageExtensions = ['.png', '.jpg', '.jpeg'];
-
-  for (const file of files) {
+  const filesToProcess = files.filter(file => {
     const ext = path.extname(file).toLowerCase();
-    if (!imageExtensions.includes(ext)) continue;
+    if (!imageExtensions.includes(ext)) return false;
+    const imgPath = path.join(sourceDir, file);
+    return !fs.existsSync(`${imgPath}.md`);
+  });
 
+  if (filesToProcess.length === 0) {
+    console.log("[wiki-sync] No new images to analyze.");
+    return;
+  }
+
+  let idx = 0;
+  for (const file of filesToProcess) {
+    idx++;
+    const ext = path.extname(file).toLowerCase();
     const imgPath = path.join(sourceDir, file);
     const mdFile = `${imgPath}.md`;
 
-    if (fs.existsSync(mdFile)) continue;
-
+    updateStatus(`[wiki-sync] Analyzing image: ${file}`, `${idx}/${filesToProcess.length}`);
     console.log(`Analyzing: ${imgPath}`);
 
     const format = ext === '.jpg' ? 'jpeg' : ext.slice(1);
@@ -106,4 +117,6 @@ console.log(`Interpreting inbox images with image model: ${imageModelName}`);
       console.error(`Failed to analyze ${imgPath}:`, e.message);
     }
   }
+
+  cleanStatus();
 })();

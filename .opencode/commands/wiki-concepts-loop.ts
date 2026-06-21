@@ -2,6 +2,7 @@ import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { updateStatus, cleanStatus } from './status-helper.ts';
 
 const vaultName = argv[2];
 if (!vaultName) {
@@ -69,12 +70,28 @@ if (newEntities.length === 0) {
   exit(0);
 }
 
-console.log(`[wiki-concepts] Processing ${newEntities.length} new/changed concepts in batches of 5...`);
+const configPath = path.resolve(process.cwd(), 'mycelium-mind.json');
+let conceptBatchSize = 5;
+if (fs.existsSync(configPath)) {
+  try {
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    if (config.batchSizes && typeof config.batchSizes.concepts === 'number') {
+      conceptBatchSize = config.batchSizes.concepts;
+    }
+  } catch (e: any) {
+    console.warn("[wiki-concepts] Warning: Could not parse mycelium-mind.json, using default batch size of 5.");
+  }
+}
 
+console.log(`[wiki-concepts] Processing ${newEntities.length} new/changed concepts in batches of ${conceptBatchSize}...`);
+
+let idx = 0;
 let batch: string[] = [];
 for (const entity of newEntities) {
   batch.push(entity);
-  if (batch.length >= 5) {
+  if (batch.length >= conceptBatchSize) {
+    idx += batch.length;
+    updateStatus(`[wiki-concepts] Processing concepts batch`, `${idx}/${newEntities.length}`);
     const argsStr = batch.map(e => `"${e}"`).join(' ');
     console.log(`[wiki-concepts] Processing batch: ${batch.join(', ')}`);
     execSync(`opencode run --command "wiki-concept-batch" "${vaultName}" ${argsStr}`, { stdio: 'inherit' });
@@ -83,9 +100,12 @@ for (const entity of newEntities) {
 }
 
 if (batch.length > 0) {
+  idx += batch.length;
+  updateStatus(`[wiki-concepts] Processing final concepts batch`, `${idx}/${newEntities.length}`);
   const argsStr = batch.map(e => `"${e}"`).join(' ');
   console.log(`[wiki-concepts] Processing final batch: ${batch.join(', ')}`);
   execSync(`opencode run --command "wiki-concept-batch" "${vaultName}" ${argsStr}`, { stdio: 'inherit' });
 }
 
+cleanStatus();
 console.log("[wiki-concepts] Finished processing all concepts.");

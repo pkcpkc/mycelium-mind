@@ -11,6 +11,7 @@ Vault: `./Vaults/$1`
 ## Pipeline Execution
 
 Simply Inform the user that the vault will be updated through the full pipeline:
-!`jq -r '[.commands.post[] | split(" ")[0]] | join(", ")' .opencode/commands/wiki.hooks.json`
+!`jq -r '[.commands.post[].command | split(" ")[0]] | join(", ")' .opencode/commands/wiki.hooks.json`
 
 The execution itself will happen without your action.
+DONT DO ANYTHING ELSE!

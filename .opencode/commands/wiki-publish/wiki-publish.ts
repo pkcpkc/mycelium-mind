@@ -113,7 +113,16 @@ let configData: any = {};
 if (fs.existsSync(sourceConfig)) {
   console.log(`Loading config from ${sourceConfig}...`);
   try {
-    configData = YAML.parse(fs.readFileSync(sourceConfig, 'utf8')) || {};
+    configData = YAML.parse(fs.readFileSync(sourceConfig, 'utf8'), {
+      customTags: [
+        {
+          tag: 'tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format',
+          resolve() {
+            return '!!python/name:pymdownx.superfences.fence_code_format';
+          }
+        }
+      ]
+    }) || {};
   } catch (e: any) {
     console.error(`Error loading YAML: ${e.message}, falling back to default configuration.`);
     configData = {};
@@ -245,7 +254,7 @@ configData.markdown_extensions = extensions;
 
 // Dump config and replace quoted YAML tags so MkDocs parses them correctly
 let yamlStr = YAML.stringify(configData);
-yamlStr = yamlStr.replace(/'!!python\/name:([^']+)'/g, '!!python/name:$1');
+yamlStr = yamlStr.replace(/['"]!!python\/name:([^'"]+)['"]/g, '!!python/name:$1');
 
 fs.writeFileSync(buildConfigPath, yamlStr, 'utf8');
 
@@ -319,7 +328,7 @@ function processFile(filePath: string) {
   const currentDirAbs = path.dirname(filePath);
   let content = fs.readFileSync(filePath, 'utf8');
 
-  let newContent = content.replace(wikilinkRe, (match, linkContent) => {
+  let newContent = content.replace(wikilinkRe, (match: string, linkContent: string) => {
     let targetPart = '';
     let label = '';
     if (linkContent.includes('|')) {
@@ -365,7 +374,7 @@ function processFile(filePath: string) {
     }
   });
 
-  newContent = newContent.replace(stdLinkRe, (match, label, pathPart, anchorPart = '') => {
+  newContent = newContent.replace(stdLinkRe, (match: string, label: string, pathPart: string, anchorPart: string = '') => {
     let cleanedPath = pathPart;
     if (cleanedPath.startsWith('wiki/')) {
       cleanedPath = cleanedPath.slice(5);
