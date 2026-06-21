@@ -1,7 +1,6 @@
 import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { updateStatus, cleanStatus } from '../status-helper.ts';
 
 console.log("--- Semantic Image Analysis ---");
 
@@ -66,7 +65,7 @@ console.log(`Interpreting inbox images with image model: ${imageModelName}`);
     const imgPath = path.join(sourceDir, file);
     const mdFile = `${imgPath}.md`;
 
-    updateStatus(`[wiki-sync] Analyzing image: ${file}`, `${idx}/${filesToProcess.length}`);
+
     console.log(`Analyzing: ${imgPath}`);
 
     const format = ext === '.jpg' ? 'jpeg' : ext.slice(1);
@@ -118,5 +117,5 @@ console.log(`Interpreting inbox images with image model: ${imageModelName}`);
     }
   }
 
-  cleanStatus();
+
 })();

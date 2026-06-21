@@ -1,5 +1,5 @@
 ---
-description: Generate or update a batch of OKF Concept entries. Usage: /wiki-concept-batch <VaultName> <Concept1> [Concept2] [Concept3] [Concept4] [Concept5]
+description: Generate or update a batch of OKF Concept entries. Usage: /wiki-concept-batch <VaultName> <Concept1> [Concept2] [Concept3] [Concept4] [Concept5] [Concept6] [Concept7] [Concept8] [Concept9] [Concept10] [Concept11] [Concept12] [Concept13] [Concept14] [Concept15] [Concept16] [Concept17] [Concept18] [Concept19] [Concept20]
 ---
 
 # Wiki Concept Batch Command
@@ -7,7 +7,7 @@ description: Generate or update a batch of OKF Concept entries. Usage: /wiki-con
 ## Context
 
 Vault Name: $1
-Concepts: $2, $3, $4, $5, $6
+Concepts: $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
 
 ## Schema
 

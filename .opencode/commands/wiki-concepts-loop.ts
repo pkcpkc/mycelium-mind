@@ -2,7 +2,6 @@ import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { updateStatus, cleanStatus } from './status-helper.ts';
 
 const vaultName = argv[2];
 if (!vaultName) {
@@ -91,7 +90,7 @@ for (const entity of newEntities) {
   batch.push(entity);
   if (batch.length >= conceptBatchSize) {
     idx += batch.length;
-    updateStatus(`[wiki-concepts] Processing concepts batch`, `${idx}/${newEntities.length}`);
+
     const argsStr = batch.map(e => `"${e}"`).join(' ');
     console.log(`[wiki-concepts] Processing batch: ${batch.join(', ')}`);
     execSync(`opencode run --command "wiki-concept-batch" "${vaultName}" ${argsStr}`, { stdio: 'inherit' });
@@ -101,11 +100,11 @@ for (const entity of newEntities) {
 
 if (batch.length > 0) {
   idx += batch.length;
-  updateStatus(`[wiki-concepts] Processing final concepts batch`, `${idx}/${newEntities.length}`);
+
   const argsStr = batch.map(e => `"${e}"`).join(' ');
   console.log(`[wiki-concepts] Processing final batch: ${batch.join(', ')}`);
   execSync(`opencode run --command "wiki-concept-batch" "${vaultName}" ${argsStr}`, { stdio: 'inherit' });
 }
 
-cleanStatus();
+
 console.log("[wiki-concepts] Finished processing all concepts.");

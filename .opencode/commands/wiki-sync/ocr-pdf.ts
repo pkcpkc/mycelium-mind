@@ -2,7 +2,6 @@ import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { updateStatus, cleanStatus } from '../status-helper.ts';
 
 console.log("\n--- OCR Analysis ---");
 
@@ -52,7 +51,7 @@ if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
   let pdfIdx = 0;
   for (const file of pdfFiles) {
     pdfIdx++;
-    updateStatus(`[wiki-sync] Converting PDF to images: ${file}`, `${pdfIdx}/${pdfFiles.length}`);
+
 
     const pdfPath = path.join(sourceDir, file);
     const folderName = path.join(sourceDir, path.basename(file, '.pdf'));
@@ -107,7 +106,7 @@ if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
         const imgPath = path.join(subdir, imgName);
         const mdFile = `${imgPath}.md`;
 
-        updateStatus(`[wiki-sync] OCRing: ${folderBasename}/${imgName}`, `${imageIdx}/${totalImages}`);
+
         console.log(`OCRing: ${imgPath}`);
 
         const ext = path.extname(imgName).toLowerCase();
@@ -172,7 +171,7 @@ if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
     const outputMd = path.join(sourceDir, `${baseName}.md`);
 
     if (fs.existsSync(folderName) && fs.statSync(folderName).isDirectory()) {
-      updateStatus(`[wiki-sync] Concatenating PDF results: ${file}`, `${concatIdx}/${pdfFiles.length}`);
+
       console.log(`Concatenating results from ${folderName} into ${outputMd}`);
       
       const mdFiles = fs.readdirSync(folderName)
@@ -195,5 +194,5 @@ if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
     }
   }
 
-  cleanStatus();
+
 })();

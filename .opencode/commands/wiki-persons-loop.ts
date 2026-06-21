@@ -2,7 +2,6 @@ import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { updateStatus, cleanStatus } from './status-helper.ts';
 
 const vaultName = argv[2];
 if (!vaultName) {
@@ -99,7 +98,7 @@ for (const entity of newEntities) {
   batch.push(entity);
   if (batch.length >= personBatchSize) {
     idx += batch.length;
-    updateStatus(`[wiki-persons] Processing persons batch`, `${idx}/${newEntities.length}`);
+
     const argsStr = batch.map(e => `"${e}"`).join(' ');
     console.log(`[wiki-persons] Processing batch: ${batch.join(', ')}`);
     execSync(`opencode run --command "wiki-person-batch" "${vaultName}" ${argsStr}`, { stdio: 'inherit' });
@@ -109,11 +108,11 @@ for (const entity of newEntities) {
 
 if (batch.length > 0) {
   idx += batch.length;
-  updateStatus(`[wiki-persons] Processing final persons batch`, `${idx}/${newEntities.length}`);
+
   const argsStr = batch.map(e => `"${e}"`).join(' ');
   console.log(`[wiki-persons] Processing final batch: ${batch.join(', ')}`);
   execSync(`opencode run --command "wiki-person-batch" "${vaultName}" ${argsStr}`, { stdio: 'inherit' });
 }
 
-cleanStatus();
+
 console.log("[wiki-persons] Finished processing all persons.");
