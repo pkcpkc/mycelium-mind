@@ -1,21 +1,29 @@
+---
+type: "Person"
+title: "Andrew Ng"
+description: "AI researcher and educator at Stanford, known for contributions to deep learning, machine learning education, and unsupervised feature learning."
+tags:
+  - researcher
+  - educator
+timestamp: "2026-06-21T07:12:53Z"
+---
 # Andrew Ng
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- AI researcher, educator, and entrepreneur
-- Adjunct professor at [[Stanford University]]
-- Co-founder of [[Coursera]]
-- Founder of [[DeepLearning.AI]]
-- Co-founder and former CCO of [[Baidu]]
+- Researcher at Stanford (affiliated with the Stanford Vision Lab and rotation advising program, circa 2011–2017)
 
 ## Biography & Context
 
-[[Andrew Ng]] is a prominent AI researcher, educator, and entrepreneur. He served as one of [[Andrej Karpathy]]'s mentors during his PhD at [[Stanford University]] and has been a collaborator throughout Karpathy's career.
+Andrew Ng is an AI researcher and educator known for his contributions to deep learning, machine learning education, and unsupervised feature learning. During his time at Stanford, he served as a PhD rotation advisor, mentoring students including Andrej Karpathy during their first-year rotation program before they joined the Stanford Vision Lab under Fei-Fei Li.
 
-He worked with Karpathy during the first-year rotation program at [[Stanford University]] (2011–2017). They had a joint appearance in the 2017 "Heroes of Deep Learning" event.
+Ng co-authored the paper "Emergence of Object-Selective Features in Unsupervised Feature Learning" published at NIPS 2012 alongside Adam Coates and Andrej Karpathy, investigating how object-selective features emerge in unsupervised learning models. He also co-authored "Grounded Compositional Semantics" (TACL 2013) with Richard Socher, Quoc V. Le, Christopher D. Manning, and Andrej Karpathy, which focused on finding and describing images with sentences — work produced during Karpathy's internship at Google Research.
 
-Ng co-founded [[Coursera]] with [[Daphne Koller]], bringing university-level courses online, and created the popular Machine Learning course on Coursera. He also founded [[DeepLearning.AI]] and served as co-founder and former CCO of [[Baidu]].
+In 2017, Ng participated in the "Heroes of Deep Learning" event alongside Andrej Karpathy, highlighting his prominence in the deep learning community.
 
-Ng was also a co-author with [[Andrej Karpathy]], [[Richard Socher]], [[Quoc V. Le]], and [[Christopher D. Manning]] on the paper *Grounded Compositional Semantics for Finding and Describing Images with Sentences* (TACL 2013).
+> [!warning] Contradiction
+> This entry is based on a single source — the Andrej Karpathy bio summary. Significant biographical details (full academic background, other institutions, founding of Coursera or DeepLearning.AI, leadership roles beyond Stanford, publication record) are not available in the vault and should be verified before publishing.
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+## Collaborators
+
+[[Andrej Karpathy]], [[Adam Coates]], [[Fei-Fei Li]], [[Daphne Koller]], [[Sebastian Thrun]], [[Vladlen Koltun]], [[Richard Socher]], [[Quoc V. Le]], [[Christopher D. Manning]]

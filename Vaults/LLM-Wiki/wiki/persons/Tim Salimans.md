@@ -1,12 +1,20 @@
+---
+type: "Person"
+title: "Tim Salimans"
+description: "AI researcher known for contributions to generative modeling and autoregressive image generation."
+tags: ["researcher", "deep-learning", "generative-modeling"]
+timestamp: "2026-06-21T08:05:52Z"
+---
 # Tim Salimans
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Machine learning researcher
-- Co-author on PixelCNN++ paper
+- Researcher in deep learning and generative models
 
 ## Biography & Context
 
-[[Tim Salimans]] was a co-author with [[Andrej Karpathy]] on the *PixelCNN++: A PixelCNN Implementation with Discretized Logistic Mixture Likelihood and Other Modifications* paper (ICLR 2017). Other co-authors on this paper included [[Diederik P. Kingma]], [[Xi Chen]], and [[Yaroslav Bulatov]].
+Tim Salimans is an AI researcher known for contributions to deep learning and generative modeling. He is best known as a co-author of "PixelCNN++: A PixelCNN Implementation with Discretized Logistic Mixture Likelihood and Other Modifications" (ICLR 2017), which improved upon the PixelCNN autoregressive model for image generation by introducing a discretized logistic mixture likelihood and other modifications. The paper was co-authored with Andrej Karpathy, Xi Chen, Diederik P. Kingma, and Yaroslav Bulatov.
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+## Collaborators
+
+[[Andrej Karpathy]], [[Xi Chen]], [[Diederik P. Kingma]], [[Yaroslav Bulatov]]

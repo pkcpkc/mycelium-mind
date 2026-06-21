@@ -6,12 +6,14 @@ description: Generate reports, syntheses, or thematic overviews across vault(s).
 
 This command explicitly triggers the report generation process to create comprehensive thematic overviews or Map of Content (MOC) pages.
 
-This command MUST follow the Wiki Core rules defined in `AGENTS.md` (directory layout, wikilink formatting, and source attribution).
+## Report Schema
+
+!`cat ./Vaults/$1/schemas/report.md`
 
 ## Discovery Phase
 
 - Read the main `index.md` and `timeline.md` files for _each_ vault in $1 to identify all relevant [[Wikilinks]] related to the report inquiry: "$2"
-- List the specific files in the `topics/`, `summaries/`, and all directories across all provided vaults that will form the basis of the synthesis.
+- List the specific files in the `concepts/`, `summaries/`, and all directories across all provided vaults that will form the basis of the synthesis.
 
 ## Synthesis Logic
 
@@ -22,11 +24,16 @@ This command MUST follow the Wiki Core rules defined in `AGENTS.md` (directory l
 ## Output Format
 
 - Write the result to the reports directory (e.g. `reports/[Report-Name].md`).
-- **Structural Requirement**: Every paragraph must link back to one or more existing wiki pages to prove inter-connectivity following the `AGENTS.md` wikilink format rule.
-- **Callouts**: Use Obsidian `> [!abstract] Key Insight` blocks to highlight "emergent" ideas (ideas that only appeared once you looked at all sources together).
+- Follow the Report Schema template EXACTLY for frontmatter and structure.
+- **Structural Requirement**: Every paragraph must link back to one or more existing wiki pages to prove inter-connectivity.
+- **Callouts**: Use Obsidian `> [!abstract] Key Insight` blocks to highlight "emergent" ideas.
+
+## Wikilinks Format Rule
+
+- All internal links MUST be simple Obsidian wikilinks without folder prefixes.
+- **Correct:** `[[Andrej Karpathy]]`, `[[Deep Learning]]`
+- **Incorrect:** `[[concepts/Deep Learning]]`
 
 ## Optimization
 
-- Ensure the synthesis includes a "Future Research" section identifying what is _missing_ from the current wiki to fully understand the topic.
-
-!`cat .opencode/commands/wiki-sync/wiki-rules.md`
+- Ensure the synthesis includes a "Future Research" section identifying what is _missing_ from the current wiki to fully understand the subject.

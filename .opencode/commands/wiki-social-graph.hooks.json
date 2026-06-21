@@ -1,10 +1,10 @@
 {
   "scripts": {
     "pre": [
-      "wiki-social-graph.pre.sh $1"
+      "wiki-social-graph.pre.ts $1"
     ],
     "post": [
-      "wiki-social-graph.post.sh $1"
+      "wiki-social-graph.post.ts $1"
     ]
   }
 }

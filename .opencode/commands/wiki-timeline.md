@@ -8,10 +8,6 @@ description: Create or update the chronological timeline of all events mentioned
 
 Vault Name: $1
 
-## Execution Rules
-
-This command MUST follow the Wiki Core rules defined in `AGENTS.md` (directory layout, wikilink formatting, and source attribution).
-
 ## Execution Instructions
 
 When this command is triggered, compile a master chronological timeline in `./Vaults/$1/wiki/timeline.md` of all events mentioned in the wiki vault:
@@ -19,7 +15,7 @@ When this command is triggered, compile a master chronological timeline in `./Va
 ### Data Collection
 
 - **Scan Sources:**
-  - Read all files `./Vaults/$1/wiki`.
+  - Read all files in `./Vaults/$1/wiki/summaries/`.
 - **Extraction:** Extract every date, year, or specific time period mentioned in these files, along with the event description and the source attribution.
 
 ### Timeline Compilation
@@ -30,7 +26,7 @@ When this command is triggered, compile a master chronological timeline in `./Va
   ```markdown
   ## [Year/Date]
 
-  - [Event Description] ([file.md](assets/YYYY-MM-DD/file.md))
+  - [Event Description] ([[Source Summary Name]])
   ```
 
 ### Verification
@@ -38,4 +34,8 @@ When this command is triggered, compile a master chronological timeline in `./Va
 - Verify that timeline.md is successfully created or updated.
 - Verify that a link to the timeline page exists in the main index.md under `## Timeline`.
 
-!`cat .opencode/commands/wiki-sync/wiki-rules.md`
+## Wikilinks Format Rule
+
+- All internal links MUST be simple Obsidian wikilinks without folder prefixes.
+- **Correct:** `[[Andrej Karpathy]]`, `[[Deep Learning]]`
+- **Incorrect:** `[[summaries/Andrej Karpathy]]`

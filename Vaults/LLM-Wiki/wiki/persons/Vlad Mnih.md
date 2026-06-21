@@ -1,14 +1,23 @@
+---
+type: "Person"
+title: "Vlad Mnih"
+description: "A researcher known for his work on deep reinforcement learning at DeepMind."
+tags: ["researcher", "deep-learning", "reinforcement-learning"]
+timestamp: "2026-06-21T12:00:00Z"
+---
 # Vlad Mnih
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Research Scientist at [[DeepMind]]
-- PhD researcher at [[University of Toronto]]
+- Researcher at [[DeepMind]] (2015)
 
 ## Biography & Context
 
-[[Vlad Mnih]] is a researcher known for his work on deep reinforcement learning. He was one of [[Andrej Karpathy]]'s collaborators during Karpathy's 2015 internship at [[DeepMind]], where they worked on deep reinforcement learning together.
+Vlad Mnih is an AI researcher known for his work in deep reinforcement learning. In 2015, he was part of the deep reinforcement learning team at [[DeepMind]], where he collaborated with **Koray Kavukcuoglu** and **Andrej Karpathy** during the lab's foundational work in the field. This period at DeepMind coincided with the development of breakthrough approaches that would later lead to notable systems including AlphaGo.
 
-Karpathy's experience at DeepMind in reinforcement learning complemented his earlier work at [[Google Brain]] (2011) on unsupervised learning from videos and his PhD research at [[Stanford University]] on computer vision and natural language processing.
+> [!warning] Contradiction
+> The available source material is extremely limited — only one summary and a handful of references across the vault mention Vlad Mnih. This entry is based solely on those sparse references and may be incomplete. [[Andrej Karpathy — Bio & Portfolio]], [[DeepMind]]
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+## Collaborators
+
+[[Andrej Karpathy]], [[Koray Kavukcuoglu]], [[Geoffrey Hinton]]

@@ -1,12 +1,20 @@
+---
+type: "Person"
+title: "Xi Chen"
+description: "AI researcher known for contributions to generative modeling and autoregressive image generation."
+tags: ["researcher", "deep-learning", "generative-modeling"]
+timestamp: "2026-06-21T08:07:00Z"
+---
 # Xi Chen
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Machine learning researcher
-- Co-author on PixelCNN++ paper
+- AI researcher in deep learning and generative models
 
 ## Biography & Context
 
-[[Xi Chen]] was a co-author with [[Andrej Karpathy]] on the *PixelCNN++: A PixelCNN Implementation with Discretized Logistic Mixture Likelihood and Other Modifications* paper (ICLR 2017). Other co-authors on this paper included [[Diederik P. Kingma]], [[Yaroslav Bulatov]], and [[Tim Salimans]].
+Xi Chen is an AI researcher known for contributions to deep learning and generative modeling. Xi Chen is best known as a co-author of "PixelCNN++: A PixelCNN Implementation with Discretized Logistic Mixture Likelihood and Other Modifications" (ICLR 2017), which improved upon the PixelCNN autoregressive model for image generation by introducing a discretized logistic mixture likelihood and other modifications. The paper was co-authored with Andrej Karpathy, Tim Salimans, Diederik P. Kingma, and Yaroslav Bulatov.
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+## Collaborators
+
+[[Andrej Karpathy]], [[Tim Salimans]], [[Diederik P. Kingma]], [[Yaroslav Bulatov]]

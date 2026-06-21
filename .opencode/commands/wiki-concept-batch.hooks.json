@@ -1,0 +1,9 @@
+{
+  "commands": {
+    "pre": []
+  },
+  "scripts": {
+    "pre": [],
+    "post": []
+  }
+}

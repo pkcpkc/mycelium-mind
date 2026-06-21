@@ -9,7 +9,7 @@ import { getToolDefinitions } from "./tools.js";
 import { handleToolCall } from "./handlers.js";
 
 // Re-export utilities for external consumers (e.g. tests)
-export { sanitizeWikilinks, cleanContentBody } from "./utils.js";
+export { sanitizeWikilinks, cleanContentBody, toSafeFilename, fromSafeFilename } from "./utils.js";
 
 // Initialize MCP Server
 const server = new Server(

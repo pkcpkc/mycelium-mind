@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "pre": [
+      "wiki-concepts-loop.ts $1"
+    ],
+    "post": []
+  }
+}

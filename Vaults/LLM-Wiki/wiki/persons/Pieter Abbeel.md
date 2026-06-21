@@ -1,12 +1,23 @@
+---
+type: "Person"
+title: "Pieter Abbeel"
+description: "AI researcher and educator known for work in deep reinforcement learning."
+tags: ["researcher", "educator"]
+timestamp: "2026-06-21T07:49:37Z"
+---
 # Pieter Abbeel
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Professor at [[University of California, Berkeley]]
-- Reinforcement learning and robotics researcher
+- [Role not yet documented] — [[UC Berkeley]]
 
 ## Biography & Context
 
-[[Pieter Abbeel]] is listed among the notable collaborators of [[Andrej Karpathy]]. While specific collaborative details are not extensively documented in available sources, Abbeel is a well-known figure in reinforcement learning and robotics research.
+Pieter Abbeel is an AI researcher and educator recognized for his contributions to deep reinforcement learning. He is mentioned in the Andrej Karpathy bio as a guest on the Robot Brains Podcast in 2021.
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+> [!warning] Incomplete Entry
+> This person page was synthesized from limited source material. The Andrej Karpathy bio ([Andrej_Karpathy.md]) references Pieter Abbeel only in passing as a podcast collaborator. Additional source documents should be ingested to expand this biography with verified biographical details, affiliations, and publications.
+
+## Collaborators
+
+[[Andrej Karpathy]]

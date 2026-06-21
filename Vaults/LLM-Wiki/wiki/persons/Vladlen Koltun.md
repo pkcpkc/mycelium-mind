@@ -1,14 +1,25 @@
+---
+type: "Person"
+title: "Vladlen Koltun"
+description: "Researcher and rotation advisor at Stanford University's PhD program."
+tags:
+  - researcher
+  - educator
+timestamp: "2026-06-21T07:15:00Z"
+---
 # Vladlen Koltun
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Researcher at [[Stanford University]]
-- Computer vision and machine learning researcher
+- Rotation advisor at Stanford (circa 2011–2017)
 
 ## Biography & Context
 
-[[Vladlen Koltun]] was one of [[Andrej Karpathy]]'s mentors during his first-year rotation program at [[Stanford University]] (2011–2017). He worked with Karpathy alongside [[Andrew Ng]], [[Daphne Koller]], [[Sebastian Thrun]], and himself during this period.
+Vladlen Koltun served as a PhD rotation advisor at Stanford, mentoring students during their first-year rotation program before they joined the Stanford Vision Lab under Fei-Fei Li. During this time, he advised Andrej Karpathy alongside Daphne Koller, Andrew Ng, and Sebastian Thrun.
 
-Karpathy also worked with [[Vladlen Koltun]] during his PhD rotation year at Stanford.
+> [!warning] Contradiction
+> This entry is based on a single source — the Andrej Karpathy bio summary. Significant biographical details (full academic background, affiliations beyond Stanford, publication record, research focus) are not available in the vault and should be verified before publishing.
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+## Collaborators
+
+[[Andrej Karpathy]], [[Andrew Ng]], [[Fei-Fei Li]], [[Daphne Koller]], [[Sebastian Thrun]]

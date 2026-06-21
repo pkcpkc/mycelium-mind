@@ -1,30 +1,24 @@
+---
+type: "Person"
+title: "Justin Johnson"
+description: "AI researcher known for contributions to computer vision and image captioning, particularly dense captioning and recurrent neural networks."
+tags: ["researcher", "computer-vision", "deep-learning"]
+timestamp: "2026-06-21T07:36:41Z"
+---
 # Justin Johnson
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Computer vision researcher
-- Researcher at [[Stanford University]]
+- Researcher at Stanford University (via collaborations with [[Fei-Fei Li]] and the Stanford Vision Lab)
 
 ## Biography & Context
 
-[[Justin Johnson]] is a computer vision researcher and close collaborator of [[Andrej Karpathy]]. They worked together on multiple influential research projects at [[Stanford University]] under the advisement of [[Fei-Fei Li]].
+Justin Johnson is an AI researcher who has contributed to computer vision and image captioning. He co-authored **DenseCap** (CVPR 2016, Oral), a fully convolutional localization network for dense captioning, with [[Andrej Karpathy]] and [[Fei-Fei Li]]. This work extended the earlier **neuraltalk2** image captioning project to dense captioning.
 
-### Collaborative Work with Karpathy
+Johnson also co-authored **Visualizing and Understanding Recurrent Networks** (ICLR 2016 Workshop) with Karpathy and Fei-Fei Li. He and Karpathy held a reading group on Clubhouse, which was recorded as YouTube videos and a podcast.
 
-**Research Papers:**
-- **DenseCap: Fully Convolutional Localization Networks for Dense Captioning** (CVPR 2016, Oral) — Co-authored with [[Andrej Karpathy]] and [[Fei-Fei Li]]
-- **Visualizing and Understanding Recurrent Networks** (ICLR 2016 Workshop) — Co-authored with [[Andrej Karpathy]] and [[Fei-Fei Li]]
-- **NeuralTalk2** extension to dense captioning — Extended [[Karpathy]]'s original image captioning work
+Johnson is connected to the Stanford Vision Lab research community through his collaborations with [[Fei-Fei Li]], [[Andrej Karpathy]], [[Olga Russakovsky]], [[Jia Deng]], [[Hao Su]], [[Jonathan Krause]], [[Aditya Khosla]], [[Alexander C. Berg]], [[Armand Joulin]], [[Thomas Leung]], [[Rahul Sukthankar]], [[Sanketh Shetty]], and [[George Toderici]].
 
-**Educational Content:**
-- Held a reading group on Clubhouse with [[Andrej Karpathy]] — Available on YouTube and as a podcast
+## Collaborators
 
-### Research Areas
-
-- Computer vision
-- Image captioning
-- Dense captioning
-- Visual recognition
-- Recurrent networks for vision
-
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+[[Andrej Karpathy]], [[Fei-Fei Li]], [[Olga Russakovsky]], [[Jia Deng]], [[Hao Su]], [[Jonathan Krause]], [[Aditya Khosla]], [[Alexander C. Berg]], [[Armand Joulin]], [[Thomas Leung]], [[Rahul Sukthankar]], [[Sanketh Shetty]], [[George Toderici]]

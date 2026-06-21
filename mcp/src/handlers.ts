@@ -8,6 +8,13 @@ import {
   findInboundLinks,
   listCollections,
   listOverviews,
+  getAllNotesWithMetadata,
+  getEntitiesFromSummaries,
+  checkEntityNoteStatus,
+  auditVault,
+  getSocialNetworkData,
+  toSafeFilename,
+  fromSafeFilename,
 } from "./utils.js";
 
 /**
@@ -50,17 +57,17 @@ export async function handleToolCall(name: string, args: Record<string, any>) {
   const actualVault = config.vaultMode === "single" ? config.vaultName : vault_name;
 
   switch (name) {
-    case "get_topics": {
-      const topics = await listNoteTitles(wikiDir, "topics");
-      return jsonResponse({ vault: actualVault, topics });
+    case "get_concepts": {
+      const concepts = await listNoteTitles(wikiDir, "concepts");
+      return jsonResponse({ vault: actualVault, concepts });
     }
 
-    case "get_topic_details": {
+    case "get_concept_details": {
       const title = args.title;
       if (!title) throw new Error("Missing required argument: title");
 
-      const safeFile = title.replace(/\s+/g, "_") + ".md";
-      const filePath = path.join(wikiDir, "topics", safeFile);
+      const safeFile = toSafeFilename(title);
+      const filePath = path.join(wikiDir, "concepts", safeFile);
 
       try {
         const parsed = await parseMarkdownNote(filePath);
@@ -76,7 +83,7 @@ export async function handleToolCall(name: string, args: Record<string, any>) {
           },
         });
       } catch {
-        throw new Error(`Topic note not found: "${title}"`);
+        throw new Error(`Concept note not found: "${title}"`);
       }
     }
 
@@ -89,7 +96,7 @@ export async function handleToolCall(name: string, args: Record<string, any>) {
       const title = args.title;
       if (!title) throw new Error("Missing required argument: title");
 
-      const safeFile = title.replace(/\s+/g, "_") + ".md";
+      const safeFile = toSafeFilename(title);
       const filePath = path.join(wikiDir, "summaries", safeFile);
 
       try {
@@ -125,7 +132,7 @@ export async function handleToolCall(name: string, args: Record<string, any>) {
       const title = args.title;
       if (!title) throw new Error("Missing required argument: title");
 
-      const safeFile = title.replace(/\s+/g, "_") + ".md";
+      const safeFile = toSafeFilename(title);
       const filePath = path.join(wikiDir, "reports", safeFile);
 
       try {
@@ -175,7 +182,7 @@ export async function handleToolCall(name: string, args: Record<string, any>) {
         throw new Error(`Collection not found: "${collection}"`);
       }
 
-      const fileUnderscore = title.replace(/\s+/g, "_") + ".md";
+      const fileUnderscore = toSafeFilename(title);
       const fileSpace = title.replace(/_/g, " ") + ".md";
       let filePath = path.join(wikiDir, collection, fileUnderscore);
       try {
@@ -236,6 +243,74 @@ export async function handleToolCall(name: string, args: Record<string, any>) {
       } catch {
         throw new Error(`Overview not found: "${title}"`);
       }
+    }
+
+    case "get_tags": {
+      const allNotes = await getAllNotesWithMetadata(wikiDir);
+      const tagCounts: Record<string, number> = {};
+
+      for (const note of allNotes) {
+        if (note.tags) {
+          for (const tag of note.tags) {
+            const normalized = tag.toLowerCase();
+            tagCounts[normalized] = (tagCounts[normalized] || 0) + 1;
+          }
+        }
+      }
+
+      const tags = Object.entries(tagCounts)
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+
+      return jsonResponse({ vault: actualVault, tags });
+    }
+
+    case "get_tagged_documents": {
+      const tag = args.tag;
+      if (!tag) throw new Error("Missing required argument: tag");
+
+      const normalizedSearch = tag.toLowerCase();
+      const allNotes = await getAllNotesWithMetadata(wikiDir);
+
+      const matched = allNotes
+        .filter((note) => note.tags?.some((t) => t.toLowerCase() === normalizedSearch))
+        .map((note) => ({
+          title: note.title,
+          category: note.category,
+          description: note.description,
+        }));
+
+      return jsonResponse({ vault: actualVault, tag, documents: matched });
+    }
+
+    case "get_vault_entities": {
+      const entity_type = args.entity_type;
+      if (entity_type !== "concepts" && entity_type !== "persons") {
+        throw new Error("Invalid entity_type: must be 'concepts' or 'persons'");
+      }
+      const entities = await getEntitiesFromSummaries(wikiDir, entity_type);
+      return jsonResponse({ vault: actualVault, entity_type, entities });
+    }
+
+    case "check_note_status": {
+      const entity_name = args.entity_name;
+      const entity_type = args.entity_type;
+      if (!entity_name) throw new Error("Missing required argument: entity_name");
+      if (entity_type !== "concepts" && entity_type !== "persons") {
+        throw new Error("Invalid entity_type: must be 'concepts' or 'persons'");
+      }
+      const status = await checkEntityNoteStatus(wikiDir, entity_name, entity_type);
+      return jsonResponse({ vault: actualVault, entity_name, entity_type, ...status });
+    }
+
+    case "audit_vault_integrity": {
+      const report = await auditVault(wikiDir);
+      return jsonResponse({ vault: actualVault, ...report });
+    }
+
+    case "get_social_network": {
+      const graph = await getSocialNetworkData(wikiDir);
+      return jsonResponse({ vault: actualVault, ...graph });
     }
 
     default:

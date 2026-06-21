@@ -1,7 +1,7 @@
 {
   "scripts": {
     "pre": [
-      "wiki-publish/wiki-publish.sh $1 $2"
+      "wiki-publish/wiki-publish.ts $1 $2"
     ]
   }
 }

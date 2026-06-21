@@ -1,15 +1,25 @@
+---
+type: "Person"
+title: "Daphne Koller"
+description: "AI researcher and educator at Stanford, known for contributions to machine learning and probabilistic graphical models."
+tags:
+  - researcher
+  - educator
+timestamp: "2026-06-21T07:20:17Z"
+---
 # Daphne Koller
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Professor at [[Stanford University]]
-- Co-founder of [[Coursera]]
-- Co-founder of [[Baidu]] Research
+- PhD rotation advisor at Stanford (affiliated with the rotation advising program, circa 2011–2017)
 
 ## Biography & Context
 
-[[Daphne Koller]] was one of [[Andrej Karpathy]]'s mentors during his first-year rotation program at [[Stanford University]] (2011–2017). She worked with Karpathy alongside [[Andrew Ng]] and [[Sebastian Thrun]] during this period.
+Daphne Koller is an AI researcher and educator at Stanford who served as a PhD rotation advisor, mentoring students during their first-year rotation program before they joined the Stanford Vision Lab under Fei-Fei Li. Among her rotation advisees was Andrej Karpathy, who later became a prominent figure in deep learning and computer vision.
 
-Koller co-founded [[Coursera]] with [[Andrew Ng]], bringing university-level courses online. She also co-founded [[DeepLearning.AI]] and played a significant role in AI education and entrepreneurship.
+> [!warning] Contradiction
+> This entry is based on a single source — the Andrej Karpathy bio summary. Significant biographical details (full academic background, other institutions, founding of Coursera or Insitro, leadership roles beyond Stanford, publication record on probabilistic graphical models) are not available in the vault and should be verified before publishing.
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+## Collaborators
+
+[[Andrej Karpathy]], [[Andrew Ng]], [[Fei-Fei Li]], [[Sebastian Thrun]], [[Vladlen Koltun]]

@@ -1,7 +1,7 @@
 {
   "scripts": {
     "pre": [
-      "wiki-timeline.pre.sh $1"
+      "wiki-timeline.pre.ts $1"
     ],
     "post": []
   }

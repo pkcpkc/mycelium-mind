@@ -11,6 +11,6 @@ Target Directory: $2
 
 ## Description
 
-Inform the user that Vault $1 will be transformed to a static HTML page using MkDocs and the Material theme inside $2.
+Simply inform the user that Vault $1 will be transformed to a static HTML page using MkDocs and the Material theme inside $2.
 
-DONT DO ANYTHING ELSE!
+DONT TAKE ANY ACTION!

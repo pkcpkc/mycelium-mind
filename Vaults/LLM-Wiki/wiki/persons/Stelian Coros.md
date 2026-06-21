@@ -1,14 +1,20 @@
+---
+type: "Person"
+title: "Stelian Coros"
+description: "Researcher and collaborator of Andrej Karpathy."
+tags: ["researcher"]
+timestamp: "2026-06-21T07:58:48Z"
+---
 # Stelian Coros
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Researcher at [[ETH Zurich]]
-- Robotics and computer graphics researcher
+- Collaborator of [[Andrej Karpathy]]
 
 ## Biography & Context
 
-[[Stelian Coros]] was a co-author with [[Andrej Karpathy]], [[Benjamin Jones]], [[Lionel Reveret]], and [[Michiel van de Panne]] on the paper *Locomotion Skills for Simulated Quadrupeds* (SIGGRAPH 2011). This work was conducted during Karpathy's MSc studies at the [[University of British Columbia]] under the advisement of [[Michiel van de Panne]].
+Stelian Coros is listed as a collaborator of [[Andrej Karpathy]] in the Andrej Karpathy bio and portfolio summary. No additional biographical information about Stelian Coros is available in the knowledge bundle at this time.
 
-The research focused on learning controllers for simulated robotic figures, applying machine learning to agile robotics in simulation.
+## Collaborators
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+[[Andrej Karpathy]]

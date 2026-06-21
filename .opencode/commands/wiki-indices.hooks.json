@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "pre": [
+      "wiki-indices.pre.ts $1"
+    ],
+    "post": []
+  }
+}

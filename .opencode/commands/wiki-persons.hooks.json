@@ -1,7 +1,8 @@
 {
   "scripts": {
     "pre": [
-      "wiki-persons.pre.sh $1"
+      "wiki-persons.pre.ts $1",
+      "wiki-persons-loop.ts $1"
     ],
     "post": []
   }

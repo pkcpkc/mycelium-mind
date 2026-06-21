@@ -1,12 +1,20 @@
+---
+type: "Person"
+title: "Hao Su"
+description: "Computer vision researcher associated with the Stanford Vision Lab, co-author of the ImageNet ILSVRC benchmark paper."
+tags: ["researcher", "computer-vision"]
+timestamp: "2026-06-21T07:30:52Z"
+---
 # Hao Su
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Computer vision researcher
-- Co-author on ImageNet LSVRC paper
+- Researcher at Stanford Vision Lab
 
 ## Biography & Context
 
-[[Hao Su]] was a co-author on the *ImageNet Large Scale Visual Recognition Challenge* paper published in JCV 2015. The paper documented the ImageNet Large Scale Visual Recognition Challenge (ILSVRC), created by [[Fei-Fei Li]]. Other co-authors included [[Olga Russakovsky]], [[Jia Deng]], [[Jonathan Krause]], [[Andrej Karpathy]], and others.
+Hao Su is a computer vision researcher associated with the Stanford Vision Lab led by [[Fei-Fei Li]]. He is best known as a co-author of the **ImageNet Large Scale Visual Recognition Challenge** paper published in the Journal of Computer Vision (JCV) in 2015, which introduced the ILSVRC benchmark — one of the most influential evaluation frameworks in deep learning and computer vision research.
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+## Collaborators
+
+[[Fei-Fei Li]], [[Olga Russakovsky]], [[Jia Deng]], [[Jonathan Krause]], [[Aditya Khosla]], [[Alexander C. Berg]], [[Andrej Karpathy]], [[Justin Johnson]], [[Armand Joulin]], [[Thomas Leung]], [[Rahul Sukthankar]], [[Sanketh Shetty]], [[George Toderici]]

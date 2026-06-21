@@ -1,5 +1,5 @@
 ---
-description: Run the complete wiki pipeline (lint, sync, persons, timeline, and social graph). Usage: /wiki <VaultName>
+description: Run the complete OKF wiki pipeline (sync, summaries, concepts, persons, social graph, timeline). Usage: /wiki <VaultName>
 ---
 
 # Wiki Orchestration Command
@@ -10,4 +10,7 @@ Vault: `./Vaults/$1`
 
 ## Pipeline Execution
 
-Inform the user, that the vault will be updated, but dont do anything!
+Simply Inform the user that the vault will be updated through the full pipeline:
+!`jq -r '[.commands.post[] | split(" ")[0]] | join(", ")' .opencode/commands/wiki.hooks.json`
+
+The execution itself will happen without your action.

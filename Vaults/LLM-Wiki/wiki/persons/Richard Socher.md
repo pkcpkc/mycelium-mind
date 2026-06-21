@@ -1,12 +1,20 @@
+---
+type: "Person"
+title: "Richard Socher"
+description: "An AI researcher known for contributions to natural language processing and deep learning, particularly in grounded compositional semantics."
+tags: ["researcher", "nlp", "deep-learning"]
+timestamp: "2026-06-21T00:00:00Z"
+---
 # Richard Socher
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Natural language processing researcher
-- Co-author on Grounded Compositional Semantics paper
+- Researcher (affiliation not specified in available sources)
 
 ## Biography & Context
 
-[[Richard Socher]] was a co-author with [[Andrej Karpathy]], [[Quoc V. Le]], [[Christopher D. Manning]], and [[Andrew Y. Ng]] on the paper *Grounded Compositional Semantics for Finding and Describing Images with Sentences* (TACL 2013). This work bridged computer vision and NLP through compositional semantics for image description.
+Richard Socher is an AI researcher known for his contributions to natural language processing and deep learning. He co-authored the paper **"Grounded Compositional Semantics for Finding and Describing Images with Sentences"** (TACL 2013) alongside **Quoc V. Le**, **Christopher D. Manning**, **Andrew Ng**, and **Andrej Karpathy**. This work focused on finding and describing images with sentences, and was produced during Andrej Karpathy's internship at Google Research in 2013.
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+## Collaborators
+
+[[Andrej Karpathy]], [[Quoc V. Le]], [[Christopher D. Manning]], [[Andrew Ng]]

@@ -1,0 +1,11 @@
+{
+  "commands": {
+    "pre": []
+  },
+  "scripts": {
+    "pre": [],
+    "post": [
+      "wiki-summary-file.post.ts $1 $2"
+    ]
+  }
+}

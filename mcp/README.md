@@ -2,7 +2,7 @@
 
 The **Mycelium Mind MCP Server** is a Model Context Protocol (MCP) server that acts as a secure, fast, and high-fidelity **Memory Access Layer** on top of your offline Obsidian vaults.
 
-By launching this server, any LLM-powered assistant (Claude Desktop, Cursor, Cline, Roo Code) can programmatically explore, query, and reason over your personal knowledge graph—including topics, ingested summaries, and compiled thematic reports.
+By launching this server, any LLM-powered assistant (Claude Desktop, Cursor, Cline, Roo Code) can programmatically explore, query, and reason over your personal knowledge graph—including concepts, ingested summaries, and compiled thematic reports.
 
 ---
 
@@ -39,8 +39,8 @@ Once registered, the server exposes the following structured tools:
 | Tool | Parameters | Returns (Strict JSON) |
 | :--- | :--- | :--- |
 | **`get_vaults`** | None | Lists all available vaults. *Only declared and active when `"vaultMode"` is `"all"`; completely hidden in `"single"` mode.* |
-| **`get_topics`** | `vault_name` | Lists all topic nodes. |
-| **`get_topic_details`** | `vault_name`, `title` | Full metadata, clean content, and outbound/inbound wikilinks of a topic. |
+| **`get_concepts`** | `vault_name` | Lists all concept nodes. |
+| **`get_concept_details`** | `vault_name`, `title` | Full metadata, clean content, and outbound/inbound wikilinks of a concept. |
 | **`get_summaries`** | `vault_name` | Lists all document summaries compiled in the vault. |
 | **`get_summary`** | `vault_name`, `title` | Content, source asset titles, and clean links for a document summary. |
 | **`get_reports`** | `vault_name` | Lists all cross-vault thematic reports. |
@@ -56,7 +56,7 @@ Once registered, the server exposes the following structured tools:
 ## 📂 Auto-Discovery Model (Collections & Overviews)
 
 Instead of hardcoding tools for every directory and root-level file in your wiki, Mycelium Mind automatically discovers custom content:
-1. **Collections**: Any subdirectory inside a vault's `wiki/` folder that is not a core directory (`topics`, `summaries`, `reports`, `assets`) is treated as a generic collection. For example, the `persons/` directory is automatically exposed as a collection named `persons`.
+1. **Collections**: Any subdirectory inside a vault's `wiki/` folder that is not a core directory (`concepts`, `summaries`, `reports`, `assets`, `schemas`) is treated as a generic collection. For example, the `persons/` directory is automatically exposed as a collection named `persons`.
 2. **Overviews**: Any standalone markdown file directly in the root of the `wiki/` folder (excluding `index.md`) is treated as an overview page. For example, `timeline.md` and `social-graph.md` are dynamically discovered as overviews.
 
 This architecture enables you to add custom subfolders or root files without needing to register new MCP tools or write additional code. All collections and overviews instantly become queryable by the AI client.

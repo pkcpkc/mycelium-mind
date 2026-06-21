@@ -1,7 +1,7 @@
 {
   "scripts": {
     "pre": [
-      "wiki-report.pre.sh $1 \"$2\""
+      "wiki-report.pre.ts $1 \"$2\""
     ]
   }
 }

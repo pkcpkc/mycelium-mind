@@ -1,14 +1,20 @@
+---
+type: "Person"
+title: "Benjamin Jones"
+description: "Researcher who co-authored work on locomotion skills for simulated quadrupeds at the University of British Columbia."
+tags: ["researcher", "robotics", "simulation"]
+timestamp: "2026-06-21T07:17:39Z"
+---
 # Benjamin Jones
 
-## Affiliations/Roles
+## Affiliations & Roles
 
-- Researcher
-- Co-author on Locomotion Skills for Simulated Quadrupeds paper
+- Researcher at University of British Columbia (2011)
 
 ## Biography & Context
 
-[[Benjamin Jones]] was a co-author with [[Andrej Karpathy]], [[Stelian Coros]], [[Lionel Reveret]], and [[Michiel van de Panne]] on the paper *Locomotion Skills for Simulated Quadrupeds* (SIGGRAPH 2011). This work was conducted during Karpathy's MSc studies at the [[University of British Columbia]] under the advisement of [[Michiel van de Panne]].
+Benjamin Jones was a researcher at the University of British Columbia, where he collaborated with Michiel van de Panne's group on machine learning for agile robotics in simulation. In 2011, he co-authored the paper **\"Locomotion Skills for Simulated Quadrupeds\"** with Stelian Coros, Andrej Karpathy, Lionel Reveret, and Michiel van de Panne. The work was published at **SIGGRAPH 2011** and focused on learning controllers for physically-simulated figures.
 
-The research focused on learning controllers for simulated robotic figures, applying machine learning to agile robotics in simulation.
+## Collaborators
 
-(source: [Andrej_Karpathy.md](assets/2026-06-20/Andrej_Karpathy.md))
+[[Stelian Coros]], [[Andrej Karpathy]], [[Lionel Reveret]], [[Michiel van de Panne]]
