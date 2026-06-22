@@ -214,6 +214,23 @@ export function getToolDefinitions(config: McpConfig) {
         required: config.vaultMode === "all" ? ["vault_name"] : [],
       },
     },
+    {
+      name: "get_all_frontmatters",
+      description: "Lists all parsed frontmatter objects from notes in a collection folder, filtered by presence of keys.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          vault_name: vaultNameProp,
+          collection: { type: "string", description: "The collection folder name (e.g. 'summaries')" },
+          keys: {
+            type: "array",
+            items: { type: "string" },
+            description: "Optional list of keys. If specified, returns only frontmatters containing at least one of these keys with a non-empty value."
+          }
+        },
+        required: config.vaultMode === "all" ? ["vault_name", "collection"] : ["collection"],
+      }
+    }
   );
 
   return tools;

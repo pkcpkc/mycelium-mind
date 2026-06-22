@@ -1,7 +1,0 @@
-{
-  "scripts": {
-    "pre": [
-      "wiki-sync/ensure-folders.ts $1"
-    ]
-  }
-}

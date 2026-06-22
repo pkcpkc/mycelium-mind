@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "pre": [
-      "wiki-summaries-loop.ts $1"
-    ],
-    "post": []
-  }
-}

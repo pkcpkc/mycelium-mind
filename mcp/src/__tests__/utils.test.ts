@@ -49,7 +49,7 @@ title: "Timeline Schema"
   );
 
   await fs.writeFile(
-    path.join(wikiDir, "persons", "Andrej_Karpathy.md"),
+    path.join(wikiDir, "persons", "Andrej Karpathy.md"),
     `---
 title: "Andrej Karpathy"
 ---
@@ -104,13 +104,13 @@ describe("utils.ts Tests", () => {
 
   describe("toSafeFilename and fromSafeFilename", () => {
     it("should standardize title to safe filename", () => {
-      expect(toSafeFilename("Andrej Karpathy")).toBe("Andrej_Karpathy.md");
-      expect(toSafeFilename("  Large Language Models  ")).toBe("Large_Language_Models.md");
+      expect(toSafeFilename("Andrej Karpathy")).toBe("Andrej Karpathy.md");
+      expect(toSafeFilename("  Large Language Models  ")).toBe("Large Language Models.md");
     });
 
     it("should parse safe filename back to display title", () => {
-      expect(fromSafeFilename("Andrej_Karpathy.md")).toBe("Andrej Karpathy");
-      expect(fromSafeFilename("persons/Andrej_Karpathy.md")).toBe("Andrej Karpathy");
+      expect(fromSafeFilename("Andrej Karpathy.md")).toBe("Andrej Karpathy");
+      expect(fromSafeFilename("persons/Andrej Karpathy.md")).toBe("Andrej Karpathy");
     });
   });
 

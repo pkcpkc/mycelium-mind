@@ -17,9 +17,9 @@ describe("index.ts Exports Tests", () => {
     expect(cleaned).toBe("A alias");
 
     const safeName = toSafeFilename("Test Concept");
-    expect(safeName).toBe("Test_Concept.md");
+    expect(safeName).toBe("Test Concept.md");
 
-    const parsedName = fromSafeFilename("Test_Concept.md");
+    const parsedName = fromSafeFilename("Test Concept.md");
     expect(parsedName).toBe("Test Concept");
   });
 });

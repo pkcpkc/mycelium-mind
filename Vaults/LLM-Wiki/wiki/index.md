@@ -1,19 +1,16 @@
 ---
 type: "Overview"
-title: "index"
-timestamp: "2026-06-21T20:00:00Z"
+title: "LLM-Wiki Wiki"
+description: "Home page for the LLM-Wiki wiki."
+timestamp: "2026-06-22T13:11:43Z"
 ---
 
-# Index
+# LLM-Wiki Wiki
 
-## Contents
+Welcome to the wiki. Browse the available pages:
 
-- [[social-graph|Social Graph]] - Interactive social graph and detailed connection map of the individuals in this vault.
-- [[timeline|Timeline]] - Chronological timeline of all events mentioned in the wiki.
-
-## Directories
-
-- [Concepts](./concepts/)
-- [Persons](./persons/)
-- [Summaries](./summaries/)
-- [Reports](./reports/)
+- [[timeline]]
+- [[social-graph]]
+- [[summaries]]
+- [[concepts]]
+- [[persons]]

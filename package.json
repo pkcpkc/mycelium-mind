@@ -1,8 +1,19 @@
 {
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
   "dependencies": {
-    "headroom-ai": "^0.1.0"
+    "gray-matter": "^4.0.3",
+    "headroom-ai": "^0.1.0",
+    "openai": "^6.44.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.0"
+    "@types/node": "^25.9.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.7"
   }
 }

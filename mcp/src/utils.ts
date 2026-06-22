@@ -3,48 +3,22 @@ import * as path from "path";
 import matter from "gray-matter";
 import { config, __dirname } from "./config.js";
 
-/**
- * Strips brackets and aliases from Obsidian wikilinks:
- * [[Alan Turing]] -> "Alan Turing"
- * [[Alan Turing|Turing]] -> "Alan Turing"
- */
-export function sanitizeWikilinks(text: string): string[] {
-  if (!text) return [];
-  const links: string[] = [];
-  const regex = /\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;
-  let match;
-  while ((match = regex.exec(text)) !== null) {
-    links.push(match[1].trim());
-  }
-  return Array.from(new Set(links));
-}
+// @ts-ignore
+import {
+  sanitizeWikilinks,
+  cleanContentBody,
+  toSafeFilename,
+  fromSafeFilename,
+  getAllFrontmatters,
+} from "../../scripts/src/utils/utils.js";
 
-/**
- * Strips bracket wrappers from text content so LLM reads plain prose
- */
-export function cleanContentBody(content: string): string {
-  if (!content) return "";
-  return content.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (match, p1, p2) => {
-    return p2 || p1;
-  });
-}
-
-/**
- * Standardizes a title into a safe lowercase, underscore-separated markdown filename.
- * e.g., "Andrej Karpathy" -> "Andrej_Karpathy.md"
- */
-export function toSafeFilename(title: string): string {
-  return title.trim().replace(/\s+/g, "_") + ".md";
-}
-
-/**
- * Parses a safe filename back into a clean display title/subject.
- * e.g., "Andrej_Karpathy.md" -> "Andrej Karpathy"
- */
-export function fromSafeFilename(filename: string): string {
-  const base = path.basename(filename, ".md");
-  return base.replace(/_/g, " ");
-}
+export {
+  sanitizeWikilinks,
+  cleanContentBody,
+  toSafeFilename,
+  fromSafeFilename,
+  getAllFrontmatters,
+};
 
 
 /**
@@ -848,6 +822,8 @@ export async function getSocialNetworkData(wikiDir: string): Promise<SocialNetwo
 
   return { nodes, edges };
 }
+
+// getAllFrontmatters is imported from shared utils.ts
 
 
 

@@ -3,9 +3,7 @@
   "tools": {
     "rtk": false
   },
-  "plugin": [
-    "file:///Users/pkc/Projects/opencode-plugin-command-hooks/dist/index.js"
-  ],
+  "plugin": [],
   "mcp": {
     "headroom": {
       "type": "local",
@@ -28,7 +26,7 @@
       "type": "local",
       "command": [
         "node",
-        "./mcp/build/index.js"
+        "./mcp/build/mcp/src/index.js"
       ],
       "enabled": true
     }

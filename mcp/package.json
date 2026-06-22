@@ -2,11 +2,11 @@
   "name": "mycelium-mind-mcp",
   "version": "1.0.0",
   "description": "MCP server providing memory access layer for Mycelium Mind Obsidian vaults",
-  "main": "build/index.js",
+  "main": "build/mcp/src/index.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node build/index.js",
+    "start": "node build/mcp/src/index.js",
     "watch": "tsc -w",
     "test": "vitest run"
   },

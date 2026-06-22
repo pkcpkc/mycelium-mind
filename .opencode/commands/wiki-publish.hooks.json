@@ -1,7 +1,0 @@
-{
-  "scripts": {
-    "pre": [
-      "wiki-publish/wiki-publish.ts $1 $2"
-    ]
-  }
-}

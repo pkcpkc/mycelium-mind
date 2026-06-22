@@ -15,6 +15,7 @@ import {
   getSocialNetworkData,
   toSafeFilename,
   fromSafeFilename,
+  getAllFrontmatters,
 } from "./utils.js";
 
 /**
@@ -311,6 +312,15 @@ export async function handleToolCall(name: string, args: Record<string, any>) {
     case "get_social_network": {
       const graph = await getSocialNetworkData(wikiDir);
       return jsonResponse({ vault: actualVault, ...graph });
+    }
+
+    case "get_all_frontmatters": {
+      const collection = args.collection;
+      const keys = args.keys;
+      if (!collection) throw new Error("Missing required argument: collection");
+
+      const items = await getAllFrontmatters(wikiDir, collection, keys);
+      return jsonResponse({ vault: actualVault, collection, items });
     }
 
     default:

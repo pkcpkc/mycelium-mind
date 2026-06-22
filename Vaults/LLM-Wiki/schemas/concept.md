@@ -11,13 +11,13 @@ frameworks, courses, or any non-person entity referenced across the knowledge bu
 
 ## Frontmatter Specification
 
-| Key           | Type     | Requirement    | Description                                              |
-|:--------------|:---------|:---------------|:---------------------------------------------------------|
-| `type`        | String   | **Required**   | Must be exactly `"Concept"`.                             |
-| `title`       | String   | **Required**   | Human-readable display name of the concept.              |
-| `description` | String   | Recommended    | A single sentence defining or summarizing the concept.   |
-| `tags`        | Array    | Optional       | Category tags (e.g., `["framework", "python"]`).         |
-| `timestamp`   | String   | **Required**   | ISO-8601 UTC datetime of last modification.              |
+| Key           | Type   | Requirement  | Description                                            |
+| :------------ | :----- | :----------- | :----------------------------------------------------- |
+| `type`        | String | **Required** | Must be exactly `"Concept"`.                           |
+| `title`       | String | **Required** | Human-readable display name of the concept.            |
+| `description` | String | Recommended  | A single sentence defining or summarizing the concept. |
+| `tags`        | Array  | Optional     | Category tags.                                         |
+| `timestamp`   | String | **Required** | ISO-8601 UTC datetime of last modification.            |
 
 ## Markdown Body Structure
 

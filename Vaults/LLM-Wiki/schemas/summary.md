@@ -23,6 +23,8 @@ bundle — all downstream concepts (topics, persons) are derived from summaries.
 | `entities`    | Object   | **Required**   | Entity manifest extracted from the document.             |
 | `entities.concepts` | Array | **Required** | List of concept names mentioned in the document.         |
 | `entities.persons`  | Array | **Required** | List of person names mentioned in the document.          |
+| `times`       | Array    | Optional       | Mentioned dates and events (e.g. `[{date: "2026-05-03", title: "Tesla AI Day"}]`). |
+| `relationships`| Array   | Optional       | Interpersonal relations (e.g. `[{personA: "A", relation: "teaches", personB: "B"}]`). |
 
 ## Markdown Body Structure
 
@@ -42,6 +44,13 @@ bundle — all downstream concepts (topics, persons) are derived from summaries.
     entities:
       concepts: ${concepts_list}
       persons: ${persons_list}
+    times:
+      - date: "YYYY-MM-DD"
+        title: "Event description"
+    relationships:
+      - personA: "Person A"
+        relation: "relationship"
+        personB: "Person B"
     ---
     # ${title}
 

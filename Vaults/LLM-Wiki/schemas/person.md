@@ -12,13 +12,13 @@ bundle. Each person resides exclusively in the `persons/` directory — never in
 
 ## Frontmatter Specification
 
-| Key           | Type     | Requirement    | Description                                              |
-|:--------------|:---------|:---------------|:---------------------------------------------------------|
-| `type`        | String   | **Required**   | Must be exactly `"Person"`.                              |
-| `title`       | String   | **Required**   | Full name of the person.                                 |
-| `description` | String   | Recommended    | A single sentence summarizing the person's primary role. |
-| `tags`        | Array    | Optional       | Category tags (e.g., `["researcher", "educator"]`).      |
-| `timestamp`   | String   | **Required**   | ISO-8601 UTC datetime of last modification.              |
+| Key           | Type   | Requirement  | Description                                              |
+| :------------ | :----- | :----------- | :------------------------------------------------------- |
+| `type`        | String | **Required** | Must be exactly `"Person"`.                              |
+| `title`       | String | **Required** | Full name of the person.                                 |
+| `description` | String | Recommended  | A single sentence summarizing the person's primary role. |
+| `tags`        | Array  | Optional     | Category tags.                                           |
+| `timestamp`   | String | **Required** | ISO-8601 UTC datetime of last modification.              |
 
 ## Markdown Body Structure
 

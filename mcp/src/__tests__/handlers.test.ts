@@ -66,7 +66,7 @@ timestamp: "2026-06-21T00:00:00Z"
   );
 
   await fs.writeFile(
-    path.join(wikiDir, "persons", "Andrej_Karpathy.md"),
+    path.join(wikiDir, "persons", "Andrej Karpathy.md"),
     `---
 type: "Person"
 title: "Andrej Karpathy"
@@ -78,7 +78,7 @@ He worked with [[Geoffrey Hinton]] and [[Fei-Fei Li]].`
   );
 
   await fs.writeFile(
-    path.join(wikiDir, "persons", "Fei-Fei_Li.md"),
+    path.join(wikiDir, "persons", "Fei-Fei Li.md"),
     `---
 type: "Person"
 title: "Fei-Fei Li"
@@ -89,7 +89,7 @@ timestamp: "2026-06-21T00:00:00Z"
   );
 
   await fs.writeFile(
-    path.join(wikiDir, "persons", "Geoffrey_Hinton.md"),
+    path.join(wikiDir, "persons", "Geoffrey Hinton.md"),
     `---
 type: "Person"
 title: "Geoffrey Hinton"
