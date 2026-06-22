@@ -12,16 +12,24 @@ if (baseURL.endsWith('/chat/completions')) {
   baseURL = baseURL.slice(0, -17);
 }
 
-const openai = new OpenAI({
-  baseURL: baseURL,
-  apiKey: config.apiKey === 'dummy-key' ? '' : config.apiKey,
-});
+let _openai: OpenAI | undefined;
+
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({
+      baseURL: baseURL,
+      apiKey: config.apiKey === 'dummy-key' ? '' : config.apiKey,
+    });
+  }
+  return _openai;
+}
 
 /**
  * Calls the OpenAI-compatible agentic model with messages using the official OpenAI SDK.
  */
 export async function callAgenticModel(messages: Message[]): Promise<string> {
   try {
+    const openai = getOpenAI();
     const response = await openai.chat.completions.create({
       model: config.agenticModelName,
       messages: messages as any[],
