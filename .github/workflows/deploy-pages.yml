@@ -24,20 +24,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
-          enable-cache: true
+          node-version: '20'
 
       - name: Install dependencies
-        run: |
-          uv venv --allow-existing
-          uv pip install mkdocs mkdocs-material mkdocs-panzoom-plugin
+        run: npm ci
+
+      - name: Setup Python for mkdocs
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install mkdocs
+        run: pip install mkdocs mkdocs-material mkdocs-panzoom-plugin
 
       - name: Build static site
-        run: |
-          bash .opencode/commands/wiki-publish/wiki-publish.sh LLM-Wiki
+        run: bash publish-llm-wiki.sh
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
