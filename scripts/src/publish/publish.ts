@@ -122,6 +122,23 @@ markdown_extensions:
     }
   }
 
+  // Copy custom concepts-cloud Cytoscape assets
+  const assetsJsDir = path.join(docsDir, 'assets', 'js');
+  const assetsCssDir = path.join(docsDir, 'assets', 'css');
+  fs.mkdirSync(assetsJsDir, { recursive: true });
+  fs.mkdirSync(assetsCssDir, { recursive: true });
+
+  const srcJs = path.resolve(projectRoot, 'scripts/src/publish/assets/concepts-cloud.js');
+  const srcCss = path.resolve(projectRoot, 'scripts/src/publish/assets/concepts-cloud.css');
+  if (fs.existsSync(srcJs)) {
+    fs.copyFileSync(srcJs, path.join(assetsJsDir, 'concepts-cloud.js'));
+    console.log(`Copied concepts-cloud.js to ${assetsJsDir}`);
+  }
+  if (fs.existsSync(srcCss)) {
+    fs.copyFileSync(srcCss, path.join(assetsCssDir, 'concepts-cloud.css'));
+    console.log(`Copied concepts-cloud.css to ${assetsCssDir}`);
+  }
+
 // Ensure mkdocs.yml exists in the build dir with correct settings
 const buildConfigPath = path.join(buildDir, 'mkdocs.yml');
 let configData: any = {};
@@ -201,6 +218,32 @@ if (!configData.plugins) {
 if (configData.use_directory_urls === undefined) {
   configData.use_directory_urls = false;
 }
+
+// Ensure extra_javascript contains Cytoscape CDN and assets/js/concepts-cloud.js
+let extraJs = configData.extra_javascript || [];
+if (!Array.isArray(extraJs)) {
+  extraJs = [];
+}
+const cytoscapeCdn = 'https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.29.2/cytoscape.min.js';
+if (!extraJs.includes(cytoscapeCdn)) {
+  extraJs.push(cytoscapeCdn);
+}
+const customJs = 'assets/js/concepts-cloud.js';
+if (!extraJs.includes(customJs)) {
+  extraJs.push(customJs);
+}
+configData.extra_javascript = extraJs;
+
+// Ensure extra_css contains assets/css/concepts-cloud.css
+let extraCss = configData.extra_css || [];
+if (!Array.isArray(extraCss)) {
+  extraCss = [];
+}
+const customCss = 'assets/css/concepts-cloud.css';
+if (!extraCss.includes(customCss)) {
+  extraCss.push(customCss);
+}
+configData.extra_css = extraCss;
 
 // Force Mermaid support configuration
 let extensions = configData.markdown_extensions || [];

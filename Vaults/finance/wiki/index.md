@@ -13,3 +13,7 @@ Welcome to the wiki. Browse the available pages:
 - [[social-graph]]
 - [[summaries]]
 - [[timeline]]
+
+## Connection Map
+
+- [[concepts-cloud|Concepts Cloud]] - Interactive graph of concepts linked by shared tags.

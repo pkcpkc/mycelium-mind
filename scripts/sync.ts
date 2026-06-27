@@ -92,13 +92,14 @@ async function runPipeline() {
     }
   }
 
-  // Step 3: Timeline & Social Graph Generation
-  console.log('\n--- Step 3: Compiling timeline and social graph ---');
+  // Step 3: Timeline, Social Graph, & Concepts Cloud Generation
+  console.log('\n--- Step 3: Compiling timeline, social graph, and concepts cloud ---');
   try {
     execSync(`npx tsx scripts/src/timeline/timeline.ts "${vaultName}"`, { stdio: 'inherit', cwd: projectRootDir });
     execSync(`npx tsx scripts/src/social-graph/social-graph.ts "${vaultName}"`, { stdio: 'inherit', cwd: projectRootDir });
+    execSync(`npx tsx scripts/src/concepts-cloud/concepts-cloud.ts "${vaultName}"`, { stdio: 'inherit', cwd: projectRootDir });
   } catch (e: any) {
-    console.error("Timeline/Social Graph compilation failed:", e.message);
+    console.error("Timeline/Social Graph/Concepts Cloud compilation failed:", e.message);
   }
 
   // Step 4: Ensure wiki indexes exist and are rebuilt/sorted
@@ -128,6 +129,7 @@ timestamp: "${new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')}"
 Welcome to the wiki. Browse the available pages:
 
 - [[concepts]]
+- [[concepts-cloud]]
 - [[persons]]
 - [[social-graph]]
 - [[summaries]]
