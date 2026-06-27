@@ -101,40 +101,43 @@ async function runPipeline() {
     console.error("Timeline/Social Graph compilation failed:", e.message);
   }
 
-  // Step 4: Ensure wiki index.md exists
-  console.log('\n--- Step 4: Ensuring wiki index ---');
+  // Step 4: Ensure wiki indexes exist and are rebuilt/sorted
+  console.log('\n--- Step 4: Rebuilding and ensuring wiki indexes ---');
   try {
-    const { getVaultDir } = await import('./src/utils/utils.js');
+    const { getVaultDir, rebuildFolderIndex } = await import('./src/utils/utils.js');
     const vaultRoot = getVaultDir(vaultName);
     const vaultNameResolved = path.basename(vaultRoot);
     const wikiDir = path.join(vaultRoot, 'wiki');
     const indexPath = path.join(wikiDir, 'index.md');
 
-    if (!fs.existsSync(indexPath)) {
-      const indexContent = `---
+    // Rebuild all folder indexes to ensure they are created/finalized after ingestion and sorted alphabetically
+    console.log("Rebuilding folder-level indexes...");
+    rebuildFolderIndex(wikiDir, 'concepts', 'Concepts');
+    rebuildFolderIndex(wikiDir, 'persons', 'Persons');
+    rebuildFolderIndex(wikiDir, 'summaries', 'Summaries');
+
+    // Rebuild/update the main index.md file with alphabetically sorted links
+    const indexContent = `---
 type: "Overview"
 title: "${vaultNameResolved} Wiki"
 description: "Home page for the ${vaultNameResolved} wiki."
-timestamp: "${new Date().toISOString()}"
+timestamp: "${new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')}"
 ---
 # ${vaultNameResolved} Wiki
 
 Welcome to the wiki. Browse the available pages:
 
-- [[timeline]]
-- [[social-graph]]
-- [[summaries]]
 - [[concepts]]
 - [[persons]]
+- [[social-graph]]
+- [[summaries]]
+- [[timeline]]
 `;
-      fs.mkdirSync(path.dirname(indexPath), { recursive: true });
-      fs.writeFileSync(indexPath, indexContent, 'utf8');
-      console.log(`Created wiki index at ${indexPath}`);
-    } else {
-      console.log(`Wiki index already exists at ${indexPath}`);
-    }
+    fs.mkdirSync(path.dirname(indexPath), { recursive: true });
+    fs.writeFileSync(indexPath, indexContent, 'utf8');
+    console.log(`Created/updated base wiki index at ${indexPath}`);
   } catch (e: any) {
-    console.error("Failed to create wiki index:", e.message);
+    console.error("Failed to create/update wiki indexes:", e.message);
   }
 
   console.log(`\n========================================`);

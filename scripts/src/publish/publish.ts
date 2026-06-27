@@ -3,59 +3,73 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import YAML from 'yaml';
+import { config } from '../utils/config.js';
 import { getVaultDir } from '../utils/utils.js';
 
 const vaultNameOrPath = argv[2];
 const targetDirArg = argv[3];
-
-if (!vaultNameOrPath) {
-  console.error("Error: Vault name or path parameter is required. Usage: npx tsx scripts/src/publish/publish.ts <VaultName|Path> [TargetDir]");
-  exit(1);
-}
-
 const projectRoot = process.cwd();
-const vaultRoot = getVaultDir(vaultNameOrPath);
-const vaultName = path.basename(vaultRoot);
-const vaultDir = path.join(vaultRoot, 'wiki');
 
-if (!fs.existsSync(vaultDir) || !fs.statSync(vaultDir).isDirectory()) {
-  console.error(`Error: Vault directory '${vaultDir}' does not exist.`);
-  exit(1);
-}
-
-const distDir = path.resolve(projectRoot, 'dist');
-const buildDir = path.join(distDir, `build-${vaultName}`);
-const docsDir = path.join(buildDir, 'docs');
-
-let siteDir = '';
-if (targetDirArg && targetDirArg.trim()) {
-  const trimmed = targetDirArg.trim();
-  siteDir = path.isAbsolute(trimmed) ? trimmed : path.resolve(projectRoot, trimmed);
-} else {
-  siteDir = path.resolve(distDir, vaultName);
-}
-
-// 2. Clean and recreate build directory
-if (fs.existsSync(buildDir)) {
-  fs.rmSync(buildDir, { recursive: true, force: true });
-}
-fs.mkdirSync(docsDir, { recursive: true });
-
-// 3. Ensure mkdocs.yml exists in the source vault directory
-const sourceConfig = path.join(vaultRoot, 'mkdocs.yml');
-if (!fs.existsSync(sourceConfig)) {
-  console.log(`Writing default config to ${sourceConfig}...`);
-  
-  // Ensure icon is copied to source vault's assets directory
-  const sourceAssetsDir = path.join(vaultDir, 'assets');
-  fs.mkdirSync(sourceAssetsDir, { recursive: true });
-  const projectIconPath = path.resolve(projectRoot, 'assets', 'mycelium-mind-icon.png');
-  if (fs.existsSync(projectIconPath)) {
-    fs.copyFileSync(projectIconPath, path.join(sourceAssetsDir, 'mycelium-mind-icon.png'));
-    console.log(`Copied default icon to ${sourceAssetsDir}`);
+function getVaultsToPublish(requestedVault?: string): string[] {
+  const normalized = requestedVault?.trim();
+  if (normalized && !['all', 'ALL', '*'].includes(normalized)) {
+    return [normalized];
   }
 
-  const defaultConfigContent = `site_name: ${vaultName} Wiki
+  const vaultsRoot = path.resolve(projectRoot, config.vaultsRoot);
+  if (!fs.existsSync(vaultsRoot) || !fs.statSync(vaultsRoot).isDirectory()) {
+    return [];
+  }
+
+  return fs.readdirSync(vaultsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(vaultsRoot, entry.name))
+    .filter((vaultRoot) => fs.existsSync(path.join(vaultRoot, 'wiki')));
+}
+
+function publishVault(vaultNameOrPath: string, targetDirArg?: string) {
+  const vaultRoot = getVaultDir(vaultNameOrPath);
+  const vaultName = path.basename(vaultRoot);
+  const vaultDir = path.join(vaultRoot, 'wiki');
+
+  if (!fs.existsSync(vaultDir) || !fs.statSync(vaultDir).isDirectory()) {
+    console.error(`Error: Vault directory '${vaultDir}' does not exist.`);
+    exit(1);
+  }
+
+  const distDir = path.resolve(projectRoot, 'dist');
+  const buildDir = path.join(distDir, `build-${vaultName}`);
+  const docsDir = path.join(buildDir, 'docs');
+
+  let siteDir = '';
+  if (targetDirArg && targetDirArg.trim()) {
+    const trimmed = targetDirArg.trim();
+    siteDir = path.isAbsolute(trimmed) ? trimmed : path.resolve(projectRoot, trimmed);
+  } else {
+    siteDir = path.resolve(distDir, vaultName);
+  }
+
+  // 2. Clean and recreate build directory
+  if (fs.existsSync(buildDir)) {
+    fs.rmSync(buildDir, { recursive: true, force: true });
+  }
+  fs.mkdirSync(docsDir, { recursive: true });
+
+  // 3. Ensure mkdocs.yml exists in the source vault directory
+  const sourceConfig = path.join(vaultRoot, 'mkdocs.yml');
+  if (!fs.existsSync(sourceConfig)) {
+    console.log(`Writing default config to ${sourceConfig}...`);
+    
+    // Ensure icon is copied to source vault's assets directory
+    const sourceAssetsDir = path.join(vaultDir, 'assets');
+    fs.mkdirSync(sourceAssetsDir, { recursive: true });
+    const projectIconPath = path.resolve(projectRoot, 'assets', 'mycelium-mind-icon.png');
+    if (fs.existsSync(projectIconPath)) {
+      fs.copyFileSync(projectIconPath, path.join(sourceAssetsDir, 'mycelium-mind-icon.png'));
+      console.log(`Copied default icon to ${sourceAssetsDir}`);
+    }
+
+    const defaultConfigContent = `site_name: ${vaultName} Wiki
 theme:
   name: material
   favicon: assets/mycelium-mind-icon.png
@@ -87,26 +101,26 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
 `;
-  fs.writeFileSync(sourceConfig, defaultConfigContent, 'utf8');
-}
+    fs.writeFileSync(sourceConfig, defaultConfigContent, 'utf8');
+  }
 
-// 4. Copy wiki contents to docs_dir
-console.log(`Copying wiki files from ${vaultDir} to ${docsDir}...`);
-const items = fs.readdirSync(vaultDir);
-for (const item of items) {
-  const src = path.join(vaultDir, item);
-  const dest = path.join(docsDir, item);
-  if (item === 'mkdocs.yml') {
-    fs.copyFileSync(src, path.join(buildDir, 'mkdocs.yml'));
-    continue;
+  // 4. Copy wiki contents to docs_dir
+  console.log(`Copying wiki files from ${vaultDir} to ${docsDir}...`);
+  const items = fs.readdirSync(vaultDir);
+  for (const item of items) {
+    const src = path.join(vaultDir, item);
+    const dest = path.join(docsDir, item);
+    if (item === 'mkdocs.yml') {
+      fs.copyFileSync(src, path.join(buildDir, 'mkdocs.yml'));
+      continue;
+    }
+    const stat = fs.statSync(src);
+    if (stat.isDirectory()) {
+      fs.cpSync(src, dest, { recursive: true });
+    } else {
+      fs.copyFileSync(src, dest);
+    }
   }
-  const stat = fs.statSync(src);
-  if (stat.isDirectory()) {
-    fs.cpSync(src, dest, { recursive: true });
-  } else {
-    fs.copyFileSync(src, dest);
-  }
-}
 
 // Ensure mkdocs.yml exists in the build dir with correct settings
 const buildConfigPath = path.join(buildDir, 'mkdocs.yml');
@@ -298,8 +312,24 @@ function walkDir(currentDir: string) {
       walkDir(fullPath);
     } else if (file.endsWith('.md')) {
       const relPath = path.relative(docsDir, fullPath);
+      const relPathNorm = relPath.replace(/\\/g, '/');
       const basename = path.basename(file, '.md');
-      fileMap[basename.toLowerCase()] = relPath;
+      const basenameLower = basename.toLowerCase();
+
+      if (basenameLower === 'index') {
+        if (relPathNorm === 'index.md') {
+          fileMap[basenameLower] = relPath;
+        }
+        const parentDir = path.dirname(relPathNorm);
+        if (parentDir !== '.') {
+          fileMap[parentDir.toLowerCase()] = relPath;
+          fileMap[`${parentDir}/index`.toLowerCase()] = relPath;
+        }
+      } else {
+        fileMap[basenameLower] = relPath;
+        const relPathNoExt = relPathNorm.slice(0, -3);
+        fileMap[relPathNoExt.toLowerCase()] = relPath;
+      }
     }
   }
 }
@@ -383,11 +413,25 @@ function processFile(filePath: string) {
       cleanedPath = cleanedPath.slice(7);
     }
 
-    const baseNameWithExt = path.basename(cleanedPath);
-    const baseNameNoExt = path.basename(baseNameWithExt, '.md');
-    const baseNameLower = baseNameNoExt.toLowerCase();
+    // Try to resolve path relative to docsDir to perform a precise lookup
+    let pathRelativeToDocs = cleanedPath;
+    if (cleanedPath.startsWith('.')) {
+      const currentFileDirFromDocs = path.relative(docsDir, currentDirAbs);
+      pathRelativeToDocs = path.join(currentFileDirFromDocs, cleanedPath);
+    }
+    const relPathNoExt = pathRelativeToDocs.endsWith('.md') ? pathRelativeToDocs.slice(0, -3) : pathRelativeToDocs;
+    const relPathLower = relPathNoExt.toLowerCase().replace(/\\/g, '/');
 
-    const targetRelPath = findFuzzyMatch(baseNameLower);
+    let targetRelPath = findFuzzyMatch(relPathLower);
+
+    // Fall back to basename lookup if not found
+    if (!targetRelPath) {
+      const baseNameWithExt = path.basename(cleanedPath);
+      const baseNameNoExt = path.basename(baseNameWithExt, '.md');
+      const baseNameLower = baseNameNoExt.toLowerCase();
+      targetRelPath = findFuzzyMatch(baseNameLower);
+    }
+
     if (targetRelPath) {
       const targetAbsPath = path.join(docsDir, targetRelPath);
       const relPath = path.relative(currentDirAbs, targetAbsPath);
@@ -436,4 +480,15 @@ try {
   if (fs.existsSync(buildDir)) {
     fs.rmSync(buildDir, { recursive: true, force: true });
   }
+}
+}
+
+const vaultsToPublish = getVaultsToPublish(vaultNameOrPath);
+if (vaultsToPublish.length === 0) {
+  console.error("No vaults found to publish. Ensure the Vaults directory contains vault folders with a wiki/ directory.");
+  exit(1);
+}
+
+for (const vaultPath of vaultsToPublish) {
+  publishVault(vaultPath, targetDirArg);
 }

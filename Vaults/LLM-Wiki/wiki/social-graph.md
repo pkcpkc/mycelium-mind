@@ -2,7 +2,7 @@
 type: "SocialGraph"
 title: "Social Graph"
 description: "Connection map and relationship registry of all individuals in the vault."
-timestamp: "2026-06-22T19:41:05Z"
+timestamp: "2026-06-27T05:06:10Z"
 ---
 # Social Graph
 
@@ -10,67 +10,40 @@ timestamp: "2026-06-22T19:41:05Z"
 
 ```mermaid
 flowchart LR
-    AC["Adam Coates"]
-    AK["Aditya Khosla"]
-    ACB["Alexander C. Berg"]
-    AK1["Andrej Karpathy"]
+    AK["Andrej Karpathy"]
     AN["Andrew Ng"]
-    AJ["Armand Joulin"]
-    CDM["Christopher D. Manning"]
     DK["Daphne Koller"]
-    DPK["Diederik P. Kingma"]
     D["Dwarlesh"]
     FFL["Fei-Fei Li"]
     GH["Geoff Hinton"]
-    GT["George Toderici"]
-    HS["Hao Su"]
     JH["Jensen Huang"]
-    JD["Jia Deng"]
-    JH1["Jonathan Hernandez"]
-    JK["Jonathan Krause"]
     JJ["Justin Johnson"]
     KK["Koray Kavukcuoglu"]
     LF["Lex Fridman"]
     LFF["Li Fei-Fei"]
-    LF1["Linxi Fan"]
-    MB["Michael Bernstein"]
     MVDP["Michiel van de Panne"]
     NB["Nathan Benaich"]
-    OR["Oliver Russakovsky"]
-    PL["Percy Liang"]
     PA["Pieter Abbeel"]
-    QVL["Quoc V. Le"]
-    RS["Rahul Sukthankar"]
-    RS1["Richard Socher"]
-    SS["Sanjeev Satheesh"]
-    SS1["Sanketh Shetty"]
-    SM["Sean Ma"]
     ST["Sebastian Thrun"]
-    SM1["Stephen Miller"]
-    TL["Thomas Leung"]
-    TS["Tianlin Shi"]
-    TS1["Tim Salimans"]
-    VB["Vannevar Bush"]
     VM["Vlad Mnih"]
     VK["Vladlen Koltun"]
-    ZH["Zhiheng Huang"]
-    AK1 -- "advised by" --> FFL
-    AK1 -- "collaborated with" --> DK
-    AK1 -- "collaborated with" --> AN
-    AK1 -- "collaborated with" --> ST
-    AK1 -- "collaborated with" --> VK
-    AK1 -- "worked with" --> MVDP
-    AK1 -- "attended class by" --> GH
-    AK1 -- "collaborated with" --> KK
-    AK1 -- "collaborated with" --> VM
-    AK1 -- "co-presented with" --> AN
-    AK1 -- "co-presented with" --> NB
-    AK1 -- "guest on" --> D
-    AK1 -- "guest on" --> LF
-    AK1 -- "co-presented with" --> PA
-    AK1 -- "keynoted with" --> JH
-    AK1 -- "co-authored with" --> JJ
-    AK1 -- "co-authored with" --> LFF
+    AK -- "advised by" --> FFL
+    AK -- "collaborated with" --> DK
+    AK -- "collaborated with" --> AN
+    AK -- "collaborated with" --> ST
+    AK -- "collaborated with" --> VK
+    AK -- "worked with" --> MVDP
+    AK -- "attended class by" --> GH
+    AK -- "collaborated with" --> KK
+    AK -- "collaborated with" --> VM
+    AK -- "co-presented with" --> AN
+    AK -- "co-presented with" --> NB
+    AK -- "guest on" --> D
+    AK -- "guest on" --> LF
+    AK -- "co-presented with" --> PA
+    AK -- "keynoted with" --> JH
+    AK -- "co-authored with" --> JJ
+    AK -- "co-authored with" --> LFF
 ```
 
 ## Relationship Registry

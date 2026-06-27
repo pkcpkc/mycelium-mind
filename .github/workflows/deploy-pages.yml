@@ -41,7 +41,7 @@ jobs:
         run: pip install mkdocs mkdocs-material mkdocs-panzoom-plugin
 
       - name: Build static site
-        run: bash publish-llm-wiki.sh
+        run: bash publish-wiki.sh
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -49,7 +49,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist/LLM-Wiki
+          path: ./dist
 
       - name: Deploy to GitHub Pages
         id: deployment

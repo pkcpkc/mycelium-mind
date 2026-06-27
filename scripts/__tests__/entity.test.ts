@@ -2,15 +2,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
-import { config } from '../../src/utils/config.js';
-import { callAgenticModel } from '../../src/utils/llm.js';
+import { config } from '../src/utils/config.js';
+import { callAgenticModel } from '../src/utils/llm.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const TEST_ROOT = path.resolve(__dirname, '..', '..', '..', 'temp-entity-vaults');
+const TEST_ROOT = path.resolve(__dirname, '..', '..', 'temp-entity-vaults');
 
-vi.mock('../../src/utils/llm.js', () => ({
-  callAgenticModel: vi.fn(),
+vi.mock('../src/utils/llm.js', () => ({
+  callAgenticModel: vi.fn(() => Promise.resolve('# Mocked Content')),
 }));
 
 function setupScript(argvArgs: string[]) {
@@ -26,7 +26,15 @@ function restoreArgv(originalArgv: string[]) {
 }
 
 async function importEntityScript(type: 'person' | 'concept') {
-  await import(`../../src/${type}s/${type}s.js`);
+  if (type === 'person') {
+    await import('../src/persons/persons.js');
+  } else {
+    await import('../src/concepts/concepts.js');
+  }
+  if ((globalThis as any).__entityScriptPromise) {
+    await (globalThis as any).__entityScriptPromise;
+    delete (globalThis as any).__entityScriptPromise;
+  }
 }
 
 describe('Entity script tests', () => {
@@ -36,9 +44,10 @@ describe('Entity script tests', () => {
 
   beforeEach(() => {
     fs.mkdirSync(wikiDir, { recursive: true });
+    process.env.VAULTS_ROOT = TEST_ROOT;
+    process.env.VAULT_NAME = vaultName;
     config.vaultsRoot = TEST_ROOT;
     config.vaultName = vaultName;
-    process.env.VAULTS_ROOT = TEST_ROOT;
   });
 
   afterEach(() => {

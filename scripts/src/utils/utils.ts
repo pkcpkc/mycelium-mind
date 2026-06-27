@@ -96,7 +96,7 @@ export function cleanMarkdownResponse(text: string): string {
 export function rebuildFolderIndex(wikiDir: string, folderName: string, header: string) {
   const dirPath = path.join(wikiDir, folderName);
   if (!fsSync.existsSync(dirPath)) return;
-  const files = fsSync.readdirSync(dirPath).sort();
+  const files = fsSync.readdirSync(dirPath);
   const items: [string, string, string][] = [];
 
   for (const filename of files) {
@@ -117,6 +117,23 @@ export function rebuildFolderIndex(wikiDir: string, folderName: string, header: 
   if (items.length === 0) {
     if (fsSync.existsSync(indexPath)) fsSync.unlinkSync(indexPath);
     return;
+  }
+
+  // Sort items alphabetically (case-insensitive). If folder is 'persons', sort by last name first.
+  if (folderName === 'persons') {
+    items.sort((a, b) => {
+      const getLastName = (name: string) => {
+        const parts = name.trim().split(/\s+/);
+        return parts[parts.length - 1] || name;
+      };
+      const lastNameA = getLastName(a[0]);
+      const lastNameB = getLastName(b[0]);
+      const cmp = lastNameA.localeCompare(lastNameB, undefined, { sensitivity: 'base', numeric: true });
+      if (cmp !== 0) return cmp;
+      return a[0].localeCompare(b[0], undefined, { sensitivity: 'base', numeric: true });
+    });
+  } else {
+    items.sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: 'base', numeric: true }));
   }
 
   const lines = [`# ${header}\n`];
@@ -183,6 +200,10 @@ export async function generateEntityCard({
 
   let responseText = await callAgenticModel([{ role: 'user', content: prompt }]);
   responseText = cleanMarkdownResponse(responseText);
+  const entityDir = path.dirname(entityPath);
+  if (!fsSync.existsSync(entityDir)) {
+    fsSync.mkdirSync(entityDir, { recursive: true });
+  }
   fsSync.writeFileSync(entityPath, responseText, 'utf8');
   console.log(`Success: Wrote ${entityType} file to ${entityPath}`);
 

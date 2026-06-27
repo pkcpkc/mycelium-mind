@@ -235,6 +235,33 @@ describe('rebuildFolderIndex', () => {
     expect(content).toContain('Beta Concept');
   });
 
+  it('should sort persons index by last name', async () => {
+    const { rebuildFolderIndex } = await import('../../src/utils/utils.js');
+
+    const folderPath = path.join(TEST_ROOT, 'index-test-persons', 'wiki', 'persons');
+    fs.mkdirSync(folderPath, { recursive: true });
+
+    fs.writeFileSync(
+      path.join(folderPath, 'Donald Tusk.md'),
+      '---\ntitle: Donald Tusk\n---\nContent',
+    );
+    fs.writeFileSync(
+      path.join(folderPath, 'Jan Kees Martijn.md'),
+      '---\ntitle: Jan Kees Martijn\n---\nContent',
+    );
+
+    rebuildFolderIndex(path.join(TEST_ROOT, 'index-test-persons', 'wiki'), 'persons', 'Persons');
+
+    const indexPath = path.join(folderPath, 'index.md');
+    expect(fs.existsSync(indexPath)).toBe(true);
+
+    const content = fs.readFileSync(indexPath, 'utf8');
+    
+    const lines = content.split('\n').filter(l => l.startsWith('*'));
+    expect(lines[0]).toContain('Jan Kees Martijn');
+    expect(lines[1]).toContain('Donald Tusk');
+  });
+
   it('should handle missing directory gracefully', async () => {
     const { rebuildFolderIndex } = await import('../../src/utils/utils.js');
     expect(() =>

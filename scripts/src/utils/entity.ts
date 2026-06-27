@@ -1,4 +1,4 @@
-import { argv, exit } from 'process';
+import { argv } from 'process';
 import * as path from 'path';
 import { getVaultWikiDir } from './utils.js';
 import { generateEntityCard, toSafeFilename } from './utils.js';
@@ -25,12 +25,12 @@ export function runEntityScript(opts: EntityScriptOptions): void {
     console.error(
       `Usage: npx tsx scripts/src/entity/${opts.type}s.ts <VaultNameOrPath> <${opts.displayName}> <ReferenceSummaryPath>`
     );
-    exit(1);
+    process.exit(1);
   }
 
   const wikiDir = getVaultWikiDir(vaultName);
 
-  (async () => {
+  const promise = (async () => {
     try {
       await generateEntityCard({
         entityName,
@@ -42,7 +42,8 @@ export function runEntityScript(opts: EntityScriptOptions): void {
       });
     } catch (e: any) {
       console.error(`Failed to build ${opts.type} card:`, e.message);
-      exit(1);
+      process.exit(1);
     }
   })();
+  (globalThis as any).__entityScriptPromise = promise;
 }

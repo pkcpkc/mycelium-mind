@@ -26,27 +26,11 @@ const relationships: Relationship[] = [];
 const allPersons = new Set<string>();
 
 (async () => {
-  // 1. Get all persons existing in the persons collection folder
-  try {
-    const personsList = await getAllFrontmatters(wikiDir, 'persons');
-    for (const p of personsList) {
-      allPersons.add(p.title);
-    }
-  } catch {
-    // Ignore if directory doesn't exist yet
-  }
-
-  // 2. Read summaries frontmatter to extract entities and relationships
+  // Read summaries frontmatter to extract relationships
   const summaries = await getAllFrontmatters(wikiDir, 'summaries');
   for (const summary of summaries) {
     const frontmatter = summary.frontmatter;
     if (frontmatter) {
-      if (frontmatter.entities && Array.isArray(frontmatter.entities.persons)) {
-        for (const p of frontmatter.entities.persons) {
-          if (p && typeof p === 'string') allPersons.add(p.trim());
-        }
-      }
-      
       if (Array.isArray(frontmatter.relationships)) {
         for (const rel of frontmatter.relationships) {
           if (rel && typeof rel === 'object' && rel.personA && rel.relation && rel.personB) {
@@ -58,17 +42,24 @@ const allPersons = new Set<string>();
               personB: pB,
               source: summary.title
             });
-            allPersons.add(pA);
-            allPersons.add(pB);
           }
         }
       }
     }
   }
 
-  if (allPersons.size === 0) {
-    console.log("[wiki-social-graph] No persons or relationships found in vault.");
-    exit(0);
+  // Count relationships for each person
+  const relationCountMap = new Map<string, number>();
+  for (const rel of relationships) {
+    relationCountMap.set(rel.personA, (relationCountMap.get(rel.personA) || 0) + 1);
+    relationCountMap.set(rel.personB, (relationCountMap.get(rel.personB) || 0) + 1);
+  }
+
+  // Only add a person to the social graph if their relationCount > 0
+  for (const [person, count] of relationCountMap.entries()) {
+    if (count > 0) {
+      allPersons.add(person);
+    }
   }
 
   const personList = Array.from(allPersons).sort();
@@ -104,29 +95,34 @@ const allPersons = new Set<string>();
     `---`,
     `# Social Graph\n`,
     `## Connection Map\n`,
-    `\`\`\`mermaid`,
-    `flowchart LR`
   ];
 
-  for (const name of personList) {
-    const nodeId = nameToIdMap.get(name)!;
-    markdownLines.push(`    ${nodeId}["${name}"]`);
-  }
+  if (allPersons.size > 0) {
+    markdownLines.push(`\`\`\`mermaid`);
+    markdownLines.push(`flowchart LR`);
 
-  const printedEdges = new Set<string>();
-  for (const rel of relationships) {
-    const idA = nameToIdMap.get(rel.personA);
-    const idB = nameToIdMap.get(rel.personB);
-    if (idA && idB) {
-      const edgeKey = `${idA}-${rel.relation}-${idB}`;
-      if (!printedEdges.has(edgeKey)) {
-        markdownLines.push(`    ${idA} -- "${rel.relation}" --> ${idB}`);
-        printedEdges.add(edgeKey);
+    for (const name of personList) {
+      const nodeId = nameToIdMap.get(name)!;
+      markdownLines.push(`    ${nodeId}["${name}"]`);
+    }
+
+    const printedEdges = new Set<string>();
+    for (const rel of relationships) {
+      const idA = nameToIdMap.get(rel.personA);
+      const idB = nameToIdMap.get(rel.personB);
+      if (idA && idB) {
+        const edgeKey = `${idA}-${rel.relation}-${idB}`;
+        if (!printedEdges.has(edgeKey)) {
+          markdownLines.push(`    ${idA} -- "${rel.relation}" --> ${idB}`);
+          printedEdges.add(edgeKey);
+        }
       }
     }
-  }
 
-  markdownLines.push(`\`\`\`\n`);
+    markdownLines.push(`\`\`\`\n`);
+  } else {
+    markdownLines.push(`No relationships found.\n`);
+  }
 
   markdownLines.push(`## Relationship Registry\n`);
   if (relationships.length > 0) {

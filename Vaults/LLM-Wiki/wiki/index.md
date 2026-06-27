@@ -9,8 +9,8 @@ timestamp: "2026-06-22T13:11:43Z"
 
 Welcome to the wiki. Browse the available pages:
 
-- [[timeline]]
-- [[social-graph]]
-- [[summaries]]
 - [[concepts]]
 - [[persons]]
+- [[social-graph]]
+- [[summaries]]
+- [[timeline]]
