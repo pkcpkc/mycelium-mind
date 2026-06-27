@@ -2,7 +2,7 @@
 type: "ConceptsCloud"
 title: "Concepts Cloud"
 description: "Interactive graph linking concepts sharing common tags."
-timestamp: "2026-06-27T09:25:03Z"
+timestamp: "2026-06-27T09:41:12Z"
 ---
 # Concepts Cloud
 
@@ -12,9 +12,9 @@ Interactive visualization of wiki concepts and their relationships based on shar
 
 [[concepts-cloud-fullscreen|Open Fullscreen Interactive Graph ↗]]
 
-<div class="graph-search-container"><div class="search-input-wrapper"><input type="text" id="graph-search" placeholder="Search concepts by name or tag..." autocomplete="off"><button id="search-clear" class="search-clear-btn" type="button">&times;</button></div></div>
-
 <div id="cy"></div>
+
+<p class="graph-hint">💡 Note: Only showing concepts with more than 1 shared tags.</p>
 
 ## Shared Tags Registry
 

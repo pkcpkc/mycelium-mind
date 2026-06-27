@@ -84,6 +84,8 @@ tags:
     // Should contain Cytoscape container and link to fullscreen
     expect(cloudContent).toContain('<div id="cy"></div>');
     expect(cloudContent).toContain('[[concepts-cloud-fullscreen|Open Fullscreen Interactive Graph ↗]]');
+    expect(cloudContent).toContain('💡 Note: Only showing concepts with more than 1 shared tags.');
+    expect(cloudContent).not.toContain('id="graph-search"');
 
     // Verify fullscreen file exists and is populated
     const fullscreenPath = path.join(wikiDir, 'concepts-cloud-fullscreen.md');
@@ -91,6 +93,8 @@ tags:
     const fullscreenContent = fs.readFileSync(fullscreenPath, 'utf8');
     expect(fullscreenContent).toContain('<div id="cy-fullscreen"></div>');
     expect(fullscreenContent).toContain('[[concepts-cloud|← Back to Concepts Cloud]]');
+    expect(fullscreenContent).toContain('id="graph-search"');
+    expect(fullscreenContent).toContain('💡 Note: Only showing concepts with more than 1 shared tags.');
 
     // Should contain the Shared Tags Registry table
     expect(cloudContent).toContain('| Concept A | Shared Tags | Concept B |');

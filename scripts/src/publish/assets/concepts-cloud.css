@@ -104,3 +104,17 @@
   border-color: #818cf8;     /* Bright Indigo focus border */
   box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
 }
+
+/* Graph Hint Styling */
+.graph-hint {
+  font-size: 13px;
+  color: #64748b; /* Slate 500 */
+  margin-top: 8px;
+  margin-bottom: 20px;
+  font-style: italic;
+  display: block;
+}
+
+[data-md-color-scheme="slate"] .graph-hint {
+  color: #94a3b8; /* Slate 400 */
+}
