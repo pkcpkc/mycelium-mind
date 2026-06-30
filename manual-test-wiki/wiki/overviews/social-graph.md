@@ -2,7 +2,7 @@
 type: Overview
 title: Social Graph
 description: Connection map and relationship registry of all individuals in the vault.
-timestamp: 2026-06-30T20:56:47Z
+timestamp: 2026-06-30T21:02:20Z
 ---
 # Social Graph
 
