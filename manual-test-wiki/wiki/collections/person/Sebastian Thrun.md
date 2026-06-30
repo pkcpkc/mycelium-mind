@@ -1,22 +1,22 @@
 ---
 type: "Person"
 title: "Sebastian Thrun"
-description: "A prominent robotics researcher and academic collaborator who has contributed to the development of autonomous systems and machine learning."
+description: "A prominent AI researcher and educator known for his contributions to autonomous systems and deep learning."
 tags:
-  - Robotics
   - AI
   - Machine Learning
-timestamp: "2026-06-30T20:35:40Z"
+  - Robotics
+timestamp: "2026-06-30T20:42:33Z"
 ---
 # Sebastian Thrun
 
 ## Affiliations & Roles
 
-- Academic Collaborator in Robotics and Machine Learning
+- Academic Researcher and Mentor
 
 ## Biography & Context
 
-Sebastian Thrun is a recognized figure in the field of robotics and artificial intelligence. He has served as an academic collaborator for prominent AI researchers, contributing to the advancement of machine learning architectures and their applications in autonomous systems. His work intersects with foundational research in computer vision and robotics, supporting the development of complex neural networks and large-scale AI implementations.
+Sebastian Thrun is a significant figure in the field of artificial intelligence, particularly recognized for his work in autonomous vehicles and neural networks. He is noted for his role in shaping the academic foundations of modern AI, having served as a mentor and professor whose work influenced key researchers in the field.
 
 ## Collaborators
 
