@@ -2,7 +2,7 @@
 type: "ConceptsCloud"
 title: "Concepts Cloud"
 description: "Interactive graph linking concepts sharing common tags."
-timestamp: "2026-06-27T09:41:12Z"
+timestamp: "2026-06-30T18:10:10Z"
 ---
 # Concepts Cloud
 
@@ -30,7 +30,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[AI in Justice]] | judicial-reform, justice-system | [[Digitalisation]] |
 | [[AI in Justice]] | judicial-reform, justice-system | [[Justice Laws]] |
 | [[AI in Justice]] | judicial-reform, justice-system | [[Justice System Efficiency]] |
-| [[ARCOM]] | france, public-broadcasting | [[France Médias]] |
 | [[ARCOM]] | france, media-freedom, public-broadcasting | [[Public Broadcasting]] |
 | [[ARCOM]] | media-freedom, public-broadcasting | [[Public Service Media]] |
 | [[ARCOM]] | france, media-freedom | [[Right to Information]] |
@@ -170,7 +169,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Article IV Consultation]] | imf, macroeconomics | [[Fiscal Deficit]] |
 | [[Article IV Consultation]] | fiscal policy, hungary, imf, italy, malta, pillar ii, public debt, structural reforms | [[Fiscal Policy]] |
 | [[Article IV Consultation]] | fiscal policy, hungary, imf, italy, macroeconomics, public debt, structural reforms | [[Fiscal Sustainability]] |
-| [[Article IV Consultation]] | fiscal policy, imf, macroeconomics, structural reforms | [[France Economy]] |
 | [[Article IV Consultation]] | governance, imf, slovakia | [[Governance]] |
 | [[Article IV Consultation]] | italy, slovakia | [[Green Transition]] |
 | [[Article IV Consultation]] | article iv consultation, eu funds, fiscal policy, imf, macroeconomics, monetary policy | [[Hungary]] |
@@ -241,7 +239,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Austria]] | austria, eu-commission, financial-stability, fiscal-policy, green-transition, housing-affordability, imf | [[Fiscal consolidation]] |
 | [[Austria]] | fiscal-policy, imf, macroeconomics | [[Fiscal Deficit]] |
 | [[Austria]] | imf, macroeconomics | [[Fiscal Sustainability]] |
-| [[Austria]] | imf, macroeconomics | [[France Economy]] |
 | [[Austria]] | austria, green-transition | [[Green Transition]] |
 | [[Austria]] | imf, macroeconomics | [[Hungary]] |
 | [[Austria]] | fiscal-policy, green-transition, imf, macroeconomics | [[IMF Article IV Consultation]] |
@@ -375,7 +372,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Climate Risks]] | imf, macroeconomics | [[Fiscal Deficit]] |
 | [[Climate Risks]] | imf, italy | [[Fiscal Policy]] |
 | [[Climate Risks]] | imf, italy, macroeconomics | [[Fiscal Sustainability]] |
-| [[Climate Risks]] | green transition, imf, macroeconomics | [[France Economy]] |
 | [[Climate Risks]] | imf, macroeconomics | [[Hungary]] |
 | [[Climate Risks]] | imf, macroeconomics | [[IMF Article IV Consultation]] |
 | [[Climate Risks]] | climate risks, imf, macroeconomics | [[IMF]] |
@@ -388,7 +384,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Climate Risks]] | imf, macroeconomics | [[Sovereign Debt]] |
 | [[Climate Risks]] | imf, italy | [[Structural reforms]] |
 | [[Climate Risks]] | imf, italy | [[Tax Compliance]] |
-| [[Climate Transition]] | green transition, structural reforms | [[France Economy]] |
 | [[Commercial Real Estate Risk]] | austria, commercial-real-estate, financial-sector | [[Financial Sector Stability]] |
 | [[Constitutional Tribunal]] | judicial-independence, poland | [[National Council for the Judiciary]] |
 | [[Contingent Liabilities]] | credit-ratings, finance, sovereign-debt | [[Economic Assessment]] |
@@ -409,7 +404,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Current Account Surplus]] | imf, macroeconomics | [[Fiscal Deficit]] |
 | [[Current Account Surplus]] | hungary, imf, structural reforms | [[Fiscal Policy]] |
 | [[Current Account Surplus]] | hungary, imf, macroeconomics, structural reforms | [[Fiscal Sustainability]] |
-| [[Current Account Surplus]] | imf, macroeconomics, structural reforms | [[France Economy]] |
 | [[Current Account Surplus]] | eu funds, imf, macroeconomics | [[Hungary]] |
 | [[Current Account Surplus]] | imf, macroeconomics | [[IMF Article IV Consultation]] |
 | [[Current Account Surplus]] | imf, macroeconomics, structural reforms | [[IMF]] |
@@ -435,7 +429,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Demographic Aging]] | austria, fiscal-policy | [[Public Debt]] |
 | [[Demographic Aging]] | austria, demographics, fiscal-policy | [[pension system]] |
 | [[Demographic Trends]] | fiscal policy, macroeconomics | [[Fiscal Sustainability]] |
-| [[Demographic Trends]] | fiscal policy, macroeconomics | [[France Economy]] |
 | [[Demographic Trends]] | fiscal policy, macroeconomics | [[Hungary]] |
 | [[Demographic Trends]] | fiscal policy, macroeconomics | [[IMF]] |
 | [[Demographic Trends]] | fiscal policy, labor market, macroeconomics | [[Italy]] |
@@ -490,7 +483,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Economic Growth]] | imf, slovakia, structural-reforms | [[Fiscal consolidation]] |
 | [[Economic Growth]] | imf, macroeconomics | [[Fiscal Deficit]] |
 | [[Economic Growth]] | imf, macroeconomics | [[Fiscal Sustainability]] |
-| [[Economic Growth]] | imf, macroeconomics | [[France Economy]] |
 | [[Economic Growth]] | governance, imf, slovakia, structural-reforms | [[Governance]] |
 | [[Economic Growth]] | imf, macroeconomics | [[Hungary]] |
 | [[Economic Growth]] | imf, macroeconomics, structural-reforms | [[IMF Article IV Consultation]] |
@@ -630,7 +622,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Fiscal consolidation]] | austria, fiscal-policy | [[pension system]] |
 | [[Fiscal consolidation]] | austria, france, venture-capital | [[Venture Capital]] |
 | [[Fiscal Deficit]] | imf, macroeconomics | [[Fiscal Sustainability]] |
-| [[Fiscal Deficit]] | imf, macroeconomics | [[France Economy]] |
 | [[Fiscal Deficit]] | imf, macroeconomics | [[Hungary]] |
 | [[Fiscal Deficit]] | fiscal-policy, imf, macroeconomics | [[IMF Article IV Consultation]] |
 | [[Fiscal Deficit]] | imf, macroeconomics | [[IMF]] |
@@ -644,7 +635,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Fiscal Framework]] | belgium, fiscal-policy | [[Public Finances]] |
 | [[Fiscal Framework]] | belgium, fiscal-policy | [[Tax and Benefits System]] |
 | [[Fiscal Policy]] | fiscal policy, hungary, imf, italy, public debt, structural reforms | [[Fiscal Sustainability]] |
-| [[Fiscal Policy]] | fiscal policy, imf, structural reforms | [[France Economy]] |
 | [[Fiscal Policy]] | italy, nrrp | [[Green Transition]] |
 | [[Fiscal Policy]] | fiscal policy, imf | [[Hungary]] |
 | [[Fiscal Policy]] | fiscal policy, imf, public debt, structural reforms | [[IMF]] |
@@ -670,7 +660,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Fiscal Policy]] | hungary, imf, italy | [[Structural reforms]] |
 | [[Fiscal Policy]] | fiscal policy, imf, italy, public debt | [[Tax Compliance]] |
 | [[Fiscal Policy]] | italy, malta | [[National Human Rights Institution]] |
-| [[Fiscal Sustainability]] | fiscal policy, imf, macroeconomics, structural reforms | [[France Economy]] |
 | [[Fiscal Sustainability]] | fiscal policy, imf, macroeconomics | [[Hungary]] |
 | [[Fiscal Sustainability]] | imf, macroeconomics | [[IMF Article IV Consultation]] |
 | [[Fiscal Sustainability]] | fiscal policy, imf, macroeconomics, public debt, structural reforms | [[IMF]] |
@@ -701,28 +690,6 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Foreign-Currency Rating]] | credit-ratings, finance, sovereign-debt | [[Monetary Union]] |
 | [[Foreign-Currency Rating]] | finance, sovereign-debt, sp-global | [[Net General Government Debt]] |
 | [[Foreign-Currency Rating]] | credit-ratings, finance, sovereign-debt, sp-global | [[Sovereign Rating]] |
-| [[France Economy]] | fiscal policy, imf, macroeconomics | [[Hungary]] |
-| [[France Economy]] | imf, macroeconomics | [[IMF Article IV Consultation]] |
-| [[France Economy]] | fiscal policy, imf, macroeconomics, structural reforms | [[IMF]] |
-| [[France Economy]] | imf, macroeconomics | [[Inflation]] |
-| [[France Economy]] | financial stability, fiscal policy, structural reforms | [[International Monetary Fund]] |
-| [[France Economy]] | fiscal policy, imf, macroeconomics, structural reforms | [[Italy]] |
-| [[France Economy]] | macroeconomics, structural reforms | [[Labor Force Participation]] |
-| [[France Economy]] | imf, structural reforms | [[Labor Market Dynamics]] |
-| [[France Economy]] | macroeconomics, structural reforms | [[Labor Market]] |
-| [[France Economy]] | financial stability, imf | [[Macroeconomic Policy]] |
-| [[France Economy]] | fiscal policy, imf, structural reforms | [[Medium-Term Fiscal Structural Plan]] |
-| [[France Economy]] | fiscal policy, structural reforms | [[National Recovery and Resilience Plan]] |
-| [[France Economy]] | fiscal policy, imf, structural reforms | [[Pension Reform]] |
-| [[France Economy]] | fiscal policy, macroeconomics, structural reforms | [[Population Aging]] |
-| [[France Economy]] | imf, macroeconomics | [[Public Debt]] |
-| [[France Economy]] | financial stability, fiscal policy | [[Real estate market]] |
-| [[France Economy]] | fiscal policy, imf | [[Recovery and Resilience Plan]] |
-| [[France Economy]] | fiscal policy, imf, macroeconomics | [[Romania]] |
-| [[France Economy]] | fiscal policy, imf, macroeconomics | [[Sovereign Debt]] |
-| [[France Economy]] | fiscal policy, imf | [[Tax Compliance]] |
-| [[France Economy]] | fiscal policy, macroeconomics | [[Twin Deficits]] |
-| [[France Médias]] | france, public-broadcasting | [[Public Broadcasting]] |
 | [[Freedom of Information Act]] | austria, slovakia | [[Green Transition]] |
 | [[Freedom of Information Act]] | rule-of-law, transparency | [[HATVP]] |
 | [[Freedom of Information Act]] | austria, rule-of-law, slovakia | [[Judicial Independence]] |
