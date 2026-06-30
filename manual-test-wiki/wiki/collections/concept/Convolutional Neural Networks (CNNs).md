@@ -5,30 +5,28 @@ tags:
   - Machine Learning
   - Deep Learning
   - Computer Vision
+timestamp: <timestamp>
 
 ## Definition
-Convolutional Neural Networks (CNNs) are a class of deep neural networks specifically designed to process data with a grid-like topology, most notably digital images. They are the foundational architecture for modern computer vision tasks.
+Convolutional Neural Networks (CNNs) are a class of deep neural networks most commonly applied to analyzing visual imagery. They are designed to automatically and adaptively learn spatial hierarchies of features, from low-level edges to high-level complex objects.
 
-## Core Characteristics
-- **Spatial Hierarchy**: CNNs are capable of learning spatial hierarchies of features, moving from low-level edges and textures to high-level objects and scenes.
-- **Weight Sharing**: By using convolutional filters (kernels), the network applies the same weights across different regions of an input, significantly reducing the number of parameters compared to fully connected networks.
-- **Translation Invariance**: CNNs can recognize patterns regardless of their position within the frame.
+## Key Characteristics
+- **Spatial Invariance:** The ability to recognize patterns regardless of their position in the frame.
+- **Weight Sharing:** Convolutional filters are applied across the entire input, significantly reducing the number of parameters compared to fully connected networks.
+- **Feature Hierarchy:** Layers progressively extract more abstract representations (e.g., edges $\rightarrow$ textures $\rightarrow$ shapes $\rightarrow$ objects).
 
-## Academic and Industrial Context
-- **Research Foundations**: CNNs were a primary focus of doctoral research at institutions like Stanford University, contributing to the evolution of deep learning.
-- **Applications**: Widely deployed in autonomous driving (e.g., Tesla's Autopilot systems) for object detection, image segmentation, and spatial awareness.
-- **Relationship to Other Architectures**: Often studied in tandem with [[Recurrent Neural Networks (RNNs)]] and [[Deep Neural Networks]] to solve complex sequential and spatial problems.
+## Contextual Connections
+- **Academic Research:** Significant focus of doctoral research at Stanford University, notably involving work on image captioning and video classification.
+- **Industry Application:** Fundamental technology used in the development of autonomous driving systems (e.g., Tesla Autopilot) and computer vision pipelines.
+- **Related Concepts:** 
+    - [[Deep Neural Networks]]
+    - [[Large Language Models (LLMs)]]
+    - [[Computer Vision]]
+    - [[Recurrent Neural Networks (RNNs)]]
+    - [[Reinforcement Learning]]
+    - [[Synthetic Data Generation]]
+    - [[Software 2.0]]
 
-## Key Figures & Influence
-- **Andrej Karpathy**: A significant researcher who focused on CNNs during his PhD and has played a pivotal role in teaching these architectures through courses like CS231n.
-- **Software 2.0**: CNNs represent a core component of the "Software 2.0" paradigm, where neural network weights replace manual code for complex perception tasks.
-
-## Related Concepts
-- [[Deep Learning]]
-- [[Computer Vision]]
-- [[Large Language Models (LLMs)]]
-- [[Recurrent Neural Networks (RNNs)]]
-- [[Reinforcement Learning]]
-- [[Synthetic Data Generation]]
-- [[Software 2.0]]
-- [[Autograd Engines]]
+## Notable Contributors & Projects
+- **Andrej Karpathy:** Influential researcher who focused on CNNs/RNNs during his PhD and has provided extensive educational resources (e.g., "Zero to Hero" series) on the architecture and implementation of these networks.
+- **Key Projects:** `ConvNetJS` (browser-based CNN implementation).
