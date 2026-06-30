@@ -1,7 +1,7 @@
 ---
 type: Summary
 title: Andrej Karpathy Biography and Portfolio
-timestamp: 2026-06-30T20:48:29Z
+timestamp: 2026-06-30T20:51:11Z
 tags:
   - AI
   - Machine Learning
@@ -19,77 +19,72 @@ concept:
     - Computer Vision
     - Natural Language Processing
     - Reinforcement Learning
-    - Autograd
+    - Autograd Engines
     - Software 2.0
     - Synthetic Data Generation
+    - Midtraining
 person:
   persons:
-    - name: Andrej Karpathy
-      role: AI Researcher and Educator
-    - name: Fei-Fei Li
-      role: Stanford Professor / Advisor
-    - name: Daphne Koller
-      role: Academic Collaborator
-    - name: Andrew Ng
-      role: Academic Collaborator
-    - name: Sebastian Thrun
-      role: Academic Collaborator
-    - name: Vladlen Koltun
-      role: Academic Collaborator
-    - name: Koray Kavukcuoglu
-      role: DeepMind Researcher
-    - name: Vlad Mnih
-      role: DeepMind Researcher
-    - name: Pieter Abbeel
-      role: Robotics Researcher
-    - name: Jensen Huang
-      role: NVIDIA CEO
-    - name: Justin Johnson
-      role: Research Collaborator
+    - Andrej Karpathy
+    - Fei-Fei Li
+    - Daphne Koller
+    - Andrew Ng
+    - Sebastian Thrun
+    - Vladlen Koltun
+    - Koray Kavukcuoglu
+    - Vlad Mnih
+    - Justin Johnson
+    - Jensen Huang
+    - Lex Fridman
+    - Pieter Abbeel
+    - Nathan Benaich
   relationships:
-    - personA: Andrej Karpathy
-      relation: Advised by
-      personB: Fei-Fei Li
-    - personA: Andrej Karpathy
-      relation: Worked with
-      personB: Andrew Ng
+    - Andrej Karpathy, student of, Fei-Fei Li
+    - Andrej Karpathy, worked with, Daphne Koller
+    - Andrej Karpathy, worked with, Andrew Ng
+    - Andrej Karpathy, worked with, Sebastian Thrun
+    - Andrej Karpathy, worked with, Vladlen Koltun
+    - Andrej Karpathy, worked with, Koray Kavukcuoglu
+    - Andrej Karpathy, worked with, Vlad Mnih
+    - Andrej Karpathy, collaborated with, Justin Johnson
 times:
   - date: 2005
     title: BSc at University of Toronto (CS, Physics, Math)
   - date: 2009
-    title: MSc at University of British Columbia (Robotics/Machine Learning)
+    title: MSc at University of British Columbia (Robotics/ML)
   - date: 2011
-    title: PhD at Stanford (CNNs/RNNs) and Internships at Google Brain
+    title: PhD focus on CNNs/RNNs (Stanford Vision Lab)
+  - date: 2011
+    title: Internship at Google Brain
   - date: 2013
     title: Internship at Google Research
   - date: 2015
-    title: Internship at DeepMind and Founding Member at OpenAI
+    title: Internship at DeepMind
   - date: 2015
-    title: Instructor for Stanford CS 231n
-  - date: 2016
-    title: PhD Thesis Completion (Connecting Images and Natural Language)
+    title: Founding member of OpenAI
   - date: 2017
-    title: Publication of World of Bits and PixelCNN++
+    title: Instructor for Stanford CS 231n
   - date: 2019
-    title: Tesla Autonomy Day
+    title: Tesla Autonomy Day / ICML Talk
   - date: 2021
-    title: Tesla AI Day (Director of AI role)
-  - date: 2022
-    title: Lex Fridman Podcast appearance
+    title: Tesla AI Day / Return to OpenAI
   - date: 2024
-    title: GPU Mode and UC Berkeley AI Hackathon talks
+    title: GPU Mode / UC Berkeley AI Hackathon
+  - date: 2025
+    title: YC AI Startup School / Dwarlesh Podcast
 ---
-# Summary of: Andrej Karpathy Biography and Portfolio
+# Summary of: Andrej Karpathy
 
 ## Context Metadata
-Andrej Karpathy is a prominent figure in the artificial intelligence field, recognized for his roles at OpenAI and Tesla, his academic contributions at Stanford, and his extensive educational content creation. This document synthesizes his professional trajectory, technical contributions, academic background, and public-facing projects.
+Andrej Karpathy is a prominent AI researcher, educator, and engineer known for his work in deep learning, computer vision, and large language models (LLMs). He has held high-level leadership roles at Tesla and OpenAI and is a prolific content creator who simplifies complex AI concepts for both technical and general audiences.
 
 ## Executive Summary
-Karpathy is an AI researcher whose career spans foundational deep learning research, industrial application at scale (Tesla Autopilot), and large-scale educational outreach. He is known for leading the computer vision team at Tesla, founding OpenAI, and creating some of the most popular deep learning courses and YouTube tutorials in the world. His work focuses on neural network architecture, large language models (LLMs), and making complex AI concepts accessible to both technical and general audiences.
+Karpathy's career spans academic excellence at Stanford and UBC to industrial leadership at Tesla (Director of AI) and OpenAI. He is recognized for designing one of Stanford's most popular deep learning courses (CS 231n) and for his "Zero to Hero" educational content. His technical expertise covers the full stack of AI development, from training neural networks on large datasets to building custom inference chips and synthetic data pipelines.
 
 ## Key Highlights
-*   **Academic Foundation:** Earned a BSc from the University of Toronto (2005) and an MSc from the University of British Columbia (2009). Completed a PhD at Stanford (2016) under Fei-Fei Li, focusing on the intersection of computer vision and NLP.
-*   **OpenAI & Tesla Leadership:** Was a founding member of OpenAI (2015) and later served as the Director of AI at Tesla, where he led the Autopilot computer vision team and managed in-house data labeling and neural network deployment.
-*   **Educational Influence:** Designed and taught Stanford's CS 231n (Convolutional Neural Networks for Visual Recognition), which scaled significantly in enrollment. He maintains a popular YouTube channel featuring "Zero to Hero" technical tracks and practical LLM guides.
-*   **Technical Contributions:** Authored several high-impact papers (e.g., PixelCNN++, DenseCap) and developed notable open-source projects including `micrograd` (a tiny autograd engine), `char-rnn`, and `arxiv-sanity`.
-*   **Public Speaking & Writing:** Frequent speaker at major AI conferences (CVPR, ICML, NVIDIA GTC) and podcasts. Author of influential blog posts on "Software 2.0" and training recipes for neural networks.
+*   **Academic Foundation**: Earned a BSc from the University of Toronto (2005) and an MSc from the University of British Columbia (2009), followed by a PhD at Stanford Vision Lab under Fei-Fei Li.
+*   **Industry Leadership**: Served as Director of AI at Tesla, leading the computer vision team for Autopilot and Optimus, and later returned to OpenAI to lead a team focused on midtraining and synthetic data.
+*   **Educational Impact**: Created the "Zero to Hero" YouTube series and was the primary instructor for Stanford's CS 231n, which grew from 150 to 750 students in just two years.
+*   **Open Source & Projects**: Developed numerous notable projects including `micrograd` (autograd engine), `arxiv-sanity`, and `ConvNetJS`.
+*   **Research Contributions**: Published significant work on PixelCNN++, DenseCap, and large-scale video classification.
+*   **Content Creation**: Maintains a multi-track educational strategy on YouTube, covering everything from "building GPT from scratch" to practical LLM use cases.
