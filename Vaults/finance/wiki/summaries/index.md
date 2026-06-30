@@ -1,6 +1,6 @@
 # Summaries
 
-* [[2025 Country Report - France]] - A comprehensive analysis of France's economic performance, fiscal sustainability, competitiveness, innovation landscape, energy transition, and social fairness.
+* [[2025 Country Report - France]] - A comprehensive assessment of France's economic, social, employment, structural, and budgetary policies, highlighting challenges in fiscal sustainability, productivity, and the green transition.
 * [[2025 Country Report - Italy]] - A comprehensive assessment of Italy's economic developments, fiscal policies, productivity challenges, and social/environmental sustainability goals.
 * [[2025 Country Report - Malta]] - A comprehensive European Commission assessment of Malta's economic, social, and structural policies, highlighting robust macroeconomic performance and employment alongside critical challenges in R&D investment, skills mismatches, decarbonization, and social inequalities.
 * [[2025 Country Report - Poland]] - A comprehensive assessment of Poland's economic, social, and environmental performance, highlighting growth trends, fiscal challenges, and the transition toward a green and digital economy.
