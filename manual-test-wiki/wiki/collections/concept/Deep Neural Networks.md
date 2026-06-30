@@ -5,34 +5,32 @@ tags:
   - Machine Learning
   - Deep Learning
   - Computer Vision
-  - Natural Language Processing (NLP)
-  - Robotics
+  - Software 2.0
 
 ## Overview
-Deep Neural Networks (DNNs) are computational models inspired by the structure and function of the human brain. They consist of multiple layers of interconnected "neurons" that process data to identify complex patterns, perform classification, and generate content.
+Deep Neural Networks (DNNs) are a class of machine learning models inspired by the structure and function of the human brain. They consist of multiple layers of interconnected nodes (neurons) that allow the system to learn complex patterns, representations, and hierarchies from large amounts of data.
 
-## Core Components & Architectures
-- **Convolutional Neural Networks (CNNs)**: Specialized for spatial data processing, crucial for [[Computer Vision]] and image recognition.
-- **Recurrent Neural Networks (RNNs)**: Designed for sequential data, fundamental to [[Natural Language Processing (NLP)]].
-- **Large Language Models (LLMs)**: Massive-scale neural networks trained on vast datasets to understand and generate human-like text.
-- **Autodiff**: The underlying engine (e.g., `micrograd`) that allows for the efficient calculation of gradients during training.
+## Core Architecture & Types
+Based on the research and industrial applications championed by figures like Andrej Karpathy, key architectures include:
+- **Convolutional Neural Networks (CNNs)**: Primarily used for computer vision and image processing; foundational to Tesla's Autopilot systems.
+- **Recurrent Neural Networks (RNNs)**: Effective for sequential data and time-series analysis; noted for their "unreasonable effectiveness" in early NLP.
+- **Large Language Models (LLMs)**: The modern evolution of neural networks capable of sophisticated text generation and reasoning.
 
-## Key Research & Applications
-- **Software 2.0**: The shift towards using neural networks as a new paradigm for programming, where models are trained on data rather than manually coded rules.
-- **Synthetic Data Generation**: The use of models to create artificial data to train other models, a key focus in modern AI development.
-- **Robotics & Autonomy**: Application of DNNs in real-world physical systems, such as Tesla's Autopilot and the Optimus robot.
+## Key Principles & Concepts
+- **Software 2.0**: A paradigm shift where models are "programmed" by optimizing a loss function over data rather than writing explicit logic in code.
+- **Autograd Engines**: The underlying mechanics (e.g., `micrograd`) that allow for automatic differentiation, enabling the training of complex networks via backpropagation.
+- **Synthetic Data Generation**: A modern technique used to augment training sets and improve model robustness, particularly in high-stakes environments like autonomous driving.
 
-## Notable Figures & Contributions
-- **Andrej Karpathy**: A leading researcher and educator who has bridged the gap between theory and practice through work at [[OpenAI]], Tesla, and Stanford.
-- **Academic Foundations**: Research involving [[Convolutional Neural Networks (CNNs)]] and [[Recurrent Neural Networks (RNNs)]] has been spearheaded by pioneers like Fei-Fei Li and Andrew Ng.
+## Industrial & Academic Context
+- **Research & Education**: Heavily influenced by the work of [[Andrej Karpathy]], who has transitioned these concepts from academic settings (Stanford CS231n) to industrial applications.
+- **Applications**: Critical for autonomous driving (Tesla), generative AI (OpenAI), and advanced computer vision.
 
 ## Related Concepts
 - [[Large Language Models (LLMs)]]
+- [[Computer Vision]]
 - [[Convolutional Neural Networks (CNNs)]]
 - [[Recurrent Neural Networks (RNNs)]]
-- [[Computer Vision]]
-- [[Natural Language Processing (NLP)]]
 - [[Reinforcement Learning]]
-- [[Autodiff]]
-- [[Software 2.0]]
 - [[Synthetic Data Generation]]
+- [[Software 2.0]]
+- [[Autograd Engines]]
