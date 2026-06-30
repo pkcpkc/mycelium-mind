@@ -22,13 +22,13 @@ tags:
   - climate-risks
   - debt-brake
   - fiscal-consolidation
-timestamp: "2026-06-27T06:10:00Z"
+timestamp: "2026-06-30T18:15:38Z"
 ---
 # Public Debt
 
 ## Summary
 
-Public debt represents the accumulated financial obligations and borrowings of a sovereign government. In recent macroeconomic assessments, this metric has become a central focus for fiscal policy and international oversight across multiple European economies. Analysis of the 2025 EU Commission Country Reports highlights that high public debt, coupled with elevated debt-servicing costs and a lack of stable medium-term budgetary frameworks, poses significant risks to economic stability. For instance, Hungary's public debt remains high at approximately 73.5% of GDP in 2024, complicated by fiscal pressures and a "state of danger" decree that allows for expansionary bias. Across the region, debt sustainability is increasingly tied to structural reforms, productivity growth, and the management of demographic shifts.
+Public debt represents the accumulated financial obligations and borrowings of a sovereign government. In recent macroeconomic assessments, this metric has become a central focus for fiscal policy and international oversight across multiple European economies. Analysis of the 2025 EU Commission Country Reports highlights that high public debt, coupled with elevated debt-servicing costs and a lack of stable medium-term budgetary frameworks, poses significant risks to economic stability. In France, specifically, the general government deficit reached 5.8% of GDP in 2024 with public debt climbing to 113%, a situation exacerbated by tax revenue shortfalls, pension indexation to high inflation, and local government spending. Across the region, debt sustainability is increasingly tied to structural reforms, productivity growth, and the management of demographic shifts.
 
 ## Key Details
 
