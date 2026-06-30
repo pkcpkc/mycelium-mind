@@ -5,32 +5,34 @@ tags:
   - Machine Learning
   - Deep Learning
   - Computer Vision
+  - Natural Language Processing
   - Software 2.0
 
+# Deep Neural Networks
+
 ## Overview
-Deep Neural Networks (DNNs) are a class of machine learning models inspired by the structure and function of the human brain. They consist of multiple layers of interconnected nodes (neurons) that allow the system to learn complex patterns, representations, and hierarchies from large amounts of data.
+Deep Neural Networks (DNNs) are a class of machine learning models inspired by the structure and function of the human brain. They consist of multiple layers of interconnected nodes (neurons) that process data to identify complex patterns, perform classification, and generate content.
 
-## Core Architecture & Types
-Based on the research and industrial applications championed by figures like Andrej Karpathy, key architectures include:
-- **Convolutional Neural Networks (CNNs)**: Primarily used for computer vision and image processing; foundational to Tesla's Autopilot systems.
-- **Recurrent Neural Networks (RNNs)**: Effective for sequential data and time-series analysis; noted for their "unreasonable effectiveness" in early NLP.
-- **Large Language Models (LLMs)**: The modern evolution of neural networks capable of sophisticated text generation and reasoning.
+## Technical Context & Applications
+DNNs serve as the foundational architecture for several key technologies:
+- **Computer Vision:** Enabling tasks such as object detection and image recognition (e.g., research on [[CNNs]] and [[RNNs]]).
+- **Natural Language Processing (NLP):** Powering modern [[LLMs]] and text generation.
+- **Reinforcement Learning:** Utilizing deep architectures to optimize agent behavior in complex environments.
+- **Software 2.0:** A paradigm shift where software is expressed as optimized weights in a neural network rather than explicit human-written code.
 
-## Key Principles & Concepts
-- **Software 2.0**: A paradigm shift where models are "programmed" by optimizing a loss function over data rather than writing explicit logic in code.
-- **Autograd Engines**: The underlying mechanics (e.g., `micrograd`) that allow for automatic differentiation, enabling the training of complex networks via backpropagation.
-- **Synthetic Data Generation**: A modern technique used to augment training sets and improve model robustness, particularly in high-stakes environments like autonomous driving.
+## Key Research & Development
+The development of Deep Neural Networks has been shaped by significant academic and industrial milestones:
+- **Architectural Innovations:** High-impact research including [[PixelCNN++]] and [[DenseCap]] has advanced how networks handle images and natural language.
+- **Autograd Engines:** The underlying mechanics of backpropagation are often simplified for educational purposes through micro-engines like `micrograd`.
+- **Synthetic Data Generation:** Used to scale training and improve model robustness.
 
-## Industrial & Academic Context
-- **Research & Education**: Heavily influenced by the work of [[Andrej Karpathy]], who has transitioned these concepts from academic settings (Stanford CS231n) to industrial applications.
-- **Applications**: Critical for autonomous driving (Tesla), generative AI (OpenAI), and advanced computer vision.
+## Key Figures & Influences
+The advancement of Deep Neural Networks is closely associated with several prominent researchers and organizations:
+- **Andrej Karpathy:** A leading researcher and educator who has contributed significantly to the field through roles at [[OpenAI]] and **Tesla** (leading the Autopilot computer vision team).
+- **Fei-Fei Li:** Stanford Professor and advisor who influenced the intersection of computer vision and NLP.
+- **Academic Collaborators:** Contributions from researchers such as Andrew Ng, Sebastian Thrun, and others have shaped the pedagogical and technical landscape of deep learning.
 
-## Related Concepts
-- [[Large Language Models (LLMs)]]
-- [[Computer Vision]]
-- [[Convolutional Neural Networks (CNNs)]]
-- [[Recurrent Neural Networks (RNNs)]]
-- [[Reinforcement Learning]]
-- [[Synthetic Data Generation]]
-- [[Software 2.0]]
-- [[Autograd Engines]]
+## Education & Resources
+Deep Neural Networks are widely taught through structured curricula, most notably:
+- **Stanford CS 231n:** A seminal course on Convolutional Neural Networks for Visual Recognition.
+- **"Zero to Hero" Tracks:** Technical guides providing practical implementations of neural network training and LLM deployment.
