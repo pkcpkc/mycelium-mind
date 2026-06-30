@@ -1,3 +1,3 @@
 # Summaries
 
-* [[Andrej Karpathy]]
+* [[Andrej Karpathy - Professional Profile and Research Overview]]
