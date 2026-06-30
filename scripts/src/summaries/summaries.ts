@@ -4,7 +4,7 @@ import * as path from 'path';
 import matter from 'gray-matter';
 import YAML from 'yaml';
 import { config, projectRootDir } from '../utils/config.js';
-import { getVaultDir, getVaultWikiDir, toSafeFilename, cleanMarkdownResponse, rebuildFolderIndex } from '../utils/utils.js';
+import { getVaultDir, getVaultWikiDir, toSafeFilename, cleanMarkdownResponse, rebuildFolderIndex, gitCommit } from '../utils/utils.js';
 import { callAgenticModel } from '../utils/llm.js';
 
 const vaultName = argv[2] || config.vaultName;
@@ -103,6 +103,7 @@ const assetDir = path.join(assetDirParent, dateToday);
       const updatedFrontmatter = YAML.stringify(frontmatter);
       const finalSummaryContent = `---\n${updatedFrontmatter}---\n${bodyContent}`;
       fs.writeFileSync(summaryPath, finalSummaryContent, 'utf8');
+      gitCommit(summaryPath, `Updated summary ${title}`);
 
       // Clean up temporary md inbox file, leave PDF in inbox
       const isPdf = path.extname(filePath).toLowerCase() === '.pdf';

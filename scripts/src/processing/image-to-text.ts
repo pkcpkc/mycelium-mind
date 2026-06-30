@@ -2,7 +2,7 @@ import { argv, exit } from "process";
 import * as fs from "fs";
 import * as path from "path";
 import { config } from "../utils/config.js";
-import { getVaultDir } from "../utils/utils.js";
+import { getVaultDir, gitCommit } from "../utils/utils.js";
 
 console.log("\n--- Semantic Image Analysis ---");
 
@@ -91,6 +91,7 @@ console.log(`Interpreting inbox images with image model: ${imageModelName}`);
       if (content && content.trim()) {
         fs.writeFileSync(mdFile, content);
         console.log(`Success: Created ${mdFile}`);
+        gitCommit(mdFile, `Created transcription for ${file}`);
       } else {
         console.error(`Failed to analyze ${imgPath}: empty response`);
       }

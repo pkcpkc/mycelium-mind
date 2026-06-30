@@ -2,7 +2,7 @@ import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { config } from '../utils/config.js';
-import { getVaultWikiDir, getAllFrontmatters, fromSafeFilename } from '../utils/utils.js';
+import { getVaultWikiDir, getAllFrontmatters, fromSafeFilename, gitCommit } from '../utils/utils.js';
 
 const vaultName = argv[2] || config.vaultName;
 if (!vaultName) {
@@ -188,6 +188,7 @@ console.log(`[wiki-timeline] Generating timeline for vault: ${vaultName}...`);
   }
 
   fs.writeFileSync(timelineFile, markdownLines.join('\n'), 'utf8');
+  gitCommit(timelineFile, 'Updated timeline');
   console.log(`[wiki-timeline] Successfully wrote timeline to ${timelineFile}`);
 
   const indexFile = path.join(wikiDir, 'index.md');
@@ -201,6 +202,7 @@ console.log(`[wiki-timeline] Generating timeline for vault: ${vaultName}...`);
         indexContent += `\n## Timeline\n\n- [[timeline|Timeline]] - Chronological timeline of all events mentioned in this vault.\n`;
       }
       fs.writeFileSync(indexFile, indexContent, 'utf8');
+      gitCommit(indexFile, 'Updated index with timeline');
     }
   }
 })();

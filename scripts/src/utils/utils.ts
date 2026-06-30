@@ -1,9 +1,32 @@
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
 import matter from 'gray-matter';
 import { config } from './config.js';
 import { callAgenticModel } from './llm.js';
+
+/**
+ * Creates a git commit for the specified file with the given message.
+ * Safe to call even if there are no changes, or if running in a test environment.
+ */
+export function gitCommit(filePath: string, message: string): void {
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
+    // Skip committing during test runs to avoid polluting git history
+    return;
+  }
+  try {
+    const absolutePath = path.resolve(filePath);
+    execSync(`git add "${absolutePath}"`, { stdio: 'ignore' });
+    const status = execSync(`git status --porcelain "${absolutePath}"`).toString().trim();
+    if (status) {
+      execSync(`git commit -m "${message}"`, { stdio: 'ignore' });
+      console.log(`Git Commit: "${message}"`);
+    }
+  } catch (e: any) {
+    console.error(`Failed to create git commit for ${filePath}:`, e.message);
+  }
+}
 
 /**
  * Strips brackets and aliases from Obsidian wikilinks:
@@ -147,6 +170,7 @@ export function rebuildFolderIndex(wikiDir: string, folderName: string, header: 
   }
   lines.push('');
   fsSync.writeFileSync(indexPath, lines.join('\n'), 'utf8');
+  gitCommit(indexPath, `Updated index for ${folderName}`);
 }
 
 /**
@@ -206,6 +230,7 @@ export async function generateEntityCard({
   }
   fsSync.writeFileSync(entityPath, responseText, 'utf8');
   console.log(`Success: Wrote ${entityType} file to ${entityPath}`);
+  gitCommit(entityPath, `Updated ${entityType} ${entityName}`);
 
   // Rebuild the index
   const indexHeader = entityType === 'concept' ? 'Concepts' : 'Persons';

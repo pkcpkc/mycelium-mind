@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { config } from '../utils/config.js';
-import { getVaultDir } from '../utils/utils.js';
+import { getVaultDir, gitCommit } from '../utils/utils.js';
 
 console.log("\n--- OCR Analysis ---");
 
@@ -168,6 +168,7 @@ if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
 
       if (concatenatedContent.trim()) {
         fs.writeFileSync(outputMd, concatenatedContent);
+        gitCommit(outputMd, `Created transcription for ${path.basename(file)}`);
         fs.rmSync(folderName, { recursive: true, force: true });
         console.log(`Successfully created ${outputMd} and removed ${folderName}`);
       } else {

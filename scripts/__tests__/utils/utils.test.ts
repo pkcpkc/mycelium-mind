@@ -4,6 +4,10 @@ import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import { config } from '../../src/utils/config.js';
 
+vi.mock('child_process', () => ({
+  execSync: vi.fn(() => Buffer.from('')),
+}));
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TEST_ROOT = path.resolve(__dirname, '..', '..', '..', 'temp-utils-vaults');
@@ -269,3 +273,14 @@ describe('rebuildFolderIndex', () => {
     ).not.toThrow();
   });
 });
+
+describe('gitCommit', () => {
+  it('should skip execution when running in test environment', async () => {
+    const { gitCommit } = await import('../../src/utils/utils.js');
+    const { execSync } = await import('child_process');
+
+    gitCommit('test-file.md', 'Test message');
+    expect(execSync).not.toHaveBeenCalled();
+  });
+});
+

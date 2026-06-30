@@ -2,7 +2,7 @@ import { argv, exit } from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { config } from '../utils/config.js';
-import { getVaultWikiDir, getAllFrontmatters } from '../utils/utils.js';
+import { getVaultWikiDir, getAllFrontmatters, gitCommit } from '../utils/utils.js';
 
 const vaultName = argv[2] || config.vaultName;
 if (!vaultName) {
@@ -141,6 +141,7 @@ const allPersons = new Set<string>();
   markdownLines.push('');
 
   fs.writeFileSync(socialGraphFile, markdownLines.join('\n'), 'utf8');
+  gitCommit(socialGraphFile, 'Updated social graph');
   console.log(`[wiki-social-graph] Successfully wrote social graph to ${socialGraphFile}`);
 
   const indexFile = path.join(wikiDir, 'index.md');
@@ -154,6 +155,7 @@ const allPersons = new Set<string>();
         indexContent += `\n## Connection Map\n\n- [[social-graph|Social Graph]] - Connection map and relationship registry of all individuals in this vault.\n`;
       }
       fs.writeFileSync(indexFile, indexContent, 'utf8');
+      gitCommit(indexFile, 'Updated index with social graph');
     }
   }
 })();

@@ -105,7 +105,7 @@ async function runPipeline() {
   // Step 4: Ensure wiki indexes exist and are rebuilt/sorted
   console.log('\n--- Step 4: Rebuilding and ensuring wiki indexes ---');
   try {
-    const { getVaultDir, rebuildFolderIndex } = await import('./src/utils/utils.js');
+    const { getVaultDir, rebuildFolderIndex, gitCommit } = await import('./src/utils/utils.js');
     const vaultRoot = getVaultDir(vaultName);
     const vaultNameResolved = path.basename(vaultRoot);
     const wikiDir = path.join(vaultRoot, 'wiki');
@@ -137,6 +137,7 @@ Welcome to the wiki. Browse the available pages:
 `;
     fs.mkdirSync(path.dirname(indexPath), { recursive: true });
     fs.writeFileSync(indexPath, indexContent, 'utf8');
+    gitCommit(indexPath, 'Updated wiki index');
     console.log(`Created/updated base wiki index at ${indexPath}`);
   } catch (e: any) {
     console.error("Failed to create/update wiki indexes:", e.message);

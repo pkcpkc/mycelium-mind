@@ -6,6 +6,7 @@ import {
   getVaultWikiDir,
   getAllFrontmatters,
   toSafeFilename,
+  gitCommit,
 } from "../utils/utils.js";
 
 const vaultName = argv[2] || config.vaultName;
@@ -156,6 +157,7 @@ interface Edge {
   markdownLines.push("");
 
   fs.writeFileSync(conceptsCloudFile, markdownLines.join("\n"), "utf8");
+  gitCommit(conceptsCloudFile, "Updated concepts cloud");
   console.log(
     `[wiki-concepts-cloud] Successfully wrote concepts cloud to ${conceptsCloudFile}`,
   );
@@ -186,6 +188,7 @@ interface Edge {
     fullscreenMarkdownLines.join("\n"),
     "utf8",
   );
+  gitCommit(conceptsCloudFullscreenFile, "Updated concepts cloud fullscreen");
   console.log(
     `[wiki-concepts-cloud] Successfully wrote concepts cloud fullscreen page to ${conceptsCloudFullscreenFile}`,
   );
@@ -210,6 +213,7 @@ interface Edge {
         indexContent += `\n## Connection Map\n\n- [[concepts-cloud|Concepts Cloud]] - Interactive graph of concepts linked by shared tags.\n`;
       }
       fs.writeFileSync(indexFile, indexContent, "utf8");
+      gitCommit(indexFile, "Updated index with concepts cloud");
     }
   }
 })();
