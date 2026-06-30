@@ -2,7 +2,7 @@
 type: "Timeline"
 title: "Timeline"
 description: "Chronological timeline of all events mentioned in the vault."
-timestamp: "2026-06-27T07:06:35Z"
+timestamp: "2026-06-30T18:10:10Z"
 ---
 # Timeline
 
@@ -52,7 +52,6 @@ timestamp: "2026-06-27T07:06:35Z"
 - **2025-05**: Repeated Presidential elections ([[2025 Rule of Law Report: Romania]])
 - **2025-05-06**: National Battery Strategy and REPowerEU progress ([[EU Commission (2025) 2025 Country Report - Hungary]])
 - **2025-05-13**: Publication of flash missions reports on justice efficiency ([[2025 Rule of Law Report: France]])
-- **2025-05-22**: Official Discussions Concluded ([[IMF 2025 France Country Report: Article IV Consultation]])
 - **2025-05-28**: End of staff discussions with Italian officials ([[IMF 2025 Article IV Consultation for Italy]])
 - **2025-06-04**: Publication of 2025 Country Report ([[2025 Country Report - Poland]])
 - **2025-06-04**: Publication of 2025 Country Report - [[Italy]] ([[2025 Country Report - Italy]])
@@ -61,7 +60,6 @@ timestamp: "2026-06-27T07:06:35Z"
 - **2025-06-04**: Publication of the 2025 Country Report [[Austria]] ([[EU Commission (2025) 2025 Country Report Austria]])
 - **2025-06-04**: Publication of the 2025 Country Report Belgium ([[2025 Country Report Belgium]])
 - **2025-06-04**: Publication of the 2025 Country Report on [[Malta]] ([[2025 Country Report - Malta]])
-- **2025-06-25**: Staff Report Completed ([[IMF 2025 France Country Report: Article IV Consultation]])
 - **2025-07-08**: Document publication ([[2025 Rule of Law Report: Romania]])
 - **2025-07-08**: EU Commission 2025 [[Rule of Law]] Report publication ([[2025 Rule of Law Report Belgium]])
 - **2025-07-08**: EU Commission Report Publication ([[2025 Rule of Law Report: Hungary]])
@@ -69,7 +67,6 @@ timestamp: "2026-06-27T07:06:35Z"
 - **2025-07-08**: Publication of the 2025 [[Rule of Law]] Report ([[2025 Rule of Law Report: Austria Country Chapter]])
 - **2025-07-08**: Publication of the 2025 [[Rule of Law]] Report for France ([[2025 Rule of Law Report: France]])
 - **2025-07-08**: Publication of the 2025 [[Rule of Law]] Report on Poland ([[2025 Rule of Law Report: Country Chapter on Poland]])
-- **2025-07-14**: [[IMF]] Executive Board Concludes Consultation ([[IMF 2025 France Country Report: Article IV Consultation]])
 - **2025-07-18**: [[IMF]] Executive Board concludes consultation ([[IMF 2025 Article IV Consultation for Italy]])
 - **2025-07-25**: [[IMF]] Staff Report publication date ([[IMF (2025) Hungary Country Report: Article IV Consultation]])
 - **2025-08-29**: [[IMF]] Executive Board concludes [[Article IV Consultation|Article IV consultation]] with [[Hungary]] ([[IMF (2025) Hungary Country Report: Article IV Consultation]])
