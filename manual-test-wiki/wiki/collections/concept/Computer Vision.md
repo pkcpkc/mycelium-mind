@@ -4,30 +4,39 @@ tags:
   - AI
   - Machine Learning
   - Deep Learning
-  - Tesla
-  - OpenAI
-  - Education
 timestamp: <timestamp>
 
-## Overview
-[[Computer Vision]] is a field of Artificial Intelligence (AI) that enables computers and systems to derive meaningful information from digital images, videos, and other visual inputs. It is a core pillar of modern [[Deep Learning]], utilizing neural networks to mimic human visual perception.
+## Definition
+Computer Vision (CV) is a field of artificial intelligence that enables computers and systems to derive meaningful information from digital images, videos, and other visual inputs. It involves the development of algorithms that can identify, process, and interpret visual data to simulate human-like sight.
 
-## Key Context & Applications
-*   **Autonomous Systems**: A primary application area where [[Computer Vision]] is utilized for self-driving cars (e.g., Tesla Autopilot) and robotics (e.g., Tesla Optimus).
-*   **Research & Development**: Significant advancements in the field have been driven by researchers like Andrej Karpathy, who has led computer vision teams at major tech firms to solve complex spatial reasoning and object detection tasks.
-*   **Neural Architectures**: The field relies heavily on [[Deep Neural Networks]], specifically Convolutional Neural Networks (CNNs) and, more recently, Vision Transformers.
+## Key Research & Applications
+- **Object Detection & Recognition:** Identifying and locating specific objects within an image or video stream.
+- **Image Captioning:** Generating natural language descriptions for visual content, often involving the intersection of vision and language.
+- **Video Classification:** Analyzing temporal sequences to understand actions or scenes.
+- **Visual-Semantic Alignment:** Mapping visual features to linguistic concepts.
+
+## Industry & Academic Context
+- **Tesla Autopilot:** Significant practical application of computer vision for autonomous driving, involving large-scale neural network deployment and in-house data labeling.
+- **Education & Pedagogy:** A core component of foundational deep learning curricula, such as Stanford's CS 231n.
+- **Neural Network Architectures:** Heavily reliant on [[Convolutional Neural Networks (CNNs)]] and increasingly integrated with [[Large Language Models (LLMs)]] for multimodal tasks.
+
+## Key Figures & Contributors
+- [[Andrej Karpathy]] (Tesla Director of AI, OpenAI Founding Member)
+- [[Fei-Fei Li]] (Stanford Professor, Karpathy's supervisor)
+- [[Andrew Ng]]
+- [[Sebastian Thrun]]
+- [[Vladlen Koltun]]
+- [[Koray Kavukcuoglu]]
+- [[Vlad Mnih]]
+- [[Justin Johnson]]
+- [[Jensen Huang]]
+- [[Pieter Abbeel]]
 
 ## Related Concepts
-- [[Deep Learning]]
-- [[LLMs]]
-- [[Natural Language Processing]]
+- [[Deep Neural Networks]]
+- [[Large Language Models (LLMs)]]
+- [[Convolutional Neural Networks (CNNs)]]
+- [[Recurrent Neural Networks (RNNs)]]
 - [[Reinforcement Learning]]
-- [[Autograd Engines]]
-- [[Software 2.0]]
 - [[Synthetic Data Generation]]
-- [[Midtraining]]
-
-## Key Figures & Influence
-- **Andrej Karpathy**: Former Director of AI at Tesla, known for leading computer vision teams and educating the next generation via [[Stanford CS 231n]].
-- **Fei-Fei Li**: Influential researcher in computer vision and a mentor to key figures in the field.
-- **Academic Foundations**: Significant research contributions involve large-scale video classification, PixelCNN++, and DenseCap.
+- [[Software 2.0]]
