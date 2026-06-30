@@ -4,30 +4,30 @@ tags:
   - AI
   - Machine Learning
   - Deep Learning
-  - Robotics
+  - Tesla
+  - OpenAI
 
-## Definition
-Computer Vision (CV) is a field of artificial intelligence that enables computers and systems to derive meaningful information from digital images, videos, and other visual inputs. It involves the development of algorithms that can interpret and understand the visual world, mimicking human sight.
+## Overview
+Computer Vision (CV) is a field of Artificial Intelligence that enables computers and systems to derive meaningful information from digital images, videos, and other visual inputs. It involves the development of algorithms that can identify, process, and interpret visual data to simulate human-like vision.
 
-## Core Concepts & Technologies
-- [[Deep Neural Networks]]: The foundational architecture for modern computer vision.
-- [[Convolutional Neural Networks (CNNs)]]: The standard architectural backbone for image recognition and spatial feature extraction.
-- [[Recurrent Neural Networks (RNNs)]]: Used in video analysis and temporal sequence processing.
-- [[Large Language Models (LLMs)]]: Increasingly integrated with vision models to create multimodal systems.
-- [[Natural Language Processing (NLP)]]: Critical for tasks like image captioning and visual question answering.
-- [[Reinforcement Learning]] : Applied in autonomous navigation and robotic vision tasks.
-- [[Autodiff]] : The underlying mathematical framework (e.g., `micrograd`) used to train vision models.
-- [[Synthetic Data Generation]] : A key technique for training robust vision models where real-world data is scarce or difficult to label.
-- [[Software 2.0]] : The paradigm shift toward models as programs, where the "code" is learned from data.
+## Key Technical Components
+- [[Convolutional Neural Networks (CNNs)]]: The foundational architecture for most modern computer vision tasks, designed to automatically and adaptively learn spatial hierarchies of features.
+- [[Recurrent Neural Networks (RNNs)]]: Often utilized in video analysis and temporal sequence modeling within visual data.
+- [[Deep Neural Networks]]: The broader framework of multi-layered architectures that power state-of-the-art vision models.
+- [[Synthetic Data Generation]]: A critical technique used to train robust vision models by creating artificial training environments, a method championed in modern industrial applications.
 
-## Industrial Applications & Research
-- **Autonomous Vehicles**: Leading research in computer vision for [Tesla Autopilot](https://tesla.com) and the [Optimus](https://tesla.com) robotics project.
-- **Robotics**: Integrating visual perception with mechanical action for complex manipulation tasks.
-- **Academic Research**: Foundational work in connecting images and natural language, including research on [PixelCNN++](https://arxiv.org) and the "World of Bits."
+## Industrial Applications & Leadership
+- **Autonomous Driving**: A primary application of computer vision where it is used for object detection, lane tracking, and spatial awareness. Notable leadership in this space includes **Andrej Karpathy**, who served as the Director of AI at Tesla, overseeing the Autopilot computer vision team.
+- **Software 2.0**: The paradigm shift where computer vision models are "programmed" via data and neural network optimization rather than manual heuristic rules.
 
 ## Key Figures & Contributors
-- **Andrej Karpathy**: Former Director of AI at Tesla; expert in deep learning architectures and computer vision education.
-- **Fei-Fei Li**: Stanford Professor; advisor on foundational vision research.
-- **Andrew Ng**: Academic collaborator and pioneer in deep learning education.
-- **Sebastian Thrun**: Academic collaborator with a focus on robotics and autonomous systems.
-- **Vladlen Koltun**: Research collaborator in the field of vision and deep learning.
+- **Andrej Karpathy**: Former Director of AI at Tesla; expert in CNNs and vision systems.
+- **Fei-Fei Li**: Pioneer in large-scale visual recognition and datasets.
+- **Daphne Koller**: Academic leader in machine learning and vision.
+- **Andrew Ng**: Key figure in deep learning education and application.
+- **Sebastian Thrun**: Pioneer in self-driving cars and robotics.
+- **Vladlen Koltun**: Researcher in deep learning and vision.
+- **Geoff Hinton**: Foundational researcher in neural networks.
+
+## Educational Context
+The study of Computer Vision is central to advanced academic curricula, such as Stanford's **CS 231n**, which focuses on Deep Learning for Computer Vision.
