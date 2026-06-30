@@ -1,22 +1,19 @@
 ---
 type: "Person"
 title: "Daphne Koller"
-description: "A prominent academic researcher and collaborator in the fields of machine learning and artificial intelligence."
-tags:
-  - AI
-  - Machine Learning
-  - Academic Research
-timestamp: "2026-06-30T20:35:18Z"
+description: "A prominent computer scientist and academic known for her significant contributions to machine learning and as a mentor to leading AI researchers."
+tags: []
+timestamp: "2026-06-30T20:42:07Z"
 ---
 # Daphne Koller
 
 ## Affiliations & Roles
 
-- Academic Collaborator
+- Professor at [[Stanford University]]
 
 ## Biography & Context
 
-Daphne Koller is recognized as a significant figure in the academic research community, specifically contributing to the development and advancement of machine learning and artificial intelligence. She has served as an academic collaborator for high-profile AI researchers, contributing to the theoretical and practical foundations of deep learning and related technologies.
+Daphne Koller is a distinguished researcher and educator in the field of artificial intelligence. She is recognized for her academic leadership and her role in shaping the careers of prominent figures in the AI industry. Notably, she served as a mentor and professor to [[Andrej Karpathy]], who studied under her guidance during his academic development.
 
 ## Collaborators
 
