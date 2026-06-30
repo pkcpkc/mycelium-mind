@@ -1,23 +1,19 @@
 ---
 type: "Person"
 title: "Vlad Mnih"
-description: "A prominent DeepMind researcher recognized for his contributions to deep reinforcement learning."
-tags:
-  - AI
-  - Machine Learning
-  - Deep Learning
-  - Reinforcement Learning
-timestamp: "2026-06-30T20:36:13Z"
+description: "A prominent researcher in the field of deep learning and reinforcement learning, recognized for his foundational work in deep Q-learning."
+tags: []
+timestamp: "2026-06-30T20:43:09Z"
 ---
 # Vlad Mnih
 
 ## Affiliations & Roles
 
-- DeepMind Researcher
+- Researcher at [[DeepMind]]
 
 ## Biography & Context
 
-Vlad Mnih is a distinguished researcher at DeepMind, where he has played a significant role in advancing the field of deep reinforcement learning. His work is central to the development of scalable AI systems and has contributed to foundational breakthroughs in how agents learn to interact with complex environments.
+Vlad Mnih is a distinguished researcher known for his significant contributions to the advancement of deep reinforcement learning. He has played a pivotal role in developing algorithms that allow agents to learn complex tasks through deep neural networks, contributing to the foundational breakthroughs that have shaped modern AI.
 
 ## Collaborators
 
