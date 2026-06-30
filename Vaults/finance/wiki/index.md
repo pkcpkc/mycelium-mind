@@ -2,7 +2,7 @@
 type: "Overview"
 title: "finance Wiki"
 description: "Home page for the finance wiki."
-timestamp: "2026-06-30T18:10:10Z"
+timestamp: "2026-06-30T18:25:11Z"
 ---
 # finance Wiki
 
