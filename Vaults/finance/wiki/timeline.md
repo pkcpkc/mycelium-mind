@@ -2,7 +2,7 @@
 type: "Timeline"
 title: "Timeline"
 description: "Chronological timeline of all events mentioned in the vault."
-timestamp: "2026-06-30T18:10:10Z"
+timestamp: "2026-06-30T18:25:10Z"
 ---
 # Timeline
 
@@ -32,7 +32,7 @@ timestamp: "2026-06-30T18:10:10Z"
 - **2024-12-17**: Completion of [[IMF]] Staff Report ([[IMF 2025 Malta Country Report - 2024 Article IV Consultation]])
 - **2024-12-31**: Economic data cut-off and fiscal status ([[2025 Country Report - Romania]])
 - **2024-12-31**: End of 2024 economic outturn data ([[2025 Country Report - Poland]])
-- **2024-12-31**: End of 2024 fiscal data collection ([[2025 Country Report - France]])
+- **2024-12-31**: Record high corporate bankruptcies in France ([[2025 Country Report - France]])
 
 ## 2025
 
@@ -49,13 +49,13 @@ timestamp: "2026-06-30T18:10:10Z"
 - **2025-03-31**: [[Superior Council of Magistracy]] defends [[Judicial Independence|judicial independence]] ([[2025 Rule of Law Report: France]])
 - **2025-04-29**: Adoption of organic law creating a prosecutor general against organised crime ([[2025 Rule of Law Report: France]])
 - **2025-04-29**: [[European Court of Justice]] rules against [[Malta]]'s [[Investor Citizenship Scheme|investor citizenship scheme]] ([[EU Commission 2025 Rule of Law Report Malta]])
+- **2025-04-30**: Cut-off date for Country Report data ([[2025 Country Report - France]])
 - **2025-05**: Repeated Presidential elections ([[2025 Rule of Law Report: Romania]])
 - **2025-05-06**: National Battery Strategy and REPowerEU progress ([[EU Commission (2025) 2025 Country Report - Hungary]])
 - **2025-05-13**: Publication of flash missions reports on justice efficiency ([[2025 Rule of Law Report: France]])
 - **2025-05-28**: End of staff discussions with Italian officials ([[IMF 2025 Article IV Consultation for Italy]])
 - **2025-06-04**: Publication of 2025 Country Report ([[2025 Country Report - Poland]])
 - **2025-06-04**: Publication of 2025 Country Report - [[Italy]] ([[2025 Country Report - Italy]])
-- **2025-06-04**: Publication of the 2025 Country Report ([[2025 Country Report - France]])
 - **2025-06-04**: Publication of the 2025 Country Report - [[Hungary]] ([[EU Commission (2025) 2025 Country Report - Hungary]])
 - **2025-06-04**: Publication of the 2025 Country Report [[Austria]] ([[EU Commission (2025) 2025 Country Report Austria]])
 - **2025-06-04**: Publication of the 2025 Country Report Belgium ([[2025 Country Report Belgium]])
