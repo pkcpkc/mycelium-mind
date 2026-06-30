@@ -2,7 +2,7 @@
 type: "ConceptsCloud"
 title: "Concepts Cloud"
 description: "Interactive graph linking concepts sharing common tags."
-timestamp: "2026-06-30T18:10:10Z"
+timestamp: "2026-06-30T18:25:11Z"
 ---
 # Concepts Cloud
 
@@ -419,7 +419,7 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Current Account Surplus]] | imf, macroeconomics | [[Romania]] |
 | [[Current Account Surplus]] | imf, macroeconomics | [[Sovereign Debt]] |
 | [[Current Account Surplus]] | eu funds, hungary, imf | [[Structural reforms]] |
-| [[Decarbonization]] | green-transition, sustainability | [[Green Transition]] |
+| [[Decarbonization]] | green-transition, renewable-energy, sustainability | [[Green Transition]] |
 | [[Decarbonization]] | green-transition, sustainability | [[Renewable Energy]] |
 | [[Decarbonization]] | green-transition, sustainability | [[Sustainable Development Goals]] |
 | [[Decarbonization]] | green-transition, sustainability | [[Circular Economy]] |
@@ -455,6 +455,7 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Digitalisation]] | judicial-reform, justice-system | [[Justice System Efficiency]] |
 | [[Digitalisation]] | france, justice-system | [[Magistrates]] |
 | [[Digitalisation]] | france, judicial-reform | [[Portalis]] |
+| [[Digitalisation]] | france, macroeconomics | [[Public Debt]] |
 | [[Digitalisation]] | france, judicial-reform | [[Right to Information]] |
 | [[Digitalisation]] | france, judicial-reform | [[Rule of Law]] |
 | [[Digitalisation]] | france, judicial-reform | [[Superior Council of Magistracy]] |
@@ -704,6 +705,7 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Freedom of Information Act]] | rule-of-law, slovakia | [[Whistleblower Protection]] |
 | [[Freedom of Information Act]] | rule-of-law, transparency | [[Whistleblowers]] |
 | [[Freedom of Information Act]] | rule-of-law, transparency | [[Political Party Financing]] |
+| [[GDP Growth]] | economic-indicators, macroeconomics | [[Real GDP]] |
 | [[GDP per Capita]] | credit-ratings, finance, sovereign-debt | [[Institutional Assessment]] |
 | [[GDP per Capita]] | credit-ratings, finance, sovereign-debt | [[Local-Currency Rating]] |
 | [[GDP per Capita]] | credit-ratings, finance, sovereign-debt | [[Monetary Assessment]] |
@@ -726,6 +728,7 @@ Interactive visualization of wiki concepts and their relationships based on shar
 | [[Green Transition]] | austria, belgium, italy | [[Media Pluralism]] |
 | [[Green Transition]] | austria, belgium, france, italy, nrrp, slovakia | [[Public Debt]] |
 | [[Green Transition]] | austria, slovakia | [[Public Procurement]] |
+| [[Green Transition]] | belgium, renewable-energy | [[Renewable Energy Roll-out]] |
 | [[Green Transition]] | decarbonization, green-transition, sustainability | [[Renewable Energy]] |
 | [[Green Transition]] | france, italy, slovakia | [[Rule of Law]] |
 | [[Green Transition]] | belgium, green-transition | [[Skills and Education]] |
