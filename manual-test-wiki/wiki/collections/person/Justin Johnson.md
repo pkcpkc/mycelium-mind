@@ -1,21 +1,19 @@
 ---
 type: "Person"
 title: "Justin Johnson"
-description: "A research collaborator of Andrej Karpathy involved in artificial intelligence development."
-tags:
-  - AI
-  - Research
-timestamp: "2026-06-30T20:36:50Z"
+description: "AI researcher and collaborator of Andrej Karpathy."
+tags: []
+timestamp: "2026-06-30T20:43:20Z"
 ---
 # Justin Johnson
 
 ## Affiliations & Roles
 
-- Research Collaborator
+- Collaborator at [[Andrej Karpathy]]'s research projects
 
 ## Biography & Context
 
-Justin Johnson is a research collaborator who has worked alongside Andrej Karpathy in the field of artificial intelligence.
+Justin Johnson is an AI researcher recognized for his collaborative work in the field of deep learning and neural networks. He has worked alongside Andrej Karpathy, contributing to the development and research initiatives involving computer vision and large-scale machine learning models.
 
 ## Collaborators
 
