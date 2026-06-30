@@ -1,19 +1,23 @@
 ---
 type: "Person"
 title: "Vladlen Koltun"
-description: "Academic researcher and collaborator in the field of computer vision and machine learning."
-tags: []
-timestamp: "2026-06-30T20:35:53Z"
+description: "A prominent academic researcher and educator in the field of computer vision and deep learning who mentored Andrej Karpathy."
+tags:
+  - AI
+  - Computer Vision
+  - Deep Learning
+  - Education
+timestamp: "2026-06-30T20:42:44Z"
 ---
 # Vladlen Koltun
 
 ## Affiliations & Roles
 
-- Academic Collaborator
+- Academic Researcher and Educator
 
 ## Biography & Context
 
-Vladlen Koltun is an academic collaborator who has worked alongside prominent figures in the artificial intelligence and computer vision research landscape, including Andrej Karpathy.
+Vladlen Koltun is a distinguished figure in the AI research community, recognized for his contributions to computer vision and deep learning. He played a pivotal role in the academic development of leading AI figures, notably serving as a mentor and instructor to [[Andrej Karpathy]] during his formative research period. His work contributes to the foundational knowledge of neural networks that has shaped both modern academic curricula and industrial applications in autonomous systems and generative AI.
 
 ## Collaborators
 
