@@ -48,7 +48,7 @@
 * [[Digital Decade]] - A European Union initiative aimed at accelerating the digital transformation of the economy and society.
 * [[Digital Transformation]] - The integration of digital technology into all areas of business and society, fundamentally changing how organizations operate and deliver value.
 * [[Digital Transition]] - The process of integrating digital technologies into all areas of economy, society, and governance to improve productivity and sustainability.
-* [[Digitalisation]] - The integration of digital technologies into institutional workflows, notably within France's justice system to enhance efficiency and modernize case management.
+* [[Digitalisation]] - The integration of digital technologies into institutional workflows, notably within France's justice system and the broader SME sector to enhance efficiency and modernize operations.
 * [[Discretionary Judgment]] - The subjective adjustments and qualitative overrides applied by analysts within structured rating frameworks, particularly when standardized metrics cannot fully capture complex economic or institutional realities.
 * [[ECB]] - The central bank for the eurozone responsible for conducting monetary policy and maintaining price stability by targeting an inflation rate of 2%.
 * [[Economic Assessment]] - A core pillar in sovereign credit rating methodologies that evaluates a nation's fundamental economic strength, anchored by GDP per capita and adjusted for growth prospects, diversity, data quality, and future tax capacity.
