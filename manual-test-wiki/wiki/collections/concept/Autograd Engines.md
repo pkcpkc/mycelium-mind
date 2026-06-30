@@ -5,23 +5,25 @@ tags:
   - Machine Learning
   - Deep Learning
   - Software 2.0
-  - Open Source
+timestamp: <timestamp>
 
-## Overview
-An Autograd Engine is a computational framework designed to automatically calculate gradients (derivatives) of mathematical functions. These engines are the backbone of modern [[Deep Learning]], enabling the efficient training of [[Neural Networks]] by automating the implementation of backpropagation.
+## Definition
+An Autograd Engine is a software framework or library designed to automatically compute the gradients of a mathematical function with respect to its input parameters. This process, known as automatic differentiation, is the fundamental mechanism that enables the training of [[Deep Neural Networks]] and [[LLMs]].
 
-## Key Characteristics
-- **Automatic Differentiation**: Unlike numerical differentiation (which is slow) or symbolic differentiation (which can lead to expression swell), autograd engines use automatic differentiation to compute exact derivatives of complex functions.
-- **Computational Graphs**: Most autograd engines represent operations as a directed acyclic graph (DAG), where nodes are mathematical operations and edges represent the flow of data (tensors).
-- **Software 2.0**: Autograd engines are fundamental to the "Software 2.0" paradigm, where programs are defined by optimizing weights through gradient descent rather than explicit hard-coded logic.
+## Core Mechanics
+- **Computational Graphs**: Autograd engines represent mathematical operations as a directed acyclic graph (DAG) where nodes are operations and edges are tensors.
+- **Backpropagation**: The engine traverses this graph in reverse order to apply the chain rule, calculating how each weight contributes to the final loss.
+- **Dynamic vs. Static Graphs**: 
+    - *Static*: The graph is defined and compiled before execution (e.g., older versions of TensorFlow).
+    - *Dynamic*: The graph is built on-the-fly during the forward pass (e.g., PyTorch).
 
-## Notable Projects & Context
-- **micrograd**: A prominent example of a minimal autograd engine developed by Andrej Karpathy. It is designed to be "tiny" enough to be understood in a single sitting while being capable of training small neural networks.
-- **Relationship to Large Language Models (LLMs)**: Autograd engines provide the underlying infrastructure required to train [[Large Language Models (LLMs)]], [[Convolutional Neural Networks (CNNs)]], and [[Recurrent Neural Networks (RNNs)]].
+## Key Implementations & Context
+- **micrograd**: A prominent educational project by [[Andrej Karpathy]] that implements a backpropagation engine from scratch. It serves as a "minimalist" autograd engine to demonstrate the fundamental principles of [[Deep Learning]].
+- **Software 2.0**: Autograd engines are the primary enablers of "Software 2.0," where models are defined by their weights and gradients rather than explicit human-written logic.
 
 ## Related Concepts
 - [[Deep Neural Networks]]
+- [[LLMs]]
 - [[Software 2.0]]
-- [[Large Language Models (LLMs)]]
-- [[Convolutional Neural Networks (CNNs)]]
-- [[Recurrent Neural Networks (RNNs)]]
+- [[Computer Vision]]
+- [[Natural Language Processing]]
