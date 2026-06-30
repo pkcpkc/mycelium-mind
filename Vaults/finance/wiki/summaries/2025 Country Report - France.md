@@ -1,72 +1,77 @@
 ---
 type: Summary
 title: 2025 Country Report - France
-description: A comprehensive analysis of France's economic performance, fiscal
-  sustainability, competitiveness, innovation landscape, energy transition, and
-  social fairness.
-resource: assets/2026-06-27/EU Commission (2025) 2025 Country Report France.md
+description: A comprehensive assessment of France's economic, social,
+  employment, structural, and budgetary policies, highlighting challenges in
+  fiscal sustainability, productivity, and the green transition.
+resource: assets/2026-06-30/EU Commission (2025) 2025 Country Report France.md
 tags:
+  - country-report
   - france
-  - economic-report
   - european-commission
-  - fiscal-policy
+  - macroeconomics
+timestamp: 2026-06-30T18:15:38Z
 entities:
   concepts:
     - Real GDP
     - Public Debt
     - Labour Productivity
+    - Green Transition
     - Renewable Energy
-    - RRP
-    - SDGs
-    - Decarbonisation
+    - Fiscal Consolidation
     - SMEs
+    - Circular Economy
+    - Sustainable Development Goals
+    - Digitalisation
     - Venture Capital
   persons: []
 times:
-  - date: 2025-06-04
-    title: Publication of the 2025 Country Report
   - date: 2024-12-31
-    title: End of 2024 fiscal data collection
-relationships: []
-timestamp: 2026-06-27T06:00:48Z
+    title: Record high corporate bankruptcies in France
+  - date: 2025-04-30
+    title: Cut-off date for Country Report data
+relationships:
+  - personA: European Commission
+    relation: author of
+    personB: 2025 Country Report - France
 ---
 
 
 # 2025 Country Report - France
 
-The 2025 Country Report provides a high-fidelity synthesis of France's economic, social, and environmental landscape. It highlights a period of slowing economic growth (forecast at 0.6% for 2025) driven by high political uncertainty, restrictive monetary policy, and elevated energy costs. While investment has remained subdued, a gradual recovery is expected in the second half of 2025 as inflationary pressures ease and private consumption drives GDP.
+The 2025 Country Report provides a high-fidelity synthesis of France's economic landscape, emphasizing a period of slowing growth and heightened political and economic uncertainty. While real GDP grew by 1.2% in 2024, a marked slowdown is forecast for 2025 (0.6%) and 2026 (1.3%). This slowdown is attributed to subdued investment, high energy costs, and tariff increases, though a gradual recovery is expected in the latter half of 2025 as inflation cools.
 
-### Economic and Fiscal Landscape
-France faces significant fiscal challenges, with public debt rising to 113% of GDP in 2024 and projected to reach 118.4% by 2026. This is exacerbated by a persistent general government deficit (5.8% in 2024) and high interest payments on sovereign debt. The report emphasizes the need for a steady deficit reduction trajectory, requiring effective spending reviews and a rationalization of tax expenditures. Structural weaknesses include high taxes on production and a lack of skilled labor, which continue to weigh on productivity.
+### Economic and Fiscal Challenges
+France faces significant fiscal hurdles, with the general government deficit reaching 5.8% of GDP in 2024 and public debt climbing to 113%. The report highlights a "substantial deficit slippage" caused by tax revenue shortfalls, pension indexation to high inflation, and local government spending. Political fragmentation following the 2024 elections has delayed the 2025 budget, complicating deficit reduction. To address this, the Commission recommends a multi-year fiscal adjustment (extended to 7 years) focused on spending reviews and rationalizing tax expenditures.
 
-### Innovation, Business Environment, and Productivity
-While France remains a strong innovator, its scientific performance is declining relative to global peers. Key findings include:
-- **R&D Intensity:** Stagnating at 1.44% for businesses, well below the 3% target.
-- **Corporate Debt:** High levels of indebtedness among non-financial corporations hamper investment resilience.
-- **SME Challenges:** SMEs face significant barriers, including late payments (reported by 58% of French SMEs) and a lack of basic digitalization.
-- **Innovation Support:** The *crédit impôt recherche* (CIR) has shown limited effectiveness for large firms, suggesting a need to refocus support toward innovative SMEs and start-ups.
+### Competitiveness and Productivity
+France's competitiveness is improving due to lower inflation compared to trading partners and tax reductions on production. However, labor productivity growth remains a concern due to:
+- **Low Business R&D:** Intensity remains below the 3% target, with a lack of efficiency in public support schemes like the *crédit impôt recherche* (CIR).
+- **Skills Shortages:** A significant gap exists in the availability of adequately trained workers, particularly in industry, construction, and care sectors.
+- **High Corporate Debt:** High indebtedness levels among non-financial corporations (NFCs) hamper investment and resilience against exogenous shocks.
 
-### Decarbonisation and Energy Transition
-France has set an ambitious target to reduce greenhouse gas emissions by 50% by 2030. Key highlights include:
-- **Energy Mix:** Achieving a milestone of 95% low-carbon electricity, primarily driven by nuclear power (68%).
-- **Renewable Energy:** A lack of a firm 2030 renewable energy target creates investment uncertainty. The report calls for accelerated deployment of solar, wind, and hydrogen.
-- **Building Decarbonisation:** Progress is hindered by a shortage of skilled workers for deep renovations and a fragmented funding landscape.
-- **Transport:** Road transport remains the primary source of emissions; efforts are focused on rail support and electric vehicle incentives.
+### Innovation and Business Environment
+While France boasts a vibrant start-up ecosystem and the second-highest number of unicorns in the EU, it struggles with:
+- **Equity Financing:** A lack of equity financing for high-growth firms during the scaling phase.
+- **Digitalization Gaps:** Only 68.5% of SMEs have reached a basic level of digitalization, lagging behind the EU average.
+- **Administrative Burden:** Despite recent reforms (e.g., the ASAP law), 84% of businesses still find administrative procedures complex.
 
-### Skills, Employment, and Social Fairness
-The labor market shows a record high employment rate (75.1% in 2024) but suffers from significant structural gaps:
-- **Skills Shortages:** High vacancy rates persist in the automotive, construction, and care sectors.
-- **Vulnerable Groups:** People with a migrant background and low-skilled workers face substantial employment gaps.
-- **Education:** A quarter of 15-year-olds lack basic math and science skills, with a pronounced urban-rural divide.
-- **Poverty:** The AROPE rate is rising, with children facing a 26.2% risk of poverty or social exclusion, necessitating better access to affordable childcare and housing.
+### Decarbonization and Energy Transition
+France's decarbonization pathway is ambitious, targeting a 50% reduction in greenhouse gas emissions by 2030. Key focus areas include:
+- **Transport and Buildings:** These sectors remain major emission sources with significant delays in renovation due to a shortage of skilled labor and complex funding schemes.
+- **Renewable Energy:** While France reached 95% low-carbon electricity (largely nuclear), it lacks a firm updated commitment for renewable energy targets by 2030, creating investor uncertainty.
+- **Energy Affordability:** Retail electricity prices for households rose by over 20% in early 2024, disproportionately affecting vulnerable populations.
 
-### Key Recommendations
-To bolster competitiveness and social fairness, the report suggests:
-- Swift implementation of the **Recovery and Resilience Plan (RRP)** and REPowerEU chapter.
-- Alignment of production taxes with EU averages to stimulate industrial output.
-- Strengthening business R&D intensity through better targeting of public support.
-- Reducing administrative burdens, specifically by adopting the draft law on the simplification of economic life.
-- Accelerating the deployment of renewable energies and associated storage technologies.
-- Addressing the "skills gap" through targeted upskilling for green and digital transitions.
+### Social Fairness and Education
+The report identifies a worsening poverty situation, with the AROPE rate reaching 20.5% in 2024. Children face a high risk of poverty (26.2%), exacerbated by inequalities in access to early childhood education and childcare. In the education sector, France struggles with:
+- **Basic Skills:** A quarter of 15-year-olds lack minimum standards in math and science.
+- **Teacher Shortages:** Declining attractiveness of the teaching profession, low pay, and high workloads are undermining the education system's performance.
 
-(source: [SWD(2025) 210 final]( ))
+### Key Findings & Recommendations
+To bolster competitiveness and sustainability, the report recommends:
+1. **Fiscal Consolidation:** Conducting spending reviews and aligning production taxes with EU averages.
+2. **R&D & Innovation:** Better targeting of public support for innovative SMEs and improving academia-business collaboration.
+3. **Decarbonization:** Accelerating renewable energy deployment, improving grid interconnections, and simplifying permitting for clean industry.
+4. **Social Inclusion:** Addressing child poverty by improving housing accessibility and childcare affordability for low-income families.
+
+(source: [2025 Country Report - France]( ))
