@@ -2,7 +2,7 @@
 type: "SocialGraph"
 title: "Social Graph"
 description: "Connection map and relationship registry of all individuals in the vault."
-timestamp: "2026-06-30T18:10:10Z"
+timestamp: "2026-06-30T18:25:11Z"
 ---
 # Social Graph
 
@@ -10,12 +10,14 @@ timestamp: "2026-06-30T18:10:10Z"
 
 ```mermaid
 flowchart LR
+    2CRF["2025 Country Report - France"]
     2CRI["2025 Country Report - Italy"]
     2CRP["2025 Country Report - Poland"]
     2CRR["2025 Country Report - Romania"]
     2CRS["2025 Country Report - Slovakia"]
     EC["European Commission"]
     H["Hungary"]
+    EC -- "author of" --> 2CRF
     EC -- "authored" --> 2CRI
     EC -- "authored" --> 2CRP
     EC -- "authored" --> 2CRR
@@ -27,6 +29,7 @@ flowchart LR
 
 | Person A | Connection | Person B | Context / Source |
 | :--- | :--- | :--- | :--- |
+| [[European Commission]] | author of | [[2025 Country Report - France]] | [[2025 Country Report - France]] |
 | [[European Commission]] | authored | [[2025 Country Report - Italy]] | [[2025 Country Report - Italy]] |
 | [[European Commission]] | authored | [[2025 Country Report - Poland]] | [[2025 Country Report - Poland]] |
 | [[European Commission]] | authored | [[2025 Country Report - Romania]] | [[2025 Country Report - Romania]] |
