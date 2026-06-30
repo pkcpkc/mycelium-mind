@@ -2,7 +2,7 @@
 type: "SocialGraph"
 title: "Social Graph"
 description: "Connection map and relationship registry of all individuals in the vault."
-timestamp: "2026-06-27T07:06:35Z"
+timestamp: "2026-06-30T18:10:10Z"
 ---
 # Social Graph
 
