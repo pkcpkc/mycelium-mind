@@ -1,13 +1,14 @@
 # Persons
 
-* [[Pieter Abbeel]] - A prominent robotics researcher known for his work in machine learning and reinforcement learning.
-* [[Jensen Huang]] - The CEO of NVIDIA, a pivotal figure in the advancement of GPU computing and the current artificial intelligence revolution.
-* [[Justin Johnson]] - A research collaborator of Andrej Karpathy involved in artificial intelligence development.
-* [[Andrej Karpathy]] - A prominent AI researcher, educator, and engineer known for his leadership at Tesla and OpenAI, and his influential contributions to deep learning education.
-* [[Koray Kavukcuoglu]] - A DeepMind researcher involved in collaborative AI research and development.
-* [[Daphne Koller]] - A prominent academic researcher and collaborator in the fields of machine learning and artificial intelligence.
-* [[Vladlen Koltun]] - Academic researcher and collaborator in the field of computer vision and machine learning.
-* [[Fei-Fei Li]] - A prominent computer scientist and Stanford Professor known for her pioneering work in computer vision and as an advisor to leading AI researchers.
-* [[Vlad Mnih]] - A prominent DeepMind researcher recognized for his contributions to deep reinforcement learning.
-* [[Andrew Ng]] - A prominent AI researcher and academic collaborator known for his contributions to machine learning and education.
-* [[Sebastian Thrun]] - A prominent robotics researcher and academic collaborator who has contributed to the development of autonomous systems and machine learning.
+* [[Geoff Hinton]] - A pioneering researcher and foundational figure in the field of deep learning and artificial intelligence.
+* [[Jensen Huang]] - Co-founder and CEO of NVIDIA, a pivotal figure in the advancement of GPU computing and the global AI revolution.
+* [[Justin Johnson]] - AI researcher and collaborator of Andrej Karpathy.
+* [[Andrej Karpathy]] - A prominent AI researcher, educator, and engineer known for his leadership in deep learning at Tesla and OpenAI, and his extensive contributions to computer vision and large language models.
+* [[Koray Kavukcuoglu]] - A professional associated with the research and development ecosystem surrounding prominent AI figures like Andrej Karpathy.
+* [[Daphne Koller]] - A prominent computer scientist and academic known for her significant contributions to machine learning and as a mentor to leading AI researchers.
+* [[Vladlen Koltun]] - A prominent academic researcher and educator in the field of computer vision and deep learning who mentored Andrej Karpathy.
+* [[Fei-Fei Li]] - A prominent AI researcher and educator known for her foundational contributions to computer vision and deep learning.
+* [[Vlad Mnih]] - A prominent researcher in the field of deep learning and reinforcement learning, recognized for his foundational work in deep Q-learning.
+* [[Andrew Ng]] - A prominent AI researcher and educator known for his foundational contributions to deep learning and machine learning education.
+* [[Michiel van de Panne]] - An academic and researcher who served as a mentor to Andrej Karpathy during his doctoral studies.
+* [[Sebastian Thrun]] - A prominent AI researcher and educator known for his contributions to autonomous systems and deep learning.
