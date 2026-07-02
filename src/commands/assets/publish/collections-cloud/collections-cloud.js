@@ -2,10 +2,24 @@ document.addEventListener('DOMContentLoaded', async function() {
   const container = document.getElementById('cy') || document.getElementById('cy-fullscreen');
   if (!container) return;
 
-  // Resolve root prefix dynamically based on current page URL depth
-  const pathParts = window.location.pathname.split('/');
-  const depth = pathParts.filter(p => p.length > 0).length - 1;
-  const rootPrefix = depth > 0 ? '../'.repeat(depth) : '';
+  // Try to find the script element loading collections-cloud.js to get the exact relative root prefix.
+  // This is highly robust as MkDocs automatically builds the correct relative path for assets.
+  let rootPrefix = '';
+  const scriptEl = document.querySelector('script[src*="collections-cloud.js"]');
+  if (scriptEl) {
+    const src = scriptEl.getAttribute('src') || '';
+    const match = src.match(/^(.*)assets[/\\]js[/\\]collections-cloud\.js/);
+    if (match) {
+      rootPrefix = match[1];
+    }
+  } else {
+    // Fallback: Resolve root prefix dynamically based on current page URL depth
+    const pathParts = window.location.pathname.split('/');
+    const nonEmptyParts = pathParts.filter(p => p.length > 0);
+    const isDirectoryUrl = window.location.pathname.endsWith('/') || !nonEmptyParts[nonEmptyParts.length - 1]?.includes('.');
+    const depth = isDirectoryUrl ? nonEmptyParts.length : nonEmptyParts.length - 1;
+    rootPrefix = depth > 0 ? '../'.repeat(depth) : '';
+  }
 
   console.log(`[Collections Cloud] Fetching ${rootPrefix}tags.json...`);
   let tagsData;
@@ -51,38 +65,49 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
   });
 
-  // Build edges based on shared tags
-  const edges = [];
-  const seenEdges = new Set();
-  const connectedNodeIds = new Set();
+  // Build elements based on shared tags threshold
+  const thresholdSelect = document.getElementById('shared-tag-threshold');
+  let currentThreshold = thresholdSelect ? parseInt(thresholdSelect.value, 10) : 2;
+  if (isNaN(currentThreshold)) currentThreshold = 2;
 
-  for (let i = 0; i < rawNodes.length; i++) {
-    for (let j = i + 1; j < rawNodes.length; j++) {
-      const nodeA = rawNodes[i];
-      const nodeB = rawNodes[j];
-      
-      const shared = nodeA.tags.filter(t => nodeB.tags.includes(t));
-      if (shared.length > 1) {
-        const edgeKey = [nodeA.data.id, nodeB.data.id].sort().join('-');
-        if (!seenEdges.has(edgeKey)) {
-          edges.push({
-            data: {
-              id: `${nodeA.data.id}-${nodeB.data.id}`,
-              source: nodeA.data.id,
-              target: nodeB.data.id,
-              label: shared.join(', ')
-            }
-          });
-          seenEdges.add(edgeKey);
-          connectedNodeIds.add(nodeA.data.id);
-          connectedNodeIds.add(nodeB.data.id);
+  function buildGraphElements(minSharedTags) {
+    const edges = [];
+    const seenEdges = new Set();
+    const connectedNodeIds = new Set();
+
+    for (let i = 0; i < rawNodes.length; i++) {
+      for (let j = i + 1; j < rawNodes.length; j++) {
+        const nodeA = rawNodes[i];
+        const nodeB = rawNodes[j];
+        
+        const shared = nodeA.tags.filter(t => nodeB.tags.includes(t));
+        if (shared.length >= minSharedTags) {
+          const edgeKey = [nodeA.data.id, nodeB.data.id].sort().join('-');
+          if (!seenEdges.has(edgeKey)) {
+            edges.push({
+              data: {
+                id: `${nodeA.data.id}-${nodeB.data.id}`,
+                source: nodeA.data.id,
+                target: nodeB.data.id,
+                label: shared.join(', ')
+              }
+            });
+            seenEdges.add(edgeKey);
+            connectedNodeIds.add(nodeA.data.id);
+            connectedNodeIds.add(nodeB.data.id);
+          }
         }
       }
     }
+
+    const nodes = rawNodes.filter(n => connectedNodeIds.has(n.data.id));
+    return [
+      ...nodes.map(n => ({ data: n.data })),
+      ...edges
+    ];
   }
 
-  // Filter nodes to only connected ones
-  const nodes = rawNodes.filter(n => connectedNodeIds.has(n.data.id));
+  const initialElements = buildGraphElements(currentThreshold);
 
   // Set up stylesheet colors
   const lightColors = {
@@ -112,13 +137,29 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   const currentColors = getCurrentThemeColors();
 
+  const layoutConfig = {
+    name: 'cose',
+    idealEdgeLength: 120,
+    nodeOverlap: 30,
+    refresh: 20,
+    fit: true,
+    padding: 40,
+    randomize: false,
+    componentSpacing: 100,
+    nodeRepulsion: 400000,
+    edgeElasticity: 100,
+    nestingFactor: 5,
+    gravity: 80,
+    numIter: 1000,
+    initialTemp: 200,
+    coolingFactor: 0.95,
+    minTemp: 1.0
+  };
+
   // Initialize Cytoscape
   const cy = window.cytoscape({
     container: container,
-    elements: [
-      ...nodes.map(n => ({ data: n.data })),
-      ...edges
-    ],
+    elements: initialElements,
     style: [
       {
         selector: 'node',
@@ -184,24 +225,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
       }
     ],
-    layout: {
-      name: 'cose',
-      idealEdgeLength: 120,
-      nodeOverlap: 30,
-      refresh: 20,
-      fit: true,
-      padding: 40,
-      randomize: false,
-      componentSpacing: 100,
-      nodeRepulsion: 400000,
-      edgeElasticity: 100,
-      nestingFactor: 5,
-      gravity: 80,
-      numIter: 1000,
-      initialTemp: 200,
-      coolingFactor: 0.95,
-      minTemp: 1.0
-    }
+    layout: layoutConfig
   });
 
   // Tap navigation
@@ -237,6 +261,22 @@ document.addEventListener('DOMContentLoaded', async function() {
         node.addClass('search-highlighted');
       } else {
         node.removeClass('search-highlighted');
+      }
+    });
+  }
+
+  function updateGraph(threshold) {
+    cy.elements().remove();
+    cy.add(buildGraphElements(threshold));
+    cy.layout(layoutConfig).run();
+    updateSearchHighlights();
+  }
+
+  if (thresholdSelect) {
+    thresholdSelect.addEventListener('change', function() {
+      const val = parseInt(thresholdSelect.value, 10);
+      if (!isNaN(val)) {
+        updateGraph(val);
       }
     });
   }

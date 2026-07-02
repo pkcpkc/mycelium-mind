@@ -298,4 +298,37 @@ describe('Unified Wiki Compiler CLI Tests', () => {
 
     consoleErrorSpy.mockRestore();
   });
+
+  it('sync and resync commands: should log dual-level progress and final summary', async () => {
+    await initWiki(wikiPath);
+    const docPath = path.join(wikiPath, 'inbox', 'Andrej Karpathy.md');
+    fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning and co-founded OpenAI.', 'utf8');
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    // Run sync
+    await syncWiki(wikiPath);
+
+    // Verify logs
+    const loggedLines = logSpy.mock.calls.map(call => call[0]);
+    
+    // Check that we logged steps for summaries, concepts, overviews, indexes
+    expect(loggedLines.some(line => line && line.includes('[Step 1] [Summaries 1/1]'))).toBe(true);
+    expect(loggedLines.some(line => line && line.includes('[concepts 1/1]'))).toBe(true);
+    expect(loggedLines.some(line => line && line.includes('[Indexes 1/'))).toBe(true);
+    expect(loggedLines.some(line => line && line.includes('Sync pipeline complete.'))).toBe(true);
+    expect(loggedLines.some(line => line && line.includes('- Summaries generated: 1/1'))).toBe(true);
+
+    logSpy.mockClear();
+
+    // Run resync
+    await resyncWiki(wikiPath);
+
+    const resyncLoggedLines = logSpy.mock.calls.map(call => call[0]);
+    expect(resyncLoggedLines.some(line => line && line.includes('[Step 1] [Summaries 1/1]'))).toBe(true);
+    expect(resyncLoggedLines.some(line => line && line.includes('Resync complete.'))).toBe(true);
+    expect(resyncLoggedLines.some(line => line && line.includes('- Summaries generated: 1/1'))).toBe(true);
+
+    logSpy.mockRestore();
+  });
 });

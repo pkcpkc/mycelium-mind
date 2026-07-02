@@ -22,6 +22,11 @@
   margin-bottom: 10px;
   width: 100%;
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .search-input-wrapper {
@@ -141,4 +146,71 @@
   fill: #0f172a !important;
   color: #0f172a !important;
 }
+
+/* Filter Dropdown Styling */
+.filter-dropdown-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Fallback/wrap adjustment for mobile */
+@media (max-width: 600px) {
+  .filter-dropdown-wrapper {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+.filter-dropdown-wrapper label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0;
+  white-space: nowrap;
+}
+
+[data-md-color-scheme="slate"] .filter-dropdown-wrapper label {
+  color: #94a3b8;
+}
+
+.filter-dropdown-select {
+  padding: 8px 32px 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #1e293b;
+  outline: none;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+}
+
+.filter-dropdown-select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+[data-md-color-scheme="slate"] .filter-dropdown-select {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: #f1f5f9;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+[data-md-color-scheme="slate"] .filter-dropdown-select:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
+}
+
 

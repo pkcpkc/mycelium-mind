@@ -2,10 +2,14 @@ import * as fs from 'fs';
 import * as fsPromises from 'fs/promises';
 import * as path from 'path';
 import * as readline from 'readline';
+import { fileURLToPath } from 'url';
 import matter from 'gray-matter';
 import YAML from 'yaml';
 import { config } from './config.js';
 import { gitCommit } from './git.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Resolves the absolute path to a vault's root directory, supporting absolute/relative paths and vault names.
@@ -194,23 +198,11 @@ export async function rebuildFolderIndex(wikiDir: string, relativeFolderPath: st
     const cloudFullscreenPath = path.join(dirPath, `${folderName}-cloud-fullscreen.md`);
     const timestampStr = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
     
-    const cloudContent = `---
-type: "Overview"
-title: "${titleCapitalized} Relation Cloud"
-description: "Interactive graph linking ${folderName} cards sharing common tags."
-timestamp: "${timestampStr}"
-hide:
-  - navigation
-  - toc
----
-# ${titleCapitalized} Relation Cloud
-
-<div class="graph-search-container"><div class="search-input-wrapper"><input type="text" id="graph-search" placeholder="Search ${folderName} by name or tag..." autocomplete="off"><button id="search-clear" class="search-clear-btn" type="button">&times;</button></div></div>
-
-<div id="cy-fullscreen" data-collection="${folderName}"></div>
-
-<p class="graph-hint">💡 Note: Only showing ${folderName} with more than 1 shared tags.</p>
-`;
+    const templatePath = path.join(__dirname, 'collection-cloud-template.md');
+    const cloudContent = fs.readFileSync(templatePath, 'utf8')
+      .replace(/\$TITLE_CAPITALIZED/g, titleCapitalized)
+      .replace(/\$FOLDER_NAME/g, folderName)
+      .replace(/\$TIMESTAMP/g, timestampStr);
     fs.writeFileSync(cloudPath, cloudContent, 'utf8');
     gitCommit(cloudPath, `Updated ${folderName}-cloud overview page`);
 

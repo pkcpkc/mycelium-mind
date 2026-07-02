@@ -208,14 +208,38 @@ Compiles the vault into a static web output:
 
 ## 🧩 Extending the System via Custom Collection Plugins
 
-Custom collections (e.g. companies, projects, APIs) are defined as plugins. By adding a plugin directory, the compiler automatically registers the schema, modifies the ingestion prompt, extracts matching entities, and compiles their respective index files and relation clouds.
+Custom collections (e.g. companies, projects, APIs) are defined as plugins. By adding a plugin directory under `plugins/collections/<plural-name>/` (for example: `plugins/collections/companies/`), you can define custom schema extensions, prompts for compiling entity pages, or both.
 
-### Required Directory Layout
+### Flexible Plugin Specifications
 
-To create a custom collection plugin, create a folder under `plugins/collections/<plural-name>/` (for example: `plugins/collections/companies/`) containing two files:
+A custom collection plugin can be defined using one of three styles:
 
-1. **`schema.md`**: Defines what parameters to extract from raw files during the initial summary phase, and describes attributes for the compiled entity card.
-2. **`prompt.md`**: Prompt guiding the LLM on how to generate and merge information into this entity's card.
+1. **Both `schema.md` and `prompt.md` (Dual Plugin)**:
+   - Registers new fields in the dynamic ingestion summary schema.
+   - Extracts those fields into summary page frontmatter.
+   - Compiles individual entity pages (e.g., `wiki/collections/companies/Google.md`) using the custom prompt.
+2. **`schema.md` only (Schema-only Plugin)**:
+   - Registers new fields in the dynamic ingestion summary schema, making them available in summary page frontmatter.
+   - **No individual entity pages** are created.
+   - Ideal for adding metadata that custom overview scripts (e.g., in `plugins/overviews/`) will consume.
+3. **`prompt.md` only (Prompt-only Plugin)**:
+   - Compiles individual entity pages using a target field or field combination from the summary page frontmatter.
+   - By default, it targets the plugin's folder name (plural) and its singular version.
+   - You can customize which frontmatter fields it targets by declaring `fields` in `prompt.md`'s YAML frontmatter (see below).
+
+### Target Fields configuration in `prompt.md`
+
+For prompt-only or dual plugins, you can specify custom target fields in `prompt.md` using YAML frontmatter:
+
+```markdown
+---
+fields:
+  - project
+  - campaign
+---
+# Wiki Initiative Prompt
+...
+```
 
 ### Flow of Plugin Integration
 
@@ -228,7 +252,7 @@ flowchart TD
     SummaryPromptTemplate -->|4. run LLM on source note| SummaryDoc[wiki/summaries/Example.md]
 
     SummaryDoc -->|5. parse custom field lists| EntityCompiler[Entity Compiler Loop]
-    EntityCompiler -->|6. loop over active collection plugins| LoadEntityConfig[Read plugins/collections/companies/ schema.md + prompt.md]
+    EntityCompiler -->|6. loop over plugins containing prompt.md| LoadEntityConfig[Read prompt.md + optional schema.md]
     LoadEntityConfig -->|7. auto-inject missing timestamp/tags| DynamicEntityPrompt
     DynamicEntityPrompt -->|8. run LLM to merge and update| EntityCard[wiki/collections/companies/Google.md]
 ```

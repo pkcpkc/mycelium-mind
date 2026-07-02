@@ -36,22 +36,67 @@ describe('check-plugin command tests', () => {
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('does not exist'));
   });
 
-  it('should exit with 1 if schema.md is missing', async () => {
+  it('should exit with 1 if both schema.md and prompt.md are missing', async () => {
     fs.mkdirSync(pluginPath);
-    fs.writeFileSync(path.join(pluginPath, 'prompt.md'), 'some prompt');
 
     await expect(checkPlugin(pluginPath)).rejects.toThrow('process.exit called');
     expect(exitSpy).toHaveBeenCalledWith(1);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Required file 'schema.md' is missing"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Plugin must contain at least one of"));
   });
 
-  it('should exit with 1 if prompt.md is missing', async () => {
+  it('should pass if only schema.md is present and valid', async () => {
     fs.mkdirSync(pluginPath);
-    fs.writeFileSync(path.join(pluginPath, 'schema.md'), 'some schema');
+    fs.writeFileSync(
+      path.join(pluginPath, 'schema.md'),
+      `---
+type: Schema
+title: Test Schema
+description: Test Desc
+---
+| Key | Type | Requirement | Description |
+|---|---|---|---|
+| test_key | String | Optional | Valid |
+`
+    );
+
+    await checkPlugin(pluginPath);
+    expect(exitSpy).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('completed successfully'));
+  });
+
+  it('should pass if only prompt.md is present and valid', async () => {
+    fs.mkdirSync(pluginPath);
+    fs.writeFileSync(
+      path.join(pluginPath, 'prompt.md'),
+      `---
+fields:
+  - project
+  - campaign
+---
+Prompt with $SCHEMA, $VALUE, $TIMESTAMP, $EXISTING_CONTENT, $SUMMARY_CONTENT
+`
+    );
+
+    await checkPlugin(pluginPath);
+    expect(exitSpy).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('completed successfully'));
+  });
+
+  it('should exit with 1 if prompt.md frontmatter fields has invalid types', async () => {
+    fs.mkdirSync(pluginPath);
+    fs.writeFileSync(
+      path.join(pluginPath, 'prompt.md'),
+      `---
+fields:
+  - 123
+---
+Prompt content
+`
+    );
 
     await expect(checkPlugin(pluginPath)).rejects.toThrow('process.exit called');
     expect(exitSpy).toHaveBeenCalledWith(1);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Required file 'prompt.md' is missing"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("fields' array must be strings"));
   });
 
   it('should exit with 1 if schema.md lacks frontmatter delimiters', async () => {
