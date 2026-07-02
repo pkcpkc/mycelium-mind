@@ -1,305 +1,395 @@
-# Mycelium Mind
+# Mycelium Mind 🧠
 
-Mycelium Mind is a fully offline, multi-vault wiki engine built on top of Obsidian, powered by local LLMs running on oMLX.
+Mycelium Mind is a fully offline, schema-driven, multi-vault compiler pipeline and wiki engine built on top of **Obsidian** and **MkDocs**, powered by local LLMs via an OpenAI-compatible API.
 
-Inspired by [karpathy's llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) and orchestrated via [OpenCode](https://opencode.ai/).
-
----
-
-## 📜 [Offline Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) Standard
-
-Mycelium Mind strictly conforms to the [**Offline Knowledge Format (OKF)**](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) standard. OKF is a strict schema specification for offline Obsidian-based wikis designed to maximize readability and interoperability for both human readers and AI models (via MCP).
-
-Under the OKF standard:
-1. **Frontmatter Conformance**: Every knowledge card (except root indices) must contain parseable YAML frontmatter declaring its logical `type`, `title`, `description`, and a UTC ISO-8601 `timestamp`.
-2. **Standard Schemas**: Vault assets are structured into five core directories, each governed by its own schema definition:
-   - `schemas/summary.md`: governs `summaries/` (dense synthesis cards linking to source assets with an extracted entity manifest).
-   - `schemas/concept.md`: governs `concepts/` (definitions, key details, and relations for abstract ideas/methodologies).
-   - `schemas/person.md`: governs `persons/` (structured biographies and collaborator networks for individuals).
-   - `schemas/report.md`: governs `reports/` (cross-vault thematic synthesis pages).
-3. **Flat Wikilinks**: All links between files use standard flat Obsidian wikilinks without path prefixes (e.g., `[[Andrej Karpathy]]`, not `[[persons/Andrej Karpathy]]`), allowing the graph to remain fully relocatable.
-4. **Separation of Concerns**: Persons reside exclusively under `persons/`, concepts under `concepts/`, and summaries under `summaries/`. No duplicate names should overlap across directories.
+It is designed to ingest raw documents, synthesize them into structured metadata-rich cards (conforming to the **Open Knowledge Format (OKF)** standard), dynamically construct interactive relationships between concepts, and compile them into static, publishable documentation sites.
 
 ---
 
-## 🧠 Design Principles
+## 🧠 Design & Core Principles
 
-1. **Filesystem is the interface.** Each command reads from and writes to well-defined directories. No shared state, no session context.
-2. **Every command runs standalone.** `/wiki-persons LLM-Wiki` works without `/wiki` having run. If its input directory (`summaries/`) has files, it runs. If not, it exits cleanly.
-3. **Isolated LLM contexts.** Commands that process multiple entities delegate to a shell loop script that spawns `opencode run --command <child> <args>` per entity. The parent command never holds all entities in context simultaneously.
-4. **Schema injection via `!cat`.** Each child command prompt includes the relevant schema file so the local 35B model has the exact template in its context.
-5. **Hybrid metadata.** The LLM generates semantic fields (`type`, `title`, `description`, `tags`, `entities`). Shell scripts inject system fields (`resource`, `timestamp`) programmatically.
+1. **Local & Offline First**: Designed to run entirely on your local machine using local LLMs (e.g. via oMLX, llama.cpp, Ollama, or LM Studio) through standard OpenAI-compatible API endpoints.
+2. **Strict Schema Validation & Auto-Injection**: Vault entities are governed by markdown-defined schema specifications. Common system metadata such as `timestamp` and `tags` are automatically injected into the schema definitions and processed frontmatter at compile-time to reduce LLM prompt size and guarantee schema consistency.
+3. **Isolated LLM Invocations**: To prevent context window overflow, each raw inbox document is processed individually. Entity syntheses are batched and compiled incrementally to scale to large vaults.
+4. **Git-Backed Version Control**: The compiler performs local git commits and tags directly inside the directory of each target wiki, ensuring clean revision history local to the vault itself.
+5. **Decoupled Architecture**: Each CLI command operates independently. Folder structures are dynamically inspected, allowing you to easily add new schemas, collections, or custom overview scripts.
 
 ---
 
-## 🗺️ Pipeline Dependency Graph
+## 🛠️ Environment & Runtime Manager
 
-The entire ingestion and synthesis pipeline is organized as a decoupled DAG (Directed Acyclic Graph) of standalone OpenCode commands:
+This repository uses [mise](https://mise.jdx.dev/) to ensure fully reproducible runtimes for Node.js and Python.
+
+- **Node.js Version**: `25.9.0`
+- **Python Version**: `3.11.15`
+- **Virtual Environment**: `.venv/` containing python dependencies (e.g., `headroom-ai` for visualization/hosting).
+
+To execute commands within the correct environment context:
+
+```bash
+# Run CLI commands using the pinned Node version
+mise exec -- npm run cli <command> <wiki-path>
+
+# Run python scripts or tools from the venv
+mise exec -- python script.py
+```
+
+---
+
+## 📂 Vault Structure & Directory Map
+
+When a vault is initialized, it is structured to cleanly separate source inputs, pipeline configurations, compiled pages, and published web outputs:
+
+```
+Vaults/<WikiName>/
+├── inbox/                        # Input folder for raw PDFs, images, markdown, or text files
+├── config/
+│   ├── mkdocs.yml                # Configuration file for MkDocs static site generation
+│   └── summary/
+│       ├── prompt.md             # LLM Prompt for document summary extraction
+│       └── schema.md             # Frontmatter schema specification for summaries
+├── plugins/
+│   ├── collections/              # Custom collections defined by prompt and schema
+│   │   ├── concepts/
+│   │   ├── persons/
+│   │   └── times/
+│   └── overviews/                # Sandboxed JavaScript scripts to generate structural overview pages
+│       ├── social-graph.js
+│       └── timeline.js
+└── wiki/                         # The compiled Obsidian Vault (Open this folder in Obsidian!)
+    ├── index.md                  # Map of Content (auto-rebuilt index of the entire vault)
+    ├── assets/                   # Archive of raw ingested files (sorted by YYYY-MM-DD date)
+    ├── summaries/                # Compiled summary cards of source assets
+    ├── collections/              # Compiled entity collections (e.g. concepts/, persons/, times/)
+    │   ├── concepts/
+    │   │   ├── index.md          # Concept index linking all concept cards
+    │   │   ├── concepts-cloud.md # Interactive relation cloud matching shared tags
+    │   │   └── ...
+    │   ├── persons/
+    │   └── times/
+    └── overviews/                # Generated structural overviews (e.g. timeline.md, social-graph.md)
+```
+
+---
+
+## 🗺️ Pipeline Architecture
+
+The overall execution pipeline is split into separate phases:
+
+```mermaid
+graph TD
+    Inbox[Raw Ingest Files under inbox/] -->|1. sync command| SummaryExtraction[Extract Summaries + Move Sources to assets/]
+    SummaryExtraction -->|2. sync command| EntityCompilation[Synthesize/Merge Collection Entities]
+    EntityCompilation -->|3. sync command| OverviewGeneration[Execute Sandboxed Overview Scripts]
+    OverviewGeneration -->|4. sync command| IndexRebuilding[Generate relations clouds, folder indexes, & root index.md]
+    IndexRebuilding -->|5. sync command| GitIsolation[Git commit local to Wiki repo]
+
+    Anytime[Existing assets/] -->|resync command| WipeAndRebuild[Wipe generated summaries/entities & repeat ingestion]
+
+    FinishedWiki[Compiled wiki/ folder] -->|publish command| RelativeLinksConverter[Convert flat Obsidian links to relative paths]
+    RelativeLinksConverter -->|publish command| TagsMapper[Map titles and tags to tags.json]
+    TagsMapper -->|publish command| StaticSite[MkDocs build to static HTML site]
+```
+
+---
+
+## 🚀 Quick Start Guide
+
+### 1. Prerequisites & Installation
+
+Clone the repository and install the dependencies:
+
+```bash
+# Clone the repository
+git clone https://github.com/pkcpkc/mycelium-mind.git
+cd mycelium-mind
+
+# Install Node & Python runtimes via mise
+mise install
+
+# Install project dependencies
+npm install
+```
+
+### 2. Configure Your Local Model Endpoint
+
+Create a `.env` file in the root of the repository:
+
+```env
+API_URL="http://localhost:8000/v1"
+API_KEY="your-api-key"
+AGENTIC_MODEL_NAME="your-local-llm-model-name"
+```
+
+### 3. Initialize a Wiki Vault
+
+Initialize a new vault structure in your chosen directory:
+
+```bash
+mise exec -- npm run cli init ./my-first-wiki
+```
+
+> [!NOTE]
+> This command populates folder structures, base prompts, default collection schemas (concepts, persons, times), and initializes a local git repository inside the vault folder.
+
+### 4. Sync the Inbox
+
+Drop some raw text files or articles into `./my-first-wiki/inbox/`, then trigger the compiler sync:
+
+```bash
+mise exec -- npm run cli sync ./my-first-wiki
+```
+
+This runs the main ingestion pipeline:
+
+1. Summarizes inbox documents into `wiki/summaries/`.
+2. Archives raw sources into dated directories inside `wiki/assets/`.
+3. Batches and synthesizes entity cards inside `wiki/collections/`.
+4. Runs sandboxed overview scripts to compile timelines and graphs.
+5. Dynamically builds index tables and relationship clouds.
+6. Commits the changes local to the vault's git repository.
+
+### 5. Publish to MkDocs
+
+Build a static site ready for deployment:
+
+```bash
+mise exec -- npm run cli publish ./my-first-wiki ./dist/my-first-wiki-site
+```
+
+This converts Obsidian-style wiki-links to standard markdown, extracts tag relationships into `tags.json` for frontend graph visualization, and compiles the site into the destination folder.
+
+---
+
+## 💻 CLI Command Reference
+
+### `init <wiki-path>`
+
+Sets up the vault folder structure and populates it with default template files:
+
+- **MkDocs configuration** (`config/mkdocs.yml`)
+- **Collection schemas**: Default plugins for `concepts`, `persons`, and `times`.
+- **Overview scripts**: JavaScript controllers for the timeline and social graph.
+- **Git**: Initializes a standalone git repository inside `<wiki-path>` so that changes are tracked locally to that vault.
+
+### `sync <wiki-path> [options]`
+
+Processes new source documents found in `<wiki-path>/inbox`:
+
+- **Summarization**: Generates individual document summaries.
+- **Asset Archiving**: Moves the processed sources to `wiki/assets/YYYY-MM-DD/`.
+- **Compilation**: Updates and expands entities in collections (`concepts`, `persons`, `times`) by merging new synthesized definitions into existing ones.
+- **Overviews**: Re-runs overview scripts inside a secure VM sandbox.
+- **MOC & Cloud Generation**: Rebuilds directory index files, including `wiki/overviews/index.md` and tag relationship clouds.
+
+**Options**:
+
+- `--branch`: Creates and checkouts a new git branch (e.g. `sync-YYYYMMDD-HHMMSS`) in the wiki vault repository before changing files, committing all compilations to this branch.
+- `--pr`: Automatically pushes the branch to origin and creates a GitHub Pull Request at the end of the sync execution (requires `gh` CLI).
+- `-v, --verbose`: Print the final assembled LLM prompts (both summaries and entity merges) to the console before calling the model API.
+
+### `resync <wiki-path> [options]`
+
+Wipes and rebuilds the entire wiki state from the archived assets. Useful if you update prompts, schema specifications, or modify your overview scripts and want to re-ingest all source material.
+
+**Options**:
+
+- Supports same `--branch`, `--pr`, and `-v, --verbose` options as the `sync` command.
+
+### `publish <wiki-path> [target-dir]`
+
+Compiles the vault into a static web output:
+
+- Preprocesses all files to translate Obsidian flat wikilinks (`[[Andrej Karpathy]]`) into relative path markdown links (`../collections/persons/Andrej_Karpathy.md`).
+- Iterates through compiled docs to produce `tags.json` containing node and connection mappings for frontend Cytoscape graph rendering.
+- Triggers `mkdocs build` to export HTML outputs to `[target-dir]`.
+
+---
+
+## 🧩 Extending the System via Custom Collection Plugins
+
+Custom collections (e.g. companies, projects, APIs) are defined as plugins. By adding a plugin directory, the compiler automatically registers the schema, modifies the ingestion prompt, extracts matching entities, and compiles their respective index files and relation clouds.
+
+### Required Directory Layout
+
+To create a custom collection plugin, create a folder under `plugins/collections/<plural-name>/` (for example: `plugins/collections/companies/`) containing two files:
+
+1. **`schema.md`**: Defines what parameters to extract from raw files during the initial summary phase, and describes attributes for the compiled entity card.
+2. **`prompt.md`**: Prompt guiding the LLM on how to generate and merge information into this entity's card.
+
+### Flow of Plugin Integration
 
 ```mermaid
 flowchart TD
-    Raw["inbox/ (Raw Files)"]
-    Raw --> Step0["Step 0: /wiki-sync (Shell Only)<br>OCR · Vision · Filename Sanitation"]
-    Step0 --> Step1["Step 1: /wiki-summaries (LLM per file)<br>writes summaries/*.md"]
-    
-    Step1 --> Step2["Step 2: /wiki-concepts (LLM per batch)<br>writes concepts/*.md"]
-    Step1 --> Step3["Step 3: /wiki-persons (LLM per entity)<br>writes persons/*.md"]
-    Step1 --> Step5["Step 5: /wiki-timeline (Single pass)<br>writes timeline.md"]
-    
-    Step3 --> Step4["Step 4: /wiki-social-graph (Single pass)<br>writes social-graph.md"]
-    
-    Step2 --> Step6["Step 6: /wiki-indices (Shell Only)<br>writes index.md per folder"]
-    Step3 --> Step6
-    Step1 --> Step6
+    BaseSpec[config/summary/schema.md] -->|1. parse properties| DynamicPromptBuilder
+    PluginsSpec[plugins/collections/*/schema.md] -->|2. parse properties as custom fields| DynamicPromptBuilder
+
+    DynamicPromptBuilder -->|3. replace $SCHEMA| SummaryPromptTemplate[config/summary/prompt.md]
+    SummaryPromptTemplate -->|4. run LLM on source note| SummaryDoc[wiki/summaries/Example.md]
+
+    SummaryDoc -->|5. parse custom field lists| EntityCompiler[Entity Compiler Loop]
+    EntityCompiler -->|6. loop over active collection plugins| LoadEntityConfig[Read plugins/collections/companies/ schema.md + prompt.md]
+    LoadEntityConfig -->|7. auto-inject missing timestamp/tags| DynamicEntityPrompt
+    DynamicEntityPrompt -->|8. run LLM to merge and update| EntityCard[wiki/collections/companies/Google.md]
 ```
 
----
+### Example: A Custom `companies` Plugin
 
-## 🚀 Quick Start (Offline Ingestion)
+#### 1. Define fields (`plugins/collections/companies/schema.md`)
 
-Follow this sequence to ingest your files into a clean Obsidian wiki vault:
+Declare a YAML key the summarization LLM must look for and populate:
 
-### 1. Prerequisites
-Install **Obsidian**, and fetch the CLI tools:
-```bash
-brew bundle install
-gh auth login
+```markdown
+| Key         | Type  | Requirement | Description                                   |
+| :---------- | :---- | :---------- | :-------------------------------------------- |
+| `companies` | Array | Optional    | List of organizations or companies mentioned. |
 ```
 
-### 2. Configure Local Models (oMLX)
-Start your local oMLX server hosting the following models:
-* **Text:** `Qwen3.6-35B`
-* **Vision:** `Gemma-4-31B-IT` (image analysis)
-* **OCR:** `DeepSeek-OCR-2-bf16` (PDF extraction)
+#### 2. Define entity attributes (`plugins/collections/companies/schema.md`)
 
-Create a `.env` in the repository root:
-```env
-API_URL="http://localhost:8000/v1/chat/completions"
-API_KEY="your-api-key"
-OCR_MODEL_NAME="DeepSeek-OCR-2-bf16"
-IMAGE_MODEL_NAME="gemma-4-31b-it-4bit"
-```
+Specify columns for the compiled company card. Note that `timestamp` and `tags` do not need to be declared; they are automatically appended by the system.
 
-Configure OpenCode's main text model in `.opencode/models.yaml`:
-```yaml
-default:
-  api_url: "http://localhost:8000/v1"
-  api_key: "your-api-key"
-  model: "Qwen3.6-35B-A3B-UD-MLX-4bit"
-```
-
-### 3. Pipeline Configuration (`mycelium-mind.json`)
-You can configure the pipeline batch sizes for processing concepts and persons by creating a `mycelium-mind.json` file in the project root:
-
-```json
-{
-  "batchSizes": {
-    "concepts": 5,
-    "persons": 5
-  }
-}
-```
-
-* **`batchSizes.concepts`**: Number of concept entities processed in a single LLM invocation (default: `5`).
-* **`batchSizes.persons`**: Number of person entities processed in a single LLM invocation (default: `5`).
-
-### 4. Drop & Process Files
-1. Create your vault folder structure:
-   ```bash
-   mkdir -p Vaults/LLM-Wiki/inbox Vaults/LLM-Wiki/wiki
-   ```
-2. Place raw PDFs, images, text, or markdown files into `Vaults/LLM-Wiki/inbox/`.
-3. In your OpenCode terminal, run the orchestrator:
-   ```bash
-   /wiki LLM-Wiki
-   ```
-4. Open the compiled `Vaults/LLM-Wiki/wiki/` folder in **Obsidian** to view your synced wiki!
-
----
-
-## 📂 Vault Schema & Directory Map
-
-Inside your vault root `Vaults/<VaultName>/`, Mycelium Mind organizes files into configuration/input folders and the compiled Obsidian-facing `wiki/` directory:
-
-* `schemas/` — OKF schema definitions for all content types (kept outside `wiki/` to avoid spoiling Obsidian).
-* `inbox/` — Input area for raw documents.
-* `wiki/` — The compiled Obsidian vault (open this folder in Obsidian!):
-  * `index.md` — The Map of Content (entry directory).
-  * `summaries/` — Synthesis cards for raw documents.
-  * `concepts/` — General concept and topic notes.
-  * `persons/` — Biography cards for individuals.
-  * `reports/` — Cross-vault thematic syntheses (compiled via `/wiki-report`).
-  * `assets/` — Archive of raw documents sorted by date of ingestion (`assets/YYYY-MM-DD/`).
-
----
-
-## 🧩 Commands Reference & Contract Table
-
-All subcommands run independently in OpenCode:
-
-| Command | Reads | Writes | LLM Invocations | Standalone? | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `/wiki-sync` | `inbox/` (binary + text) | `inbox/` (converted text) | None (pure shell) | ✅ | Pre-processes inbox files (OCR, vision, filename sanitation). |
-| `/wiki-summaries` | `inbox/*.md,*.txt` | `summaries/`, `assets/` | 1 per inbox file | ✅ | Generates OKF Summary cards from inbox files. |
-| `/wiki-concepts` | `summaries/` (frontmatter) | `concepts/` | 1 per batch (configurable) | ✅ | Extracts and generates Concept cards from summaries. |
-| `/wiki-persons` | `summaries/` (frontmatter) | `persons/` | 1 per batch (configurable) | ✅ | Extracts and generates Person biography cards from summaries. |
-| `/wiki-social-graph` | `persons/` | `social-graph.md` | 1 (single pass) | ✅ | Generates a Mermaid social graph and connection map of persons. |
-| `/wiki-timeline` | `summaries/` | `timeline.md` | 1 (single pass) | ✅ | Compiles a chronological timeline of events from summaries. |
-| `/wiki-indices` | `wiki/*` (frontmatter) | `* /index.md` | None (pure shell) | ✅ | Generates OKF folder-level index.md files for progressive disclosure. |
-| `/wiki-lint` | `wiki/*` + `schemas/*` | stdout (report) | 1 (single pass) | ✅ | Performs a health check and OKF compliance audit on the wiki. |
-| `/wiki-report` | `summaries/`, `concepts/` | `reports/` | 1 (single pass) | ✅ | Synthesizes a thematic study across multiple vaults. |
-| `/wiki` | — | — | Orchestrates all above | ✅ | Runs the entire pipeline sequentially. |
-
----
-
-## 🔗 Hook-Based Modularity & Pipeline Extension
-
-Mycelium Mind is designed around **single-responsibility, decoupled commands** that build on top of each other. This is orchestrated via the Command Hooks plugin (`@pkcpkc/opencode-plugin-command-hooks`), which executes sequential shell scripts and OpenCode commands before and after a main command executes.
-
-Because commands are completely modular, you can easily extend the ingestion pipeline with new LLM-driven features (e.g. generating custom category indices, extracting semantic structures, or running concept-specific syntheses).
-
-### Case Study: Adding a `/wiki-companies` Command
-Suppose we want to automatically scan all ingested text, identify mentioned companies, and compile a dedicated profile page for each under `wiki/companies/`.
-
-#### Step A: Define the Company Schema (`Vaults/LLM-Wiki/schemas/company.md`)
-First, define the structured metadata and layout template for Company profile cards:
-
-```yaml
+```markdown
 ---
 type: "Schema"
 title: "Company Schema"
-description: "Defines the required metadata fields and structural format for company profile pages."
+description: "Attributes for a company wiki card."
 ---
+
+| Key           | Type   | Requirement | Description                            |
+| :------------ | :----- | :---------- | :------------------------------------- |
+| `type`        | String | Required    | Must be exactly `"Company"`.           |
+| `title`       | String | Required    | Name of the company or organization.   |
+| `description` | String | Required    | One-sentence organization description. |
 ```
 
-Body:
-```markdown
-# Company Schema
+#### 3. Define merge instructions (`plugins/collections/companies/prompt.md`)
 
-Company profiles are structured cards representing organizations, institutions, or corporate entities.
+Configure how the LLM should assemble the final markdown page. Provide `$SCHEMA` placeholder inside a markdown code block:
 
-## Frontmatter Specification
+````markdown
+# Wiki Company Prompt
 
-| Key           | Type     | Requirement    | Description                                              |
-|:--------------|:---------|:---------------|:---------------------------------------------------------|
-| `type`        | String   | **Required**   | Must be exactly `"Company"`.                             |
-| `title`       | String   | **Required**   | Full name of the company.                                |
-| `description` | String   | Recommended    | A single sentence description of what the company does.  |
-| `tags`        | Array    | Optional       | Category tags (e.g., `["artificial-intelligence"]`).      |
-| `timestamp`   | String   | **Required**   | ISO-8601 UTC datetime of last modification.              |
+You are a knowledge compiler. Synthesize information into a Company card.
 
-## Markdown Body Structure
+## Schema Specification
 
-- **`# [Company Name]`** — L1 main title.
-- **`## Overview`** — Summary description of the company.
-- **`## Founders & Leadership`** — Bulleted list of founders (using Obsidian wikilinks).
-- **`## Products & Technologies`** — Key products or systems developed.
-- **`## Context & Operations`** — Narrative history synthesized from mentions in summaries.
-
-## Template
-
-    ---
-    type: "Company"
-    title: "${title}"
-    description: "${description}"
-    tags: ${tags}
-    timestamp: "${timestamp}"
-    ---
-    # ${title}
-
-    ## Overview
-
-    [High-level description...]
-
-    ## Founders & Leadership
-
-    - [[Founder A]]
-    - [[Founder B]]
-
-    ## Products & Technologies
-
-    - [Product A]
-
-    ## Context & Operations
-
-    [Detailed context...]
+```schema
+$SCHEMA
 ```
-
-#### Step B: Define the Command Prompt (`.opencode/commands/wiki-companies.md`)
-Create a prompt instructing the LLM on how to extract and format company pages, injecting the newly defined schema:
-
-```markdown
----
-description: Scans summaries and concepts to identify companies and compile profile pages under companies/. Usage: /wiki-companies <VaultName>
----
-# Wiki Companies Command
+````
 
 ## Context
-Vault Name: $1
 
-## Company Schema
+- Company Name: $VALUE
 
-!`cat ./Vaults/$1/schemas/company.md`
+## Existing Content
+
+$EXISTING_CONTENT
+
+## Mentions In Ingested Summaries
+
+$SUMMARY_CONTENT
 
 ## Instructions
-1. Scan `./Vaults/$1/wiki/summaries/` and `./Vaults/$1/wiki/concepts/`.
-2. Extract all mentioned business entities or companies.
-3. For each unique company, write or update `./Vaults/$1/wiki/companies/[Company Name].md` conforming to the Company Schema template EXACTLY.
-4. Set the `timestamp` field to the current date/time in ISO-8601 UTC format.
-```
 
-#### Step C: Declare Hooks (`.opencode/commands/wiki-companies.hooks.json`)
-Configure the pre-script to ensure the target directory exists:
-```json
-{
-  "scripts": {
-    "pre": [
-      "mkdir -p ./Vaults/$1/wiki/companies"
-    ]
-  }
-}
-```
+Merge information from the summary mentions into the existing company content for `$VALUE`.
 
-#### Step D: Append to the Master Pipeline (`.opencode/commands/wiki.hooks.json`)
-To make this new company extraction execute automatically whenever you run `/wiki <VaultName>`, simply append it to the post-commands array in the master hooks file:
-```json
-{
-  "commands": {
-    "post": [
-      "wiki-sync $1",
-      "wiki-summaries $1",
-      "wiki-concepts $1",
-      "wiki-persons $1",
-      "wiki-companies $1",
-      "wiki-social-graph $1",
-      "wiki-timeline $1"
-    ]
-  }
-}
-```
+- Output ONLY the valid markdown content. Do not include markdown code block wraps.
+
+````
 
 ---
 
-## 🔌 Model Context Protocol (MCP) Integration
+## ⚙️ Custom Overviews & Sandbox Scripting
 
-Mycelium Mind exposes your vaults programmatically to other LLM interfaces (Claude Desktop, Cursor, Cline, Roo Code) via MCP. 
+Overviews are dynamic markdown dashboards generated programmatically by running sandboxed JavaScript scripts against the compiled entity index.
 
-Register the server by adding this to your MCP configuration (`mcp_config.json`):
+### Execution Flow
+```mermaid
+flowchart LR
+    WikiDocs[wiki/summaries/ & wiki/collections/] -->|1. parse frontmatter| GraphBuilder[Build Session Graph in Memory]
+    GraphBuilder -->|2. instantiate VM sandbox| OverviewVM[Node.js VM Context]
+    OverviewVM -->|3. expose read helpers & writePage| ScriptRunner[plugins/overviews/*.js]
+    ScriptRunner -->|4. execute JS| WriteOutput[wiki/overviews/*.md]
+````
 
-```json
-{
-  "mcpServers": {
-    "mycelium-mind": {
-      "command": "node",
-      "args": [
-        "/Users/pkc/Projects/mycelium-mind/mcp/build/index.js",
-        "--vault=LLM-Wiki"
-      ],
-      "cwd": "/Users/pkc/Projects/mycelium-mind/mcp"
+### Sandbox Environment API Context
+
+Overview scripts run inside a secure `node:vm` sandbox with access to the following methods (also accessible on the namespaced `wiki` object, e.g. `wiki.getCollection`):
+
+- **`getCollection(key, filter)`**: Retrieves all items in a collection (e.g. `getCollection('concepts')`), optional `filter` matching metadata fields.
+- **`getSummaries(filter)`**: Retrieves all summary pages.
+- **`getConcepts(filter)`**: Shorthand for concept cards.
+- **`getPagesByTag(tag, filter)`**: Retrieves all items matching a tag.
+- **`writePage(pageName, frontmatter, markdownBody)`**: Generates an overview note under `wiki/overviews/<pageName>.md`, automatically injecting `type: "Overview"` and the current ISO `timestamp`.
+- **`console`**: Direct logging to standard output.
+
+### Example: A custom `tag-dashboard.js` overview script
+
+Create `plugins/overviews/tag-dashboard.js`:
+
+```javascript
+// Collect all pages in the wiki graph
+const concepts = getCollection("concepts");
+const persons = getCollection("persons");
+const allEntities = [...concepts, ...persons];
+
+// Count entity frequencies per tag
+const tagCounts = {};
+for (const entity of allEntities) {
+  if (entity.tags) {
+    for (const tag of entity.tags) {
+      tagCounts[tag] = (tagCounts[tag] || 0) + 1;
     }
   }
 }
+
+// Build Markdown dashboard output
+let body =
+  "Here is a breakdown of all tags matching entities in this wiki:\n\n";
+body += "| Tag Name | Frequency |\n";
+body += "| :--- | :--- |\n";
+
+const sortedTags = Object.keys(tagCounts).sort(
+  (a, b) => tagCounts[b] - tagCounts[a],
+);
+for (const tag of sortedTags) {
+  body += `| \`${tag}\` | ${tagCounts[tag]} |\n`;
+}
+
+// Output overview dashboard note
+writePage(
+  "tag-dashboard",
+  {
+    title: "Tag Frequency Dashboard",
+    description: "Detailed analysis of tags used throughout wiki collections.",
+  },
+  body,
+);
 ```
 
-*Note: Omit `--vault=<name>` to run in **Multi-Vault Mode**, which activates vault discovery (`get_vaults`) and exposes all vaults under `Vaults/`.*
-For detailed configuration and API tool schemas, see the [MCP README](file:///Users/pkc/Projects/mycelium-mind/mcp/README.md).
+---
+
+## 📈 Dynamic Relation Clouds
+
+For each collection folder under `wiki/collections/`, the compiler automatically generates a dedicated **Relation Cloud** overview page (`<collection-name>-cloud.md`).
+
+These pages dynamically read their target collection from `data-collection` attributes:
+
+```markdown
+<div id="cy-fullscreen" data-collection="concepts"></div>
+```
+
+When compiled for static deployment, Cytoscape scripts render interactive, fullscreen graph visualizations, letting users navigate the wiki by clicking connected nodes sharing common tags.
+
+---
+
+## 🧪 Testing
+
+The codebase includes an extensive suite of integration tests covering the command CLI executions:
+
+```bash
+# Run tests via Vitest
+mise exec -- npm run test
+```

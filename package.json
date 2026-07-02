@@ -1,6 +1,7 @@
 {
   "type": "module",
   "scripts": {
+    "cli": "tsx src/cli.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -8,6 +9,7 @@
     "gray-matter": "^4.0.3",
     "headroom-ai": "^0.1.0",
     "openai": "^6.44.0",
+    "sirv": "^3.0.2",
     "yaml": "^2.9.0"
   },
   "devDependencies": {

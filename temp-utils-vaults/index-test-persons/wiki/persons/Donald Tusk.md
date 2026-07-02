@@ -1,4 +1,0 @@
----
-title: Donald Tusk
----
-Content
