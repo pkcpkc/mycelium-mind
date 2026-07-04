@@ -1,0 +1,7 @@
+$meta:
+  type: Schema
+  title: "Person Summary Extension Schema"
+  description: "Defines dynamic person summary extraction fields."
+
+persons: [string] # Array | Required | List of individuals extracted from source.
+relationships: [string] # Array | Required | List of relationships between extracted persons (e.g. personA, relation, personB).

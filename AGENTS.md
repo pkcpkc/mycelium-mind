@@ -35,10 +35,6 @@ The local Python virtual environment is located at `./.venv/` in the project roo
 
 Use `headroom` and `tokensave` MCP servers to save tokens.
 
-### Mycelium Mind MCP Server (`mycelium-mind`)
-
-When interacting with the wiki, use the `mycelium-mind` MCP server to quickly query vault content instead of reading files manually. It exposes a clean JSON API over your vaults with sanitized wikilinks and no raw file paths.
-
 ---
 
 ## Best Practices for Developer Agents

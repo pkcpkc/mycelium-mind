@@ -1,4 +1,0 @@
----
-title: Alpha Concept
----
-Content

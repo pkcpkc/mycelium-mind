@@ -1,0 +1,24 @@
+site_name: My Wiki
+theme:
+  name: material
+  logo: assets/mycelium-mind-icon.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+docs_dir: ../wiki
+use_directory_urls: false
+plugins:
+  - search
+  - tags
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
