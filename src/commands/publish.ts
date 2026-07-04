@@ -12,6 +12,9 @@ const stdLinkRe = /\[([^\]]+)\]\(((?!(?:https?:\/\/|mailto:))[^)]+?\.md)(#[^)]*)
 /**
  * Publishes the wiki to a static site using MkDocs.
  */
+const compiledAssetsPath = path.join(projectRootDir, 'build/commands/assets');
+const useCompiled = fs.existsSync(compiledAssetsPath);
+const assetsBaseDir = useCompiled ? compiledAssetsPath : path.join(projectRootDir, 'src/commands/assets');
 export async function publishWiki(wikiPath: string, targetDirArg?: string): Promise<void> {
   const vaultRoot = getVaultDir(wikiPath);
   const vaultName = path.basename(vaultRoot);
@@ -65,8 +68,8 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
   fs.mkdirSync(assetsJsDir, { recursive: true });
   fs.mkdirSync(assetsCssDir, { recursive: true });
 
-  const srcJs = path.resolve(projectRootDir, 'src/commands/assets/publish/collections-cloud/collections-cloud.js');
-  const srcCss = path.resolve(projectRootDir, 'src/commands/assets/publish/collections-cloud/collections-cloud.css');
+  const srcJs = path.join(assetsBaseDir, 'publish/collections-cloud/collections-cloud.js');
+  const srcCss = path.join(assetsBaseDir, 'publish/collections-cloud/collections-cloud.css');
   
   if (fs.existsSync(srcJs)) {
     fs.copyFileSync(srcJs, path.join(assetsJsDir, 'collections-cloud.js'));
@@ -76,8 +79,8 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
   }
 
   // 4.05 Copy custom mermaid-zoom assets
-  const zoomJs = path.resolve(projectRootDir, 'src/commands/assets/publish/mermaid-zoom/mermaid-zoom.js');
-  const zoomCss = path.resolve(projectRootDir, 'src/commands/assets/publish/mermaid-zoom/mermaid-zoom.css');
+  const zoomJs = path.join(assetsBaseDir, 'publish/mermaid-zoom/mermaid-zoom.js');
+  const zoomCss = path.join(assetsBaseDir, 'publish/mermaid-zoom/mermaid-zoom.css');
   
   console.log('DEBUG [publish.ts]: zoomJs path =', zoomJs);
   console.log('DEBUG [publish.ts]: zoomJs exists in src =', fs.existsSync(zoomJs));
