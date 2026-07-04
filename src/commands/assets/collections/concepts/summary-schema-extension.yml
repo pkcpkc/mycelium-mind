@@ -1,0 +1,6 @@
+$meta:
+  type: Schema
+  title: "Concept Summary Extension Schema"
+  description: "Defines dynamic concept summary extraction fields."
+
+concepts: [string] # Array | Required | List of technical core concepts mentioned in the text.

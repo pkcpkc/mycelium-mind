@@ -17,32 +17,20 @@ import {
 } from '../utils/fs-utils.js';
 import { gitCommit, gitCreateBranch, gitCreatePR, enableGitCommits } from '../utils/git.js';
 import { buildSessionGraph, runOverviewScript } from '../utils/overview-runner.js';
-import { checkPlugin } from './check-plugin.js';
+import { checkPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
+import { overviewsWiki } from './overviews.js';
+import { parseSchema } from '../utils/schema-parser.js';
 
-
-
-// Parses properties table from schema markdown
-function parseSchemaProperties(markdown: string): string {
-  const lines = markdown.split('\n');
-  const specLines: string[] = [];
-  let inTable = false;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('|')) {
-      if (trimmed.includes('---')) continue; // Skip separator line
-      if (trimmed.toLowerCase().includes('key') && trimmed.toLowerCase().includes('type')) {
-        continue; // Skip header line
-      }
-      const cols = trimmed.split('|').map(c => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
-      if (cols.length >= 3) {
-        specLines.push(`- '${cols[0]}' (${cols[2]}, ${cols[1]}): ${cols[3] || ''}`);
-      }
-    }
+// Parses properties table from schema YAML
+function parseSchemaProperties(yamlContent: string): string {
+  try {
+    const parsed = parseSchema(yamlContent);
+    return parsed.cleanSchemaYaml;
+  } catch (e: any) {
+    console.error('Failed to parse schema YAML:', e.message);
+    return '';
   }
-
-  return specLines.join('\n');
 }
 
 /**
@@ -129,8 +117,8 @@ async function processPdf(pdfPath: string, tempDir: string): Promise<string> {
 /**
  * Syncs the inbox folder with the wiki database.
  */
-export async function syncWiki(wikiPath: string, options?: { commit?: boolean; branch?: boolean; pr?: boolean; verbose?: boolean }): Promise<void> {
-  enableGitCommits(!!(options?.commit || options?.branch || options?.pr));
+export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbose?: boolean }): Promise<void> {
+  enableGitCommits(!!options?.pr);
   const absolutePath = path.resolve(wikiPath);
 
   // Implicitly create folders/files for the wiki if missing
@@ -141,7 +129,7 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
   if (fs.existsSync(pluginsCollectionsDir)) {
     const folders = fs.readdirSync(pluginsCollectionsDir).filter(f => fs.statSync(path.join(pluginsCollectionsDir, f)).isDirectory());
     for (const folder of folders) {
-      await checkPlugin(path.join(pluginsCollectionsDir, folder));
+      await checkPlugins(path.join(pluginsCollectionsDir, folder));
     }
   }
 
@@ -149,7 +137,7 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
   const wikiDir = path.join(absolutePath, 'wiki');
 
   let branchName = '';
-  if (options?.branch) {
+  if (options?.pr) {
     const timestamp = new Date().toISOString()
       .replace(/[-:]/g, '')
       .replace('T', '-')
@@ -226,6 +214,7 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
 
     console.log(`[Step ${globalStepIndex}] [Summaries ${summaryIdx}/${totalSummaries}] Processing file from inbox: ${file}`);
     console.log(`[Step ${globalStepIndex}] [Summaries ${summaryIdx}/${totalSummaries}] Generating summary for: ${file}`);
+    const summaryStartTime = Date.now();
 
     let rawTextContent = '';
     let companionMetadataContent = '';
@@ -283,7 +272,7 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
     }
 
     const summaryPromptTemplate = fs.readFileSync(path.join(absolutePath, 'config', 'summary', 'prompt.md'), 'utf8');
-    const summaryBaseSchema = fs.readFileSync(path.join(absolutePath, 'config', 'summary', 'schema.md'), 'utf8');
+    const summaryBaseSchema = fs.readFileSync(path.join(absolutePath, 'config', 'summary', 'schema.yml'), 'utf8');
 
     const schemasDir = path.join(absolutePath, 'plugins', 'collections');
     const schemaInstructions: string[] = [];
@@ -291,9 +280,9 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
     if (fs.existsSync(schemasDir)) {
       const folders = fs.readdirSync(schemasDir).filter(f => fs.statSync(path.join(schemasDir, f)).isDirectory());
       for (const folder of folders) {
-        const frontmatterPath = path.join(schemasDir, folder, 'schema.md');
-        if (fs.existsSync(frontmatterPath)) {
-          const fmContent = fs.readFileSync(frontmatterPath, 'utf8');
+        const extensionPath = path.join(schemasDir, folder, 'summary-schema-extension.yml');
+        if (fs.existsSync(extensionPath)) {
+          const fmContent = fs.readFileSync(extensionPath, 'utf8');
           schemaInstructions.push(parseSchemaProperties(fmContent));
         }
       }
@@ -315,6 +304,7 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
       ]);
       summaryText = cleanMarkdownResponse(summaryText);
       stats.summariesSuccess++;
+      console.log(`[Step ${globalStepIndex}] [Summaries ${summaryIdx}/${totalSummaries}] Done in ${((Date.now() - summaryStartTime) / 1000).toFixed(1)}s`);
     } catch (e: any) {
       console.error(`LLM synthesis failed for ${file}:`, e.message);
       stats.summariesFailed++;
@@ -421,6 +411,7 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
 
       const { entityName, summaryContent } = task;
       console.log(`[Step ${globalStepIndex}/${totalSteps}] [${schemaName} ${schemaTaskIdx}/${totalSchemaTasks}] Compiling: ${entityName}`);
+      const entityStartTime = Date.now();
       
       const entityFilename = toSafeFilename(entityName);
       const collectionFolder = path.join(wikiDir, 'collections', schemaName);
@@ -429,7 +420,7 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
 
       let existingContent = fs.existsSync(entityPath) ? fs.readFileSync(entityPath, 'utf8') : '';
       const schemaPromptPath = path.join(schemasDir, schemaName, 'prompt.md');
-      const schemaPropertiesPath = path.join(schemasDir, schemaName, 'schema.md');
+      const schemaPropertiesPath = path.join(schemasDir, schemaName, 'schema.yml');
       
       if (!fs.existsSync(schemaPromptPath) || !fs.existsSync(schemaPropertiesPath)) {
         stats.entitiesFailed[schemaName]++;
@@ -437,26 +428,43 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
       }
 
       const promptTemplate = fs.readFileSync(schemaPromptPath, 'utf8');
-      let schemaProperties = fs.readFileSync(schemaPropertiesPath, 'utf8');
-      const autoRows = [
-        { key: 'timestamp', row: '| `timestamp` | String | Required | ISO-8601 date of synthesis. Auto-set by the system. |' },
-        { key: 'tags', row: '| `tags` | Array | Optional | Categorization tags. |' },
-      ];
-      for (const { key, row } of autoRows) {
-        if (!new RegExp(key, 'i').test(schemaProperties)) {
-          const lines = schemaProperties.split('\n');
-          let lastTableLineIdx = lines.findIndex(l => l.trim().startsWith('|') && l.trim().endsWith('|') && !l.includes('---'));
-          if (lastTableLineIdx !== -1) {
-            lines.splice(lastTableLineIdx + 1, 0, row);
-            schemaProperties = lines.join('\n');
-          } else schemaProperties += '\n\n' + row + '\n';
+      const rawSchemaContent = fs.readFileSync(schemaPropertiesPath, 'utf8');
+      let schemaProperties = rawSchemaContent;
+      try {
+        const doc = YAML.parseDocument(rawSchemaContent);
+        if (doc && doc.contents && YAML.isMap(doc.contents)) {
+          // Remove $meta
+          const metaIndex = doc.contents.items.findIndex(item => item.key && (item.key as any).value === '$meta');
+          if (metaIndex !== -1) {
+            doc.contents.items.splice(metaIndex, 1);
+          }
+          // Auto-inject missing system keys
+          const keys = doc.contents.items.map(item => item.key && (item.key as any).value);
+          if (!keys.includes('timestamp')) {
+            const node = doc.createNode('$TIMESTAMP');
+            node.comment = ' String | Required | ISO-8601 date of synthesis. Auto-set by the system.';
+            doc.set('timestamp', node);
+          }
+          if (!keys.includes('tags')) {
+            const node = doc.createNode(['string'], { flow: true });
+            node.comment = ' Array | Optional | Categorization tags.';
+            doc.set('tags', node);
+          }
+          schemaProperties = doc.toString().trim();
         }
+      } catch (err: any) {
+        console.error(`Failed to process schema properties for ${schemaName}:`, err.message);
       }
 
-      const prompt = promptTemplate
-        .replace(/\$SCHEMA/g, schemaProperties)
+      const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      const evaluatedSchema = schemaProperties
         .replace(/\$VALUE/g, entityName)
-        .replace(/\$TIMESTAMP/g, new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'))
+        .replace(/\$TIMESTAMP/g, timestamp);
+
+      const prompt = promptTemplate
+        .replace(/\$SCHEMA/g, evaluatedSchema)
+        .replace(/\$VALUE/g, entityName)
+        .replace(/\$TIMESTAMP/g, timestamp)
         .replace(/\$EXISTING_CONTENT/g, existingContent || '(empty)')
         .replace(/\$SUMMARY_CONTENT/g, summaryContent);
 
@@ -465,6 +473,7 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
         fs.writeFileSync(entityPath, compiledText, 'utf8');
         gitCommit(entityPath, `Updated ${schemaName} entity card: ${entityName}`);
         stats.entitiesSuccess[schemaName]++;
+        console.log(`[Step ${globalStepIndex}/${totalSteps}] [${schemaName} ${schemaTaskIdx}/${totalSchemaTasks}] Done in ${((Date.now() - entityStartTime) / 1000).toFixed(1)}s`);
       } catch (e: any) {
         console.error(`Failed to compile entity ${entityName}:`, e.message);
         stats.entitiesFailed[schemaName]++;
@@ -472,51 +481,9 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
     }
   }
 
-  // 3. Compile Overviews
-  console.log('Generating overviews...');
-  const sessionGraph = await buildSessionGraph(wikiDir);
-  let overviewIdx = 0;
-  for (const script of overviewScripts) {
-    overviewIdx++;
-    globalStepIndex++;
-    const scriptPath = path.join(overviewsPluginDir, script);
-    console.log(`[Step ${globalStepIndex}/${totalSteps}] [Overviews ${overviewIdx}/${totalOverviews}] Running overview script: ${script}`);
-    try {
-      await runOverviewScript(scriptPath, wikiDir, sessionGraph);
-      stats.overviewsSuccess++;
-    } catch (e: any) {
-      console.error(`Overview script ${script} failed:`, e.message);
-      stats.overviewsFailed++;
-    }
-  }
-
-  // 4. Rebuild Indexes
-  console.log('Rebuilding indexes...');
-  let indexStepIdx = 0;
-  const logIndexStep = (name: string) => {
-    indexStepIdx++;
-    globalStepIndex++;
-    console.log(`[Step ${globalStepIndex}/${totalSteps}] [Indexes ${indexStepIdx}/${totalIndexes}] Rebuilding index for: ${name}`);
-  };
-
-  const indexSteps = [
-    { name: 'summaries', action: () => rebuildFolderIndex(wikiDir, 'summaries', 'Summaries') },
-    { name: 'overviews', action: () => rebuildFolderIndex(wikiDir, 'overviews', 'Overviews') },
-    ...activeSchemas.map(s => ({ name: s, action: () => rebuildFolderIndex(wikiDir, `collections/${s}`, s.charAt(0).toUpperCase() + (s.endsWith('s') ? s.slice(1) : s.slice(1) + 's')) })),
-    { name: 'root', action: () => rebuildWikiRootIndex(wikiDir) },
-    { name: 'tags', action: () => rebuildTagsPage(wikiDir) }
-  ];
-
-  for (const step of indexSteps) {
-    try {
-      logIndexStep(step.name);
-      await step.action();
-      stats.indexesSuccess++;
-    } catch (e: any) {
-      console.error(`Failed to rebuild index for ${step.name}:`, e.message);
-      stats.indexesFailed++;
-    }
-  }
+  // 3. Compile Overviews and Rebuild Indexes
+  await overviewsWiki(absolutePath, undefined, { verbose: options?.verbose });
+  enableGitCommits(!!options?.pr);
 
   console.log('\nSync pipeline complete.');
   console.log(`- Summaries generated: ${stats.summariesSuccess}/${totalSummaries} (${stats.summariesFailed} failed)`);
@@ -524,8 +491,7 @@ export async function syncWiki(wikiPath: string, options?: { commit?: boolean; b
     const totalSchemaTasks = entityTasksBySchema[schemaName].length;
     console.log(`- ${schemaName.charAt(0).toUpperCase() + schemaName.slice(1)} compiled: ${stats.entitiesSuccess[schemaName]}/${totalSchemaTasks} (${stats.entitiesFailed[schemaName]} failed)`);
   }
-  console.log(`- Overviews generated: ${stats.overviewsSuccess}/${totalOverviews} (${stats.overviewsFailed} failed)`);
-  console.log(`- Indexes rebuilt: ${stats.indexesSuccess}/${totalIndexes} (${stats.indexesFailed} failed)\n`);
+  console.log();
 
   if (options?.pr && branchName) {
     gitCreatePR(absolutePath, branchName);

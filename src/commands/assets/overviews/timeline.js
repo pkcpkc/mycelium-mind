@@ -82,10 +82,10 @@ if (events.length > 0) {
     return parts.join('');
   }
 
-  let body = '# Timeline\n\n';
+  let graphicBody = '# Visual Timeline\n\n[[timeline|← Back to List View]]\n\n';
 
-  // Render mermaid timeline diagram on top of the page
-  body += '```mermaid\n%%{init: {\n' +
+  // Render mermaid timeline diagram
+  graphicBody += '```mermaid\n%%{init: {\n' +
     '  "themeVariables": {\n' +
     '    "cScale0": "#6B75CC", "cScaleLabel0": "#0f172a",\n' +
     '    "cScale1": "#6B75CC", "cScaleLabel1": "#0f172a",\n' +
@@ -104,29 +104,36 @@ if (events.length > 0) {
   for (const key of sortedKeys) {
     const yearEvents = grouped[key];
     const mermaidEvents = yearEvents.map(event => {
-      let label = event.date !== key ? `${event.date}: ${event.title}` : event.title;
-      label += ` (${event.source})`;
-      const cleanLabel = label.replace(/"/g, "'").replace(/[\r\n]+/g, ' ').trim();
-      return `"${cleanLabel}"`;
+      const label = `${event.date} — ${event.title} (${event.source})`;
+      const cleanLabel = label.replace(/:/g, ' - ').replace(/"/g, "'").replace(/[\r\n]+/g, ' ').trim();
+      return cleanLabel;
     });
     const cleanKey = key.replace(/:/g, '-');
-    body += `    ${cleanKey} : ${mermaidEvents.join(' : ')}\n`;
+    graphicBody += `    ${cleanKey} : ${mermaidEvents.join(' : ')}\n`;
   }
-  body += '```\n\n';
+  graphicBody += '```\n';
+
+  let listBody = '# Timeline\n\n[[timeline-graphic|Visual Timeline ↗]]\n\n';
 
   for (const key of sortedKeys) {
-    body += `## ${key}\n\n`;
+    listBody += `## ${key}\n\n`;
     const yearEvents = grouped[key];
     for (const event of yearEvents) {
       const dateLabel = event.date !== key ? `**${event.date}**: ` : '';
       const linkedTitle = addWikiLinks(event.title);
-      body += `- ${dateLabel}${linkedTitle} ([[${event.source}]])\n`;
+      listBody += `- ${dateLabel}${linkedTitle} ([[${event.source}]])\n`;
     }
-    body += '\n';
+    listBody += '\n';
   }
 
   writePage('timeline', {
     title: 'Timeline',
     description: 'Chronological timeline of all events mentioned in the vault.'
-  }, body);
+  }, listBody);
+
+  writePage('timeline-graphic', {
+    title: 'Visual Timeline',
+    description: 'Interactive chronological timeline diagram.',
+    hide: ['navigation', 'toc']
+  }, graphicBody);
 }

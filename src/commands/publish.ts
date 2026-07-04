@@ -75,6 +75,30 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
     fs.copyFileSync(srcCss, path.join(assetsCssDir, 'collections-cloud.css'));
   }
 
+  // 4.05 Copy custom mermaid-zoom assets
+  const zoomJs = path.resolve(projectRootDir, 'src/commands/assets/publish/mermaid-zoom/mermaid-zoom.js');
+  const zoomCss = path.resolve(projectRootDir, 'src/commands/assets/publish/mermaid-zoom/mermaid-zoom.css');
+  
+  console.log('DEBUG [publish.ts]: zoomJs path =', zoomJs);
+  console.log('DEBUG [publish.ts]: zoomJs exists in src =', fs.existsSync(zoomJs));
+  console.log('DEBUG [publish.ts]: zoomCss path =', zoomCss);
+  console.log('DEBUG [publish.ts]: zoomCss exists in src =', fs.existsSync(zoomCss));
+
+  if (fs.existsSync(zoomJs)) {
+    const destJs = path.join(assetsJsDir, 'mermaid-zoom.js');
+    fs.copyFileSync(zoomJs, destJs);
+    console.log('DEBUG [publish.ts]: Copied JS to', destJs, 'Exists now =', fs.existsSync(destJs));
+  } else {
+    console.log('DEBUG [publish.ts]: zoomJs NOT FOUND');
+  }
+  if (fs.existsSync(zoomCss)) {
+    const destCss = path.join(assetsCssDir, 'mermaid-zoom.css');
+    fs.copyFileSync(zoomCss, destCss);
+    console.log('DEBUG [publish.ts]: Copied CSS to', destCss, 'Exists now =', fs.existsSync(destCss));
+  } else {
+    console.log('DEBUG [publish.ts]: zoomCss NOT FOUND');
+  }
+
   // 4.1 Copy default logo/icon from config/assets if present, otherwise fall back to project root
   const sourceIcon = path.join(vaultRoot, 'config', 'assets', 'mycelium-mind-icon.png');
   const targetIconDir = path.join(docsDir, 'assets');
@@ -161,12 +185,16 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
   if (!extraJs.includes(cytoscapeCdn)) extraJs.push(cytoscapeCdn);
   const customJs = 'assets/js/collections-cloud.js';
   if (!extraJs.includes(customJs)) extraJs.push(customJs);
+  const zoomJsAsset = 'assets/js/mermaid-zoom.js';
+  if (!extraJs.includes(zoomJsAsset)) extraJs.push(zoomJsAsset);
   configData.extra_javascript = extraJs;
 
   let extraCss = configData.extra_css || [];
   if (!Array.isArray(extraCss)) extraCss = [];
   const customCss = 'assets/css/collections-cloud.css';
   if (!extraCss.includes(customCss)) extraCss.push(customCss);
+  const zoomCssAsset = 'assets/css/mermaid-zoom.css';
+  if (!extraCss.includes(zoomCssAsset)) extraCss.push(zoomCssAsset);
   configData.extra_css = extraCss;
 
   // Mermaid SuperFences

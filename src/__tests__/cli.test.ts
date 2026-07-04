@@ -82,12 +82,15 @@ describe('Unified Wiki Compiler CLI Tests', () => {
 
     // Verify folders
     expect(fs.existsSync(path.join(wikiPath, 'inbox'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'config', 'summary', 'schema.md'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'config', 'summary', 'schema.yml'))).toBe(true);
     expect(fs.existsSync(path.join(wikiPath, 'config', 'summary', 'prompt.md'))).toBe(true);
     expect(fs.existsSync(path.join(wikiPath, 'config', 'mkdocs.yml'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'concepts', 'schema.md'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'persons', 'schema.md'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'times', 'schema.md'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'concepts', 'schema.yml'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'concepts', 'summary-schema-extension.yml'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'persons', 'schema.yml'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'persons', 'summary-schema-extension.yml'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'times', 'schema.yml'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'times', 'summary-schema-extension.yml'))).toBe(true);
     expect(fs.existsSync(path.join(wikiPath, 'plugins', 'overviews', 'timeline.js'))).toBe(true);
     expect(fs.existsSync(path.join(wikiPath, 'plugins', 'overviews', 'social-graph.js'))).toBe(true);
     expect(fs.existsSync(path.join(wikiPath, 'config', 'config.yml'))).toBe(true);
@@ -205,7 +208,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning.', 'utf8');
 
     // 2. Run sync with options
-    await syncWiki(wikiPath, { branch: true, pr: true, verbose: true });
+    await syncWiki(wikiPath, { pr: true, verbose: true });
 
     expect(spyBranch).toHaveBeenCalled();
     expect(spyPR).toHaveBeenCalled();
@@ -225,7 +228,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     expect(gitUtils.isGitCommitsEnabled()).toBe(false);
 
     // 4. Run resync with options
-    await resyncWiki(wikiPath, { branch: true, pr: true, verbose: true });
+    await resyncWiki(wikiPath, { pr: true, verbose: true });
 
     expect(spyBranch).toHaveBeenCalled();
     expect(spyPR).toHaveBeenCalled();
@@ -238,8 +241,8 @@ describe('Unified Wiki Compiler CLI Tests', () => {
   it('sync and resync commands: should implicitly check plugins and exit with 1 on plugin error', async () => {
     await initWiki(wikiPath);
 
-    // Make a plugin invalid by writing invalid content to schema.md
-    const invalidPluginSchema = path.join(wikiPath, 'plugins', 'collections', 'concepts', 'schema.md');
+    // Make a plugin invalid by writing invalid content to schema.yml
+    const invalidPluginSchema = path.join(wikiPath, 'plugins', 'collections', 'concepts', 'schema.yml');
     fs.writeFileSync(invalidPluginSchema, 'invalid schema content without frontmatter', 'utf8');
 
     const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -267,7 +270,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     await syncWiki(wikiPath);
 
     expect(fs.existsSync(path.join(wikiPath, 'inbox'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'config', 'summary', 'schema.md'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'config', 'summary', 'schema.yml'))).toBe(true);
 
     fs.rmSync(wikiPath, { recursive: true, force: true });
     expect(fs.existsSync(path.join(wikiPath, 'wiki'))).toBe(false);
@@ -275,7 +278,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     await resyncWiki(wikiPath);
 
     expect(fs.existsSync(path.join(wikiPath, 'wiki'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'config', 'summary', 'schema.md'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'config', 'summary', 'schema.yml'))).toBe(true);
   });
 
   it('overview runner: should respect the timeout set in config.yml and abort slow scripts', async () => {
@@ -330,5 +333,26 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     expect(resyncLoggedLines.some(line => line && line.includes('- Summaries generated: 1/1'))).toBe(true);
 
     logSpy.mockRestore();
+  });
+
+  it('overviews command: should regenerate overviews and index pages without LLM calls and optionally publish site', async () => {
+    const { overviewsWiki } = await import('../commands/overviews.js');
+    await initWiki(wikiPath);
+
+    // Run overviews command
+    await overviewsWiki(wikiPath);
+
+    // Verify social-graph overview and index.md for overviews exists
+    const socialGraphFile = path.join(wikiPath, 'wiki', 'overviews', 'social-graph.md');
+    const overviewsIndex = path.join(wikiPath, 'wiki', 'overviews', 'index.md');
+    expect(fs.existsSync(socialGraphFile)).toBe(true);
+    expect(fs.existsSync(overviewsIndex)).toBe(true);
+
+    // Test with optional targetHtmlPath
+    const targetDir = path.join(TEST_ROOT, 'PublishedSiteOverviews');
+    await overviewsWiki(wikiPath, targetDir);
+
+    const { execSync } = await import('child_process');
+    expect(execSync).toHaveBeenCalled();
   });
 });

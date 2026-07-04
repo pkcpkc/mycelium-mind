@@ -1,27 +1,23 @@
+#!/usr/bin/env node
 import { argv, exit } from 'process';
 import { initWiki } from './commands/init.js';
 import { syncWiki } from './commands/sync.js';
 import { publishWiki } from './commands/publish.js';
 import { resyncWiki } from './commands/resync.js';
-import { checkPlugin } from './commands/check-plugin.js';
+import { checkPlugins } from './commands/check-plugins.js';
 import { serveWiki } from './commands/serve.js';
+import { overviewsWiki } from './commands/overviews.js';
 
 async function main() {
   const args = argv.slice(2);
   const flags = {
-    commit: false,
-    branch: false,
     pr: false,
     verbose: false,
   };
 
   const positional: string[] = [];
   for (const arg of args) {
-    if (arg === '--commit') {
-      flags.commit = true;
-    } else if (arg === '--branch') {
-      flags.branch = true;
-    } else if (arg === '--pr') {
+    if (arg === '--pr') {
       flags.pr = true;
     } else if (arg === '--verbose' || arg === '-v') {
       flags.verbose = true;
@@ -32,30 +28,21 @@ async function main() {
     }
   }
 
-  // Handle flag dependencies: pr implies branch, branch implies commit
-  if (flags.pr) {
-    flags.branch = true;
-  }
-  if (flags.branch) {
-    flags.commit = true;
-  }
-
   const command = positional[0];
-  const wikiPath = positional[1];
+  const wikiPath = positional[1] || '.';
 
-  if (!command || !wikiPath) {
-    console.error('Usage: mycelium-mind <command> <wiki-path|plugin-path> [args] [options]');
+  if (!command) {
+    console.error('Usage: mm <command> [wiki-path|plugin-path] [args] [options]');
     console.error('Commands:');
-    console.error('  init <wiki-path>                      - Initialize folder layout & templates');
-    console.error('  sync <wiki-path> [options]            - Process inbox files into the wiki');
-    console.error('  publish <wiki-path> [target-dir]      - Compile static MkDocs site');
-    console.error('  serve <wiki-path|publish-path>        - Spawn minimal HTTP server serving the wiki');
-    console.error('  resync <wiki-path> [options]          - Rebuild summaries & collections from assets');
-    console.error('  check-plugin <plugin-path>            - Verify plugin schema and prompt configurations');
+    console.error('  init [wiki-path]                      - Initialize folder layout & templates (default: .)');
+    console.error('  sync [wiki-path] [options]            - Process inbox files into the wiki (default: .)');
+    console.error('  publish [wiki-path] [target-dir]      - Compile static MkDocs site (default: .)');
+    console.error('  overviews [wiki-path] [target-html-path] - Re-create overview markdown pages and indexes (default: .)');
+    console.error('  serve [wiki-path|publish-path]        - Spawn minimal HTTP server serving the wiki (default: .)');
+    console.error('  resync [wiki-path] [options]          - Rebuild summaries & collections from assets (default: .)');
+    console.error('  check-plugins [plugin-path]           - Verify plugin schema and prompt configurations (default: .)');
     console.error('Options:');
-    console.error('  --commit                              - Commit changes to Git after each step');
-    console.error('  --branch                              - Create/checkout a new branch before changing anything (implies --commit)');
-    console.error('  --pr                                  - Automatically push and create a pull request at the end (implies --branch and --commit)');
+    console.error('  --pr                                  - Create a branch, commit changes, push, and open a pull request');
     console.error('  -v, --verbose                         - Show assembled final LLM prompts in the console');
     exit(1);
   }
@@ -72,11 +59,15 @@ async function main() {
         const targetDir = positional[2];
         await publishWiki(wikiPath, targetDir);
         break;
+      case 'overviews':
+        const targetHtmlPath = positional[2];
+        await overviewsWiki(wikiPath, targetHtmlPath, flags);
+        break;
       case 'resync':
         await resyncWiki(wikiPath, flags);
         break;
-      case 'check-plugin':
-        await checkPlugin(wikiPath);
+      case 'check-plugins':
+        await checkPlugins(wikiPath);
         break;
       case 'serve':
         await serveWiki(wikiPath);

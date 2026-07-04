@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
-import { checkPlugin } from '../commands/check-plugin.js';
+import { checkPlugins } from '../commands/check-plugins.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TEST_ROOT = path.resolve(__dirname, '..', '..', 'temp-plugin-tests');
 
-describe('check-plugin command tests', () => {
+describe('check-plugins command tests', () => {
   const pluginPath = path.join(TEST_ROOT, 'test-plugin');
   let exitSpy: any;
   let errorSpy: any;
@@ -31,35 +31,33 @@ describe('check-plugin command tests', () => {
   });
 
   it('should exit with 1 if plugin directory does not exist', async () => {
-    await expect(checkPlugin(path.join(TEST_ROOT, 'non-existent'))).rejects.toThrow('process.exit called');
+    await expect(checkPlugins(path.join(TEST_ROOT, 'non-existent'))).rejects.toThrow('process.exit called');
     expect(exitSpy).toHaveBeenCalledWith(1);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('does not exist'));
   });
 
-  it('should exit with 1 if both schema.md and prompt.md are missing', async () => {
+  it('should exit with 1 if all schema/prompt files are missing', async () => {
     fs.mkdirSync(pluginPath);
 
-    await expect(checkPlugin(pluginPath)).rejects.toThrow('process.exit called');
+    await expect(checkPlugins(pluginPath)).rejects.toThrow('process.exit called');
     expect(exitSpy).toHaveBeenCalledWith(1);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Plugin must contain at least one of"));
   });
 
-  it('should pass if only schema.md is present and valid', async () => {
+  it('should pass if only schema.yml is present and valid', async () => {
     fs.mkdirSync(pluginPath);
     fs.writeFileSync(
-      path.join(pluginPath, 'schema.md'),
-      `---
-type: Schema
-title: Test Schema
-description: Test Desc
----
-| Key | Type | Requirement | Description |
-|---|---|---|---|
-| test_key | String | Optional | Valid |
+      path.join(pluginPath, 'schema.yml'),
+      `$meta:
+  type: Schema
+  title: Test Schema
+  description: Test Desc
+
+test_key: string # String | Optional | Valid
 `
     );
 
-    await checkPlugin(pluginPath);
+    await checkPlugins(pluginPath);
     expect(exitSpy).not.toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('completed successfully'));
   });
@@ -77,7 +75,7 @@ Prompt with $SCHEMA, $VALUE, $TIMESTAMP, $EXISTING_CONTENT, $SUMMARY_CONTENT
 `
     );
 
-    await checkPlugin(pluginPath);
+    await checkPlugins(pluginPath);
     expect(exitSpy).not.toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('completed successfully'));
   });
@@ -94,111 +92,103 @@ Prompt content
 `
     );
 
-    await expect(checkPlugin(pluginPath)).rejects.toThrow('process.exit called');
+    await expect(checkPlugins(pluginPath)).rejects.toThrow('process.exit called');
     expect(exitSpy).toHaveBeenCalledWith(1);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("fields' array must be strings"));
   });
 
-  it('should exit with 1 if schema.md lacks frontmatter delimiters', async () => {
+  it('should exit with 1 if schema.yml lacks metadata block', async () => {
     fs.mkdirSync(pluginPath);
-    fs.writeFileSync(path.join(pluginPath, 'schema.md'), 'type: Schema\ntitle: Test');
+    fs.writeFileSync(path.join(pluginPath, 'schema.yml'), 'test_key: string');
     fs.writeFileSync(path.join(pluginPath, 'prompt.md'), 'some prompt');
 
-    await expect(checkPlugin(pluginPath)).rejects.toThrow('process.exit called');
+    await expect(checkPlugins(pluginPath)).rejects.toThrow('process.exit called');
     expect(exitSpy).toHaveBeenCalledWith(1);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("frontmatter is missing or not enclosed"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("is missing a '$meta' configuration block"));
   });
 
   it('should exit with 1 if frontmatter is invalid YAML', async () => {
     fs.mkdirSync(pluginPath);
     fs.writeFileSync(
-      path.join(pluginPath, 'schema.md'),
-      `---
-type: Schema
-title: [unclosed list
----`
+      path.join(pluginPath, 'schema.yml'),
+      `$meta:
+  type: Schema
+  title: [unclosed list`
     );
     fs.writeFileSync(path.join(pluginPath, 'prompt.md'), 'some prompt');
 
-    await expect(checkPlugin(pluginPath)).rejects.toThrow('process.exit called');
+    await expect(checkPlugins(pluginPath)).rejects.toThrow('process.exit called');
     expect(exitSpy).toHaveBeenCalledWith(1);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to parse 'schema.md' frontmatter"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to parse"));
   });
 
   it('should exit with 1 if frontmatter type is not Schema', async () => {
     fs.mkdirSync(pluginPath);
     fs.writeFileSync(
-      path.join(pluginPath, 'schema.md'),
-      `---
-type: SomethingElse
-title: Test Title
-description: Test Desc
----`
+      path.join(pluginPath, 'schema.yml'),
+      `$meta:
+  type: SomethingElse
+  title: Test Title
+  description: Test Desc
+test_key: string`
     );
     fs.writeFileSync(path.join(pluginPath, 'prompt.md'), 'some prompt');
 
-    await expect(checkPlugin(pluginPath)).rejects.toThrow('process.exit called');
+    await expect(checkPlugins(pluginPath)).rejects.toThrow('process.exit called');
     expect(exitSpy).toHaveBeenCalledWith(1);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("frontmatter 'type' must be 'Schema'"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("$meta 'type' must be 'Schema'"));
   });
 
-  it('should exit with 1 if schema.md properties table is missing', async () => {
+  it('should pass silently if schema.yml contains no properties', async () => {
     fs.mkdirSync(pluginPath);
     fs.writeFileSync(
-      path.join(pluginPath, 'schema.md'),
-      `---
-type: Schema
-title: Test Schema
-description: Test Desc
----
-No table here.`
+      path.join(pluginPath, 'schema.yml'),
+      `$meta:
+  type: Schema
+  title: Test Schema
+  description: Test Desc`
     );
-    fs.writeFileSync(path.join(pluginPath, 'prompt.md'), 'some prompt');
+    fs.writeFileSync(path.join(pluginPath, 'prompt.md'), '$VALUE $EXISTING_CONTENT $SUMMARY_CONTENT');
 
-    await expect(checkPlugin(pluginPath)).rejects.toThrow('process.exit called');
-    expect(exitSpy).toHaveBeenCalledWith(1);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("must contain a properties markdown table"));
+    await checkPlugins(pluginPath);
+    expect(exitSpy).not.toHaveBeenCalled();
   });
 
-  it('should exit with 1 if schema table contains invalid keys', async () => {
+  it('should exit with 1 if schema contains invalid keys', async () => {
     fs.mkdirSync(pluginPath);
     fs.writeFileSync(
-      path.join(pluginPath, 'schema.md'),
-      `---
-type: Schema
-title: Test Schema
-description: Test Desc
----
-| Key | Type | Requirement | Description |
-|---|---|---|---|
-| invalid key | String | Optional | Has spaces |
+      path.join(pluginPath, 'schema.yml'),
+      `$meta:
+  type: Schema
+  title: Test Schema
+  description: Test Desc
+
+invalid key: string # String | Optional | Has spaces
 `
     );
     fs.writeFileSync(path.join(pluginPath, 'prompt.md'), 'some prompt');
 
-    await expect(checkPlugin(pluginPath)).rejects.toThrow('process.exit called');
+    await expect(checkPlugins(pluginPath)).rejects.toThrow('process.exit called');
     expect(exitSpy).toHaveBeenCalledWith(1);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid key name 'invalid key'"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid key/sub-key name"));
   });
 
   it('should successfully pass verification with warnings for missing placeholders', async () => {
     fs.mkdirSync(pluginPath);
     fs.writeFileSync(
-      path.join(pluginPath, 'schema.md'),
-      `---
-type: Schema
-title: Test Schema
-description: Test Desc
----
-| Key | Type | Requirement | Description |
-|---|---|---|---|
-| test_key | String | Optional | Valid |
+      path.join(pluginPath, 'schema.yml'),
+      `$meta:
+  type: Schema
+  title: Test Schema
+  description: Test Desc
+
+test_key: string # String | Optional | Valid
 `
     );
     // prompt has some placeholders but not all
     fs.writeFileSync(path.join(pluginPath, 'prompt.md'), 'Prompt with $SCHEMA and $VALUE');
 
-    await checkPlugin(pluginPath);
+    await checkPlugins(pluginPath);
     expect(exitSpy).not.toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('does not use the following placeholders'));
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('completed successfully'));
@@ -207,24 +197,22 @@ description: Test Desc
   it('should successfully pass verification with no warnings when all placeholders and metadata are correct', async () => {
     fs.mkdirSync(pluginPath);
     fs.writeFileSync(
-      path.join(pluginPath, 'schema.md'),
-      `---
-type: Schema
-title: Test Schema
-description: Test Desc
----
-| Key | Type | Requirement | Description |
-|---|---|---|---|
-| test_key | String | Optional | Valid |
+      path.join(pluginPath, 'schema.yml'),
+      `$meta:
+  type: Schema
+  title: Test Schema
+  description: Test Desc
+
+test_key: string # String | Optional | Valid
 `
     );
     // prompt has all placeholders
     fs.writeFileSync(
       path.join(pluginPath, 'prompt.md'),
-      'Prompt with $SCHEMA, $VALUE, $TIMESTAMP, $EXISTING_CONTENT, $SUMMARY_CONTENT'
+      'Prompt with $VALUE, $EXISTING_CONTENT, $SUMMARY_CONTENT'
     );
 
-    await checkPlugin(pluginPath);
+    await checkPlugins(pluginPath);
     expect(exitSpy).not.toHaveBeenCalled();
     expect(warnSpy).not.toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('completed successfully'));

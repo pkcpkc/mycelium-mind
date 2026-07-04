@@ -64,13 +64,14 @@ for (const name of personList) {
   nameToIdMap.set(name, uniqueId);
 }
 
-let body = '# Social Graph\n\n## Connection Map\n\n';
+// 1. Generate the Graphic Page (social-graph-graphic.md)
+let graphicBody = '# Visual Social Graph\n\n[[social-graph|← Back to Registry View]]\n\n';
 
 if (allPersons.size > 0) {
-  body += '```mermaid\nflowchart LR\n';
+  graphicBody += '```mermaid\nflowchart LR\n';
   for (const name of personList) {
     const nodeId = nameToIdMap.get(name);
-    body += `    ${nodeId}["${name}"]\n`;
+    graphicBody += `    ${nodeId}["${name}"]\n`;
   }
 
   const printedEdges = new Set();
@@ -80,28 +81,36 @@ if (allPersons.size > 0) {
     if (idA && idB) {
       const edgeKey = `${idA}-${rel.relation}-${idB}`;
       if (!printedEdges.has(edgeKey)) {
-        body += `    ${idA} -- "${rel.relation}" --> ${idB}\n`;
+        graphicBody += `    ${idA} -- "${rel.relation}" --> ${idB}\n`;
         printedEdges.add(edgeKey);
       }
     }
   }
-  body += '```\n\n';
+  graphicBody += '```\n\n';
 } else {
-  body += 'No relationships found.\n\n';
+  graphicBody += 'No relationships found.\n\n';
 }
 
-body += '## Relationship Registry\n\n';
+// 2. Generate the Registry List Page (social-graph.md)
+let listBody = '# Social Graph\n\n[[social-graph-graphic|Visual Social Graph ↗]]\n\n';
+listBody += '## Relationship Registry\n\n';
 if (relationships.length > 0) {
-  body += '| Person A | Connection | Person B | Context / Source |\n';
-  body += '| :--- | :--- | :--- | :--- |\n';
+  listBody += '| Person A | Connection | Person B | Context / Source |\n';
+  listBody += '| :--- | :--- | :--- | :--- |\n';
   for (const rel of relationships) {
-    body += `| [[${rel.personA}]] | ${rel.relation} | [[${rel.personB}]] | [[${rel.source}]] |\n`;
+    listBody += `| [[${rel.personA}]] | ${rel.relation} | [[${rel.personB}]] | [[${rel.source}]] |\n`;
   }
 } else {
-  body += 'No explicit relationships found.';
+  listBody += 'No explicit relationships found.';
 }
 
 writePage('social-graph', {
   title: 'Social Graph',
   description: 'Connection map and relationship registry of all individuals in the vault.'
-}, body);
+}, listBody);
+
+writePage('social-graph-graphic', {
+  title: 'Visual Social Graph',
+  description: 'Interactive social graph connection map.',
+  hide: ['navigation', 'toc']
+}, graphicBody);

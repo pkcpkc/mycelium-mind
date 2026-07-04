@@ -1,0 +1,8 @@
+$meta:
+  type: Schema
+  title: "Times Summary Extension Schema"
+  description: "Defines dynamic times summary extraction fields."
+
+times: # Array | Required | List of dates and events mentioned in the text.
+  - date: string # String | Required | Date (YYYY-MM-DD or YYYY-MM or YYYY).
+    event: string # String | Required | Title/event name.

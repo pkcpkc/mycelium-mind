@@ -3,13 +3,17 @@ import * as path from 'path';
 import { execSync } from 'child_process';
 import { projectRootDir } from '../utils/config.js';
 
-const configAssetsDir = path.join(projectRootDir, 'src/commands/assets/config');
-const publishAssetsDir = path.join(projectRootDir, 'src/commands/assets/publish');
-const summaryAssetsDir = path.join(projectRootDir, 'src/commands/assets/summary');
-const conceptsAssetsDir = path.join(projectRootDir, 'src/commands/assets/collections/concepts');
-const personsAssetsDir = path.join(projectRootDir, 'src/commands/assets/collections/persons');
-const timesAssetsDir = path.join(projectRootDir, 'src/commands/assets/collections/times');
-const overviewsAssetsDir = path.join(projectRootDir, 'src/commands/assets/overviews');
+const compiledAssetsPath = path.join(projectRootDir, 'build/commands/assets');
+const useCompiled = fs.existsSync(compiledAssetsPath);
+const assetsBaseDir = useCompiled ? compiledAssetsPath : path.join(projectRootDir, 'src/commands/assets');
+
+const configAssetsDir = path.join(assetsBaseDir, 'config');
+const publishAssetsDir = path.join(assetsBaseDir, 'publish');
+const summaryAssetsDir = path.join(assetsBaseDir, 'summary');
+const conceptsAssetsDir = path.join(assetsBaseDir, 'collections/concepts');
+const personsAssetsDir = path.join(assetsBaseDir, 'collections/persons');
+const timesAssetsDir = path.join(assetsBaseDir, 'collections/times');
+const overviewsAssetsDir = path.join(assetsBaseDir, 'overviews');
 
 /**
  * Initializes a new wiki structure.
@@ -42,16 +46,19 @@ export async function initWiki(wikiPath: string, options?: { overwrite?: boolean
   // Load templates from asset directories
   const mkdocsContent = fs.readFileSync(path.join(publishAssetsDir, 'mkdocs.yml'), 'utf8');
   const configContent = fs.readFileSync(path.join(configAssetsDir, 'config.yml'), 'utf8');
-  const summarySchemaContent = fs.readFileSync(path.join(summaryAssetsDir, 'schema.md'), 'utf8');
+  const summarySchemaContent = fs.readFileSync(path.join(summaryAssetsDir, 'schema.yml'), 'utf8');
   const summaryPromptContent = fs.readFileSync(path.join(summaryAssetsDir, 'prompt.md'), 'utf8');
 
-  const conceptSchemaContent = fs.readFileSync(path.join(conceptsAssetsDir, 'schema.md'), 'utf8');
+  const conceptSchemaContent = fs.readFileSync(path.join(conceptsAssetsDir, 'schema.yml'), 'utf8');
+  const conceptExtensionContent = fs.readFileSync(path.join(conceptsAssetsDir, 'summary-schema-extension.yml'), 'utf8');
   const conceptPromptContent = fs.readFileSync(path.join(conceptsAssetsDir, 'prompt.md'), 'utf8');
 
-  const personSchemaContent = fs.readFileSync(path.join(personsAssetsDir, 'schema.md'), 'utf8');
+  const personSchemaContent = fs.readFileSync(path.join(personsAssetsDir, 'schema.yml'), 'utf8');
+  const personExtensionContent = fs.readFileSync(path.join(personsAssetsDir, 'summary-schema-extension.yml'), 'utf8');
   const personPromptContent = fs.readFileSync(path.join(personsAssetsDir, 'prompt.md'), 'utf8');
 
-  const timesSchemaContent = fs.readFileSync(path.join(timesAssetsDir, 'schema.md'), 'utf8');
+  const timesSchemaContent = fs.readFileSync(path.join(timesAssetsDir, 'schema.yml'), 'utf8');
+  const timesExtensionContent = fs.readFileSync(path.join(timesAssetsDir, 'summary-schema-extension.yml'), 'utf8');
   const timesPromptContent = fs.readFileSync(path.join(timesAssetsDir, 'prompt.md'), 'utf8');
 
   const timelineContent = fs.readFileSync(path.join(overviewsAssetsDir, 'timeline.js'), 'utf8');
@@ -68,17 +75,20 @@ export async function initWiki(wikiPath: string, options?: { overwrite?: boolean
   // 2. Pre-populate config files
   writeFile(path.join(absolutePath, 'config', 'mkdocs.yml'), mkdocsContent);
   writeFile(path.join(absolutePath, 'config', 'config.yml'), configContent);
-  writeFile(path.join(absolutePath, 'config', 'summary', 'schema.md'), summarySchemaContent);
+  writeFile(path.join(absolutePath, 'config', 'summary', 'schema.yml'), summarySchemaContent);
   writeFile(path.join(absolutePath, 'config', 'summary', 'prompt.md'), summaryPromptContent);
 
   // 3. Pre-populate default schema plugins
-  writeFile(path.join(absolutePath, 'plugins', 'collections', 'concepts', 'schema.md'), conceptSchemaContent);
+  writeFile(path.join(absolutePath, 'plugins', 'collections', 'concepts', 'schema.yml'), conceptSchemaContent);
+  writeFile(path.join(absolutePath, 'plugins', 'collections', 'concepts', 'summary-schema-extension.yml'), conceptExtensionContent);
   writeFile(path.join(absolutePath, 'plugins', 'collections', 'concepts', 'prompt.md'), conceptPromptContent);
 
-  writeFile(path.join(absolutePath, 'plugins', 'collections', 'persons', 'schema.md'), personSchemaContent);
+  writeFile(path.join(absolutePath, 'plugins', 'collections', 'persons', 'schema.yml'), personSchemaContent);
+  writeFile(path.join(absolutePath, 'plugins', 'collections', 'persons', 'summary-schema-extension.yml'), personExtensionContent);
   writeFile(path.join(absolutePath, 'plugins', 'collections', 'persons', 'prompt.md'), personPromptContent);
 
-  writeFile(path.join(absolutePath, 'plugins', 'collections', 'times', 'schema.md'), timesSchemaContent);
+  writeFile(path.join(absolutePath, 'plugins', 'collections', 'times', 'schema.yml'), timesSchemaContent);
+  writeFile(path.join(absolutePath, 'plugins', 'collections', 'times', 'summary-schema-extension.yml'), timesExtensionContent);
   writeFile(path.join(absolutePath, 'plugins', 'collections', 'times', 'prompt.md'), timesPromptContent);
 
   // 4. Pre-populate default overview scripts

@@ -10,7 +10,9 @@ export const projectRootDir = path.resolve(__dirname, '..', '..');
 
 // Helper to check environment variables and fallback to .env file
 function loadEnv() {
-  const envPath = path.join(projectRootDir, '.env');
+  const cwdEnvPath = path.join(process.cwd(), '.env');
+  const packageEnvPath = path.join(projectRootDir, '.env');
+  const envPath = fs.existsSync(cwdEnvPath) ? cwdEnvPath : packageEnvPath;
   if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, 'utf8');
     for (const line of envContent.split('\n')) {

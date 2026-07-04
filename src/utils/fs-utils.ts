@@ -223,7 +223,7 @@ export async function rebuildFolderIndex(wikiDir: string, relativeFolderPath: st
     `# ${header} Index\n`,
   ];
   if (isCollection) {
-    lines.push(`- [[${folderName}-cloud|${titleCapitalized} Relation Cloud ↗]]\n`);
+    lines.push(`[[${folderName}-cloud|${titleCapitalized} Relation Cloud ↗]]\n`);
   }
   lines.push(`## List of Items\n`);
   for (const [nameNoExt, title, desc] of items) {
