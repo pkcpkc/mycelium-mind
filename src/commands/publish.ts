@@ -28,9 +28,9 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
   let siteDir = '';
   if (targetDirArg && targetDirArg.trim()) {
     const trimmed = targetDirArg.trim();
-    siteDir = path.isAbsolute(trimmed) ? trimmed : path.resolve(projectRootDir, trimmed);
+    siteDir = path.isAbsolute(trimmed) ? trimmed : path.resolve(vaultRoot, trimmed);
   } else {
-    siteDir = path.resolve(distDir, vaultName);
+    siteDir = path.resolve(vaultRoot, 'dist');
   }
 
   // 1. Clean and recreate build directory

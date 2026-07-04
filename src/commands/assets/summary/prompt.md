@@ -20,5 +20,16 @@ $SCHEMA
 
 - Extract and output ALL specified dynamic frontmatter properties cleanly.
 - Ensure any empty arrays are output as `[]` rather than omitted.
-- All YAML string properties (including nested objects inside arrays) must be safely quoted/escaped to avoid invalid YAML syntax.
+- Produce strictly conformant YAML 1.2.2 in the frontmatter:
+  - Indent with spaces only (never use tabs).
+  - Quote strings containing special characters (especially `:`, `#`, `[`, `]`, `{`, `}`, `-`, `?`, `!`, `|`, `>`, `*`, `&`).
+  - Escape quotes inside quoted strings: use `\"` inside double quotes `""`, or `''` inside single quotes `''`.
+  - Format arrays of objects as sequence blocks, indenting keys under the hyphen:
+    ```yaml
+    list_name:
+      - item_key_1: "value"
+        item_key_2: "value"
+      - item_key_1: "value"
+        item_key_2: "value"
+    ```
 - Output ONLY the valid markdown content. Do not include markdown code block wraps.

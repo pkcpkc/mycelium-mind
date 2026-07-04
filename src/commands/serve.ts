@@ -18,8 +18,13 @@ export async function serveWiki(targetPath: string): Promise<http.Server> {
       if (fs.existsSync(path.join(resolvedPath, 'index.html'))) {
         serveDir = resolvedPath;
       } else if (fs.existsSync(path.join(resolvedPath, 'wiki'))) {
-        const vaultName = path.basename(resolvedPath);
-        serveDir = path.resolve(projectRootDir, 'dist', vaultName);
+        const vaultDist = path.resolve(resolvedPath, 'dist');
+        if (fs.existsSync(vaultDist)) {
+          serveDir = vaultDist;
+        } else {
+          const vaultName = path.basename(resolvedPath);
+          serveDir = path.resolve(projectRootDir, 'dist', vaultName);
+        }
       } else {
         serveDir = resolvedPath;
       }
@@ -29,8 +34,13 @@ export async function serveWiki(targetPath: string): Promise<http.Server> {
   } else {
     try {
       const vaultRoot = getVaultDir(targetPath);
-      const vaultName = path.basename(vaultRoot);
-      serveDir = path.resolve(projectRootDir, 'dist', vaultName);
+      const vaultDist = path.resolve(vaultRoot, 'dist');
+      if (fs.existsSync(vaultDist)) {
+        serveDir = vaultDist;
+      } else {
+        const vaultName = path.basename(vaultRoot);
+        serveDir = path.resolve(projectRootDir, 'dist', vaultName);
+      }
     } catch {
       throw new Error(`Path '${targetPath}' does not exist.`);
     }

@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import { initWiki } from '../commands/init.js';
+import { manageCollection, manageOverview } from '../commands/library.js';
 import { syncWiki } from '../commands/sync.js';
 import { publishWiki } from '../commands/publish.js';
 import { resyncWiki } from '../commands/resync.js';
@@ -77,29 +78,39 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     vi.clearAllMocks();
   });
 
-  it('init command: should create the entire folder structure and default configurations', async () => {
+  it('init command: should create the entire folder structure and core configurations without default plugins', async () => {
     await initWiki(wikiPath);
 
-    // Verify folders
+    // Verify core structure
     expect(fs.existsSync(path.join(wikiPath, 'inbox'))).toBe(true);
     expect(fs.existsSync(path.join(wikiPath, 'config', 'summary', 'schema.yml'))).toBe(true);
     expect(fs.existsSync(path.join(wikiPath, 'config', 'summary', 'prompt.md'))).toBe(true);
     expect(fs.existsSync(path.join(wikiPath, 'config', 'mkdocs.yml'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'concepts', 'schema.yml'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'concepts', 'summary-schema-extension.yml'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'persons', 'schema.yml'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'persons', 'summary-schema-extension.yml'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'times', 'schema.yml'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'times', 'summary-schema-extension.yml'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'overviews', 'timeline.js'))).toBe(true);
-    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'overviews', 'social-graph.js'))).toBe(true);
     expect(fs.existsSync(path.join(wikiPath, 'config', 'config.yml'))).toBe(true);
     expect(fs.existsSync(path.join(wikiPath, 'wiki', 'index.md'))).toBe(true);
+
+    // Default plugins and scripts should NOT exist
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'concepts'))).toBe(false);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'persons'))).toBe(false);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'times'))).toBe(false);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'overviews', 'timeline.js'))).toBe(false);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'overviews', 'social-graph.js'))).toBe(false);
+  });
+
+  it('init command: with includeDefaults should populate default collections and overviews', async () => {
+    await initWiki(wikiPath, { includeDefaults: true });
+
+    // Verify default plugins and scripts exist
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'concepts', 'schema.yml'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'persons', 'schema.yml'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'times', 'schema.yml'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'overviews', 'timeline.js'))).toBe(true);
+    expect(fs.existsSync(path.join(wikiPath, 'plugins', 'overviews', 'social-graph.js'))).toBe(true);
   });
 
   it('sync command: should process files from inbox, copy to assets, build summaries, compile collections, run overviews, and build index files', async () => {
     // Initialize wiki structure
-    await initWiki(wikiPath);
+    await initWiki(wikiPath, { includeDefaults: true });
 
     // Write a test document to inbox
     const docPath = path.join(wikiPath, 'inbox', 'Andrej Karpathy.md');
@@ -151,7 +162,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
 
   it('resync command: should wipe and recreate summaries, collections and overviews from existing assets', async () => {
     // Setup and run a clean sync first
-    await initWiki(wikiPath);
+    await initWiki(wikiPath, { includeDefaults: true });
     const docPath = path.join(wikiPath, 'inbox', 'Andrej Karpathy.md');
     fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning and co-founded OpenAI.', 'utf8');
     await syncWiki(wikiPath);
@@ -172,7 +183,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
   });
 
   it('publish command: should write cytoscape assets and build standard MkDocs outputs with converted links', async () => {
-    await initWiki(wikiPath);
+    await initWiki(wikiPath, { includeDefaults: true });
     const docPath = path.join(wikiPath, 'inbox', 'Andrej Karpathy.md');
     fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning.', 'utf8');
     await syncWiki(wikiPath);
@@ -189,7 +200,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
   });
 
   it('sync and resync commands: should accept options for git branch, pull request, and verbose logs', async () => {
-    await initWiki(wikiPath);
+    await initWiki(wikiPath, { includeDefaults: true });
     const docPath = path.join(wikiPath, 'inbox', 'Andrej Karpathy.md');
     fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning.', 'utf8');
 
@@ -239,7 +250,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
   });
 
   it('sync and resync commands: should implicitly check plugins and exit with 1 on plugin error', async () => {
-    await initWiki(wikiPath);
+    await initWiki(wikiPath, { includeDefaults: true });
 
     // Make a plugin invalid by writing invalid content to schema.yml
     const invalidPluginSchema = path.join(wikiPath, 'plugins', 'collections', 'concepts', 'schema.yml');
@@ -282,7 +293,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
   });
 
   it('overview runner: should respect the timeout set in config.yml and abort slow scripts', async () => {
-    await initWiki(wikiPath);
+    await initWiki(wikiPath, { includeDefaults: true });
 
     // Overwrite config.yml with a very short timeout (50ms)
     const configPath = path.join(wikiPath, 'config', 'config.yml');
@@ -303,7 +314,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
   });
 
   it('sync and resync commands: should log dual-level progress and final summary', async () => {
-    await initWiki(wikiPath);
+    await initWiki(wikiPath, { includeDefaults: true });
     const docPath = path.join(wikiPath, 'inbox', 'Andrej Karpathy.md');
     fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning and co-founded OpenAI.', 'utf8');
 
@@ -337,7 +348,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
 
   it('overviews command: should regenerate overviews and index pages without LLM calls and optionally publish site', async () => {
     const { overviewsWiki } = await import('../commands/overviews.js');
-    await initWiki(wikiPath);
+    await initWiki(wikiPath, { includeDefaults: true });
 
     // Run overviews command
     await overviewsWiki(wikiPath);
@@ -354,5 +365,102 @@ describe('Unified Wiki Compiler CLI Tests', () => {
 
     const { execSync } = await import('child_process');
     expect(execSync).toHaveBeenCalled();
+  });
+
+  describe('Library Collection and Overview commands', () => {
+    it('should list and install collections correctly', async () => {
+      await initWiki(wikiPath);
+      
+      const spyLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      // 1. List collections (name undefined)
+      await manageCollection(wikiPath);
+      expect(spyLog).toHaveBeenCalled();
+      const listCall = spyLog.mock.calls.map(call => call[0]).join('\n');
+      expect(listCall).toContain('concepts');
+      expect(listCall).toContain('persons');
+      expect(listCall).toContain('times');
+
+      spyLog.mockClear();
+
+      // 2. Install collection 'concepts'
+      await manageCollection(wikiPath, 'concepts');
+      expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'concepts', 'schema.yml'))).toBe(true);
+
+      // 3. Prevent duplicate install without force
+      const spyError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit called');
+      });
+
+      await expect(manageCollection(wikiPath, 'concepts')).rejects.toThrow('process.exit called');
+      expect(exitSpy).toHaveBeenCalledWith(1);
+
+      exitSpy.mockClear();
+      spyError.mockClear();
+
+      // 4. Overwrite works with force
+      await manageCollection(wikiPath, 'concepts', { force: true });
+      expect(exitSpy).not.toHaveBeenCalled();
+
+      // 5. Test custom from library path
+      const customLibPath = path.join(TEST_ROOT, 'custom-lib');
+      fs.mkdirSync(path.join(customLibPath, 'collections', 'custom-col'), { recursive: true });
+      fs.writeFileSync(path.join(customLibPath, 'collections', 'custom-col', 'schema.yml'), 'test: data');
+
+      await manageCollection(wikiPath, 'custom-col', { from: customLibPath });
+      expect(fs.existsSync(path.join(wikiPath, 'plugins', 'collections', 'custom-col', 'schema.yml'))).toBe(true);
+
+      spyLog.mockRestore();
+      spyError.mockRestore();
+      exitSpy.mockRestore();
+    });
+
+    it('should list and install overviews correctly', async () => {
+      await initWiki(wikiPath);
+      
+      const spyLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      // 1. List overviews (name undefined)
+      await manageOverview(wikiPath);
+      expect(spyLog).toHaveBeenCalled();
+      const listCall = spyLog.mock.calls.map(call => call[0]).join('\n');
+      expect(listCall).toContain('timeline');
+      expect(listCall).toContain('social-graph');
+
+      spyLog.mockClear();
+
+      // 2. Install overview 'timeline'
+      await manageOverview(wikiPath, 'timeline');
+      expect(fs.existsSync(path.join(wikiPath, 'plugins', 'overviews', 'timeline.js'))).toBe(true);
+
+      // 3. Prevent duplicate install without force
+      const spyError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit called');
+      });
+
+      await expect(manageOverview(wikiPath, 'timeline')).rejects.toThrow('process.exit called');
+      expect(exitSpy).toHaveBeenCalledWith(1);
+
+      exitSpy.mockClear();
+      spyError.mockClear();
+
+      // 4. Overwrite works with force
+      await manageOverview(wikiPath, 'timeline', { force: true });
+      expect(exitSpy).not.toHaveBeenCalled();
+
+      // 5. Test custom from library path
+      const customLibPath = path.join(TEST_ROOT, 'custom-lib');
+      fs.mkdirSync(path.join(customLibPath, 'overviews'), { recursive: true });
+      fs.writeFileSync(path.join(customLibPath, 'overviews', 'custom-ov.js'), 'console.log("custom");');
+
+      await manageOverview(wikiPath, 'custom-ov', { from: customLibPath });
+      expect(fs.existsSync(path.join(wikiPath, 'plugins', 'overviews', 'custom-ov.js'))).toBe(true);
+
+      spyLog.mockRestore();
+      spyError.mockRestore();
+      exitSpy.mockRestore();
+    });
   });
 });

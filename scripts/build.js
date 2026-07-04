@@ -28,4 +28,5 @@ fs.copyFileSync(
   'build/utils/collection-cloud-template.md'
 );
 copyDir('src/commands/assets', 'build/commands/assets');
+copyDir('library', 'build/library');
 console.log('Build completed successfully!');

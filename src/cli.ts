@@ -13,14 +13,21 @@ async function main() {
   const flags = {
     pr: false,
     verbose: false,
+    force: false,
+    from: undefined as string | undefined,
   };
 
   const positional: string[] = [];
-  for (const arg of args) {
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
     if (arg === '--pr') {
       flags.pr = true;
     } else if (arg === '--verbose' || arg === '-v') {
       flags.verbose = true;
+    } else if (arg === '--force' || arg === '--overwrite' || arg === '-f') {
+      flags.force = true;
+    } else if (arg === '--from') {
+      flags.from = args[++i];
     } else if (arg.startsWith('--')) {
       // Ignore or log unknown options
     } else {
@@ -32,9 +39,11 @@ async function main() {
   const wikiPath = positional[1] || '.';
 
   if (!command) {
-    console.error('Usage: mm <command> [wiki-path|plugin-path] [args] [options]');
+    console.error('Usage: mm <command> [args] [options]');
     console.error('Commands:');
     console.error('  init [wiki-path]                      - Initialize folder layout & templates (default: .)');
+    console.error('  collection [name] [wiki-path]         - List available collections or install one (default wiki-path: .)');
+    console.error('  overview [name] [wiki-path]           - List available overviews or install one (default wiki-path: .)');
     console.error('  sync [wiki-path] [options]            - Process inbox files into the wiki (default: .)');
     console.error('  publish [wiki-path] [target-dir]      - Compile static MkDocs site (default: .)');
     console.error('  overviews [wiki-path] [target-html-path] - Re-create overview markdown pages and indexes (default: .)');
@@ -44,6 +53,8 @@ async function main() {
     console.error('Options:');
     console.error('  --pr                                  - Create a branch, commit changes, push, and open a pull request');
     console.error('  -v, --verbose                         - Show assembled final LLM prompts in the console');
+    console.error('  -f, --force, --overwrite              - Overwrite existing files when installing templates');
+    console.error('  --from <path>                         - Use custom library path instead of the built-in library');
     exit(1);
   }
 
@@ -52,6 +63,20 @@ async function main() {
       case 'init':
         await initWiki(wikiPath);
         break;
+      case 'collection': {
+        const name = positional[1];
+        const targetPath = positional[2] || '.';
+        const { manageCollection } = await import('./commands/library.js');
+        await manageCollection(targetPath, name, { force: flags.force, from: flags.from });
+        break;
+      }
+      case 'overview': {
+        const name = positional[1];
+        const targetPath = positional[2] || '.';
+        const { manageOverview } = await import('./commands/library.js');
+        await manageOverview(targetPath, name, { force: flags.force, from: flags.from });
+        break;
+      }
       case 'sync':
         await syncWiki(wikiPath, flags);
         break;
