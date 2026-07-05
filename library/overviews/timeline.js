@@ -17,6 +17,13 @@ function normalizeDate(value) {
 }
 
 for (const s of summaries) {
+  const rawTags = s.tags || [];
+  const tags = (Array.isArray(rawTags) ? rawTags : [rawTags])
+    .map(t => String(t).trim().toLowerCase())
+    .filter(t => t.length > 0);
+
+  const tagCount = tags.length;
+
   const times = s.times;
   if (Array.isArray(times)) {
     for (const t of times) {
@@ -24,7 +31,8 @@ for (const s of summaries) {
         events.push({
           date: normalizeDate(t.date),
           title: String(t.title || t.event || '').trim(),
-          source: s.title || s.name
+          source: s.title || s.name,
+          tagCount: tagCount
         });
       } else if (typeof t === 'string') {
         const colonIdx = t.indexOf(':');
@@ -32,7 +40,8 @@ for (const s of summaries) {
           events.push({
             date: normalizeDate(t.slice(0, colonIdx).trim()),
             title: t.slice(colonIdx + 1).trim(),
-            source: s.title || s.name
+            source: s.title || s.name,
+            tagCount: tagCount
           });
         }
       }
@@ -82,9 +91,34 @@ if (events.length > 0) {
     return parts.join('');
   }
 
+  const rawEventsData = events.map(e => ({
+    date: e.date,
+    title: e.title,
+    source: e.source,
+    tagCount: e.tagCount
+  }));
+
   let graphicBody = '# Visual Timeline\n\n[[timeline|← Back to List View]]\n\n';
 
-  // Render mermaid timeline diagram
+  // Inject search bar and filter dropdown HTML
+  graphicBody += '<div class="graph-search-container">' +
+    '<div class="search-input-wrapper">' +
+    '<input type="text" id="graph-search" placeholder="Search timeline events..." autocomplete="off">' +
+    '<button id="search-clear" class="search-clear-btn" type="button">&times;</button>' +
+    '</div>' +
+    '<div class="filter-dropdown-wrapper">' +
+    '<label for="timeline-tag-threshold">Min. tags:</label>' +
+    '<select id="timeline-tag-threshold" class="filter-dropdown-select">' +
+    '<option value="0">At least 0 tags</option>' +
+    '</select>' +
+    '</div>' +
+    '</div>\n\n';
+
+  // Inject the event data as JSON
+  graphicBody += `<div id="timeline-data" data-events="${encodeURIComponent(JSON.stringify(rawEventsData))}"></div>\n\n`;
+
+  // Render mermaid timeline diagram wrapped in container
+  graphicBody += '<div id="timeline-graphic-container">\n\n';
   graphicBody += '```mermaid\n%%{init: {\n' +
     '  "themeVariables": {\n' +
     '    "cScale0": "#6B75CC", "cScaleLabel0": "#0f172a",\n' +
@@ -104,14 +138,23 @@ if (events.length > 0) {
   for (const key of sortedKeys) {
     const yearEvents = grouped[key];
     const mermaidEvents = yearEvents.map(event => {
-      const label = `${event.date} — ${event.title} (${event.source})`;
-      const cleanLabel = label.replace(/:/g, ' - ').replace(/"/g, "'").replace(/[\r\n]+/g, ' ').trim();
+      const label = `${event.date} — ${event.title}`;
+      const cleanLabel = label
+        .replace(/:/g, ' - ')
+        .replace(/"/g, "'")
+        .replace(/\(/g, '#40;')
+        .replace(/\)/g, '#41;')
+        .replace(/\[/g, '#91;')
+        .replace(/\]/g, '#93;')
+        .replace(/[\r\n]+/g, ' ')
+        .trim();
       return cleanLabel;
     });
     const cleanKey = key.replace(/:/g, '-');
     graphicBody += `    ${cleanKey} : ${mermaidEvents.join(' : ')}\n`;
   }
-  graphicBody += '```\n';
+  graphicBody += '```\n\n';
+  graphicBody += '</div>\n';
 
   let listBody = '# Timeline\n\n[[timeline-graphic|Visual Timeline ↗]]\n\n';
 

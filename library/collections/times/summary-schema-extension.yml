@@ -5,4 +5,4 @@ $meta:
 
 times: # Array | Required | List of dates and events mentioned in the text.
   - date: string # String | Required | Date (YYYY-MM-DD or YYYY-MM or YYYY).
-    event: string # String | Required | Title/event name.
+    title: string # String | Required | Title or event name.

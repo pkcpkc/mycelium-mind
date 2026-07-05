@@ -149,7 +149,13 @@ export async function rebuildFolderIndex(wikiDir: string, relativeFolderPath: st
 
   const folderName = path.basename(relativeFolderPath);
   for (const filename of files) {
-    if (!filename.endsWith('.md') || filename === 'index.md' || filename === `${folderName}-cloud.md` || filename === `${folderName}-cloud-fullscreen.md`) continue;
+    if (
+      !filename.endsWith('.md') ||
+      filename === 'index.md' ||
+      filename === `${folderName}-cloud.md` ||
+      filename === `${folderName}-cloud-fullscreen.md` ||
+      (folderName === 'overviews' && filename.endsWith('-graphic.md'))
+    ) continue;
     const filepath = path.join(dirPath, filename);
     try {
       const metadata = await readFrontmatter(filepath);
@@ -313,3 +319,31 @@ ${listItems.join('\n')}
   gitCommit(indexPath, 'Updated wiki index');
   console.log(`Created/updated base wiki index at ${indexPath}`);
 }
+
+/**
+ * Returns a formatted date-time string: YYYYMMDD-HHMMSS.
+ */
+export function getFormattedDateTime(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${year}${month}${day}-${hours}${minutes}${seconds}`;
+}
+
+/**
+ * Parses frontmatter YAML block from a raw markdown string.
+ */
+export function parseFrontmatterFromString(content: string): any {
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  if (!match) return {};
+  try {
+    return YAML.parse(match[1]) || {};
+  } catch {
+    return {};
+  }
+}
+

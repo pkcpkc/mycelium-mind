@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', async function() {
+
   const container = document.getElementById('cy') || document.getElementById('cy-fullscreen');
   if (!container) return;
 
@@ -41,13 +42,11 @@ document.addEventListener('DOMContentLoaded', async function() {
   const collectionName = container.getAttribute('data-collection') || 'concepts';
   const prefix = `collections/${collectionName}/`;
 
-  // Filter mappings to only include items matching this collection with at least 2 tags
+  // Filter mappings to only include items matching this collection
   const conceptMappings = mappings.filter(m => 
     m.item && 
     m.item.url && 
-    m.item.url.startsWith(prefix) && 
-    m.tags && 
-    m.tags.length >= 2
+    m.item.url.startsWith(prefix)
   );
 
   // Build raw nodes
@@ -65,15 +64,49 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
   });
 
+  // Find maximum shared tags among all pairs
+  let maxSharedTags = 1;
+  for (let i = 0; i < rawNodes.length; i++) {
+    for (let j = i + 1; j < rawNodes.length; j++) {
+      const nodeA = rawNodes[i];
+      const nodeB = rawNodes[j];
+      const shared = nodeA.tags.filter(t => nodeB.tags.includes(t));
+      if (shared.length > maxSharedTags) {
+        maxSharedTags = shared.length;
+      }
+    }
+  }
+
   // Build elements based on shared tags threshold
   const thresholdSelect = document.getElementById('shared-tag-threshold');
+  if (thresholdSelect) {
+    const prevSelected = parseInt(thresholdSelect.value, 10);
+    const defaultVal = !isNaN(prevSelected) ? prevSelected : 2;
+
+    thresholdSelect.innerHTML = '';
+    for (let i = 0; i <= maxSharedTags; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `At least ${i}`;
+      if (i === defaultVal || (i === maxSharedTags && defaultVal > maxSharedTags)) {
+        opt.selected = true;
+      }
+      thresholdSelect.appendChild(opt);
+    }
+  }
+
   let currentThreshold = thresholdSelect ? parseInt(thresholdSelect.value, 10) : 2;
   if (isNaN(currentThreshold)) currentThreshold = 2;
+  if (currentThreshold > maxSharedTags) currentThreshold = maxSharedTags;
 
   function buildGraphElements(minSharedTags) {
     const edges = [];
     const seenEdges = new Set();
     const connectedNodeIds = new Set();
+
+    // If minSharedTags is 0, we connect nodes sharing >= 1 tag to keep graph readable,
+    // but we will show all raw nodes (even unconnected ones).
+    const edgeThreshold = minSharedTags === 0 ? 1 : minSharedTags;
 
     for (let i = 0; i < rawNodes.length; i++) {
       for (let j = i + 1; j < rawNodes.length; j++) {
@@ -81,7 +114,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const nodeB = rawNodes[j];
         
         const shared = nodeA.tags.filter(t => nodeB.tags.includes(t));
-        if (shared.length >= minSharedTags) {
+        if (shared.length >= edgeThreshold) {
           const edgeKey = [nodeA.data.id, nodeB.data.id].sort().join('-');
           if (!seenEdges.has(edgeKey)) {
             edges.push({
@@ -100,7 +133,10 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
     }
 
-    const nodes = rawNodes.filter(n => connectedNodeIds.has(n.data.id));
+    const nodes = minSharedTags === 0 
+      ? rawNodes 
+      : rawNodes.filter(n => connectedNodeIds.has(n.data.id));
+
     return [
       ...nodes.map(n => ({ data: n.data })),
       ...edges
@@ -342,3 +378,5 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   observer.observe(document.body, { attributes: true });
 });
+
+

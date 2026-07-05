@@ -42,10 +42,12 @@ function scan() {
       if (host.dataset.zoomInitialized) continue;
       if (host.closest('.mermaid-zoom-container')) continue;
       
-      // Material replaces <pre class="mermaid"> with <div class="mermaid"> after attaching shadow root
+      // Material replaces <pre class="mermaid"> with <div class="mermaid"> after attaching shadow root.
+      // Also allow <pre class="mermaid"> if it has already been processed by Mermaid.
       const isDiv = host.tagName.toLowerCase() === 'div';
+      const isProcessed = host.getAttribute('data-processed') === 'true' || host.dataset.processed === 'true';
       
-      if (isDiv) {
+      if (isDiv || isProcessed) {
         setupZoomPan(host);
       }
     }
@@ -59,6 +61,9 @@ function init() {
   // Poll every 500ms to catch lazy rendering
   setInterval(scan, 500);
 }
+
+// Listen to custom event for instant scanning when dynamically re-rendered
+document.addEventListener('mermaid-rendered', scan);
 
 // Support both native document load and Material for MkDocs instant loading
 if (typeof document$ !== 'undefined') {

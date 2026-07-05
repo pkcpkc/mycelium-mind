@@ -61,6 +61,8 @@ We utilize [mise](https://mise.jdx.dev/) to ensure pinned, reproducible Node.js 
 
 - **Node.js**: `25.9.0`
 - **Python**: `3.11.15` (bound to an isolated `.venv/` virtual environment).
+  - Python dependencies are declared in `requirements.txt` and automatically installed into `.venv` during `npm install` via a `postinstall` script (`scripts/setup.js`).
+  - You can manually re-trigger Python environment creation and installation via `npm run setup`.
 
 Runtimes should be executed using the mise prefix to align context maps:
 ```bash

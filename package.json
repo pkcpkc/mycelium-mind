@@ -1,6 +1,6 @@
 {
   "name": "mycelium-mind",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "main": "./build/cli.js",
   "files": [
@@ -15,6 +15,8 @@
     "cli": "tsx src/cli.ts",
     "build": "node scripts/build.js",
     "prepare": "npm run build",
+    "setup": "node scripts/setup.js",
+    "postinstall": "node scripts/setup.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },

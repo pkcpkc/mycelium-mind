@@ -91,3 +91,76 @@ Compiles the flat Obsidian-style markdown wiki into a standardized MkDocs static
 # Compile site to a static folder
 mm publish . ./dist/site
 ```
+
+---
+
+### `rag [wiki-path] [options]`
+
+Starts the `knowledge-rag` MCP (Model Context Protocol) server to search your local wiki. The underlying engine is powered by [lyonzin/knowledge-rag](https://github.com/lyonzin/knowledge-rag). It reads the vault settings from `config/config.yml` (under the `rag:` key) and allows CLI flags to override configuration settings.
+
+**Options**:
+- `--transport <stdio|sse>`: MCP transport mode (defaults to `sse` or the config value).
+- `--port <number>`: Port to run the SSE server on (default: `8179`).
+- `--host <string>`: Host interface to bind (default: `127.0.0.1`).
+- `--rate-limit <rpm>`: Enable sliding-window rate limiting with the specified requests-per-minute.
+- `--prometheus-port <port>`: Enable Prometheus metrics scraping on the specified port.
+- `--chromadb-wal`: Force ChromaDB Write-Ahead Logging mode (automatically enabled in `sse` mode).
+
+```bash
+# Start standard RAG server via SSE
+mm rag
+
+# Start RAG server via local stdio for Claude Code/Claude Desktop
+mm rag --transport stdio
+
+# Start RAG server on a custom port with rate limiting enabled
+mm rag --port 9000 --rate-limit 120
+```
+
+#### Client Configuration (MCP JSON)
+
+Add the following configuration blocks to your MCP client (e.g. `claude_desktop_config.json`, Cursor, or Windsurf settings):
+
+##### 1. For Stdio Transport (Automatic Spawning)
+```json
+{
+  "mcpServers": {
+    "mycelium-mind-rag": {
+      "command": "mm",
+      "args": ["rag", "/absolute/path/to/your/wiki", "--transport", "stdio"]
+    }
+  }
+}
+```
+*(Note: If you run with `mise`, you can set the command to `"mise"` and prepend `["exec", "--", "mm", ...]` to the arguments list).*
+
+##### 2. For SSE Transport (Connecting to a Persistent Server)
+First start the server via `mm rag` in the terminal, then configure the client:
+```json
+{
+  "mcpServers": {
+    "mycelium-mind-rag": {
+      "type": "sse",
+      "url": "http://127.0.0.1:8179/sse"
+    }
+  }
+}
+```
+
+---
+
+## ⚙️ Wiki Configuration (`config/config.yml`)
+
+Each wiki vault has a configuration file located at `config/config.yml` that governs pipeline execution settings and option variables.
+
+### Pipeline Settings
+
+- **`parallelPromptExecution`** (boolean): 
+  Controls whether LLM summarizations (during `sync`) and collection entity card compiles are executed concurrently or sequentially.
+  - `true`: Speeds up the compilation process significantly by running LLM calls in parallel (highly recommended when using robust local servers or cloud APIs).
+  - `false` (default): Runs LLM calls sequentially to prevent rate limits or context starvation on smaller local backends (like standard llama.cpp or Ollama single-instance deployments).
+
+### RAG Settings (knowledge-rag)
+
+See the [`rag` command reference](#rag-wiki-path-options) above for details on configuring RAG settings (`rag.transport`, `rag.host`, `rag.port`, `rag.rate_limiting`, `rag.prometheus`) in `config.yml`.
+

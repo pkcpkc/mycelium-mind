@@ -124,28 +124,7 @@
   color: #94a3b8; /* Slate 400 */
 }
 
-/* Mermaid Timeline Accessibility and Contrast Fixes */
-.mermaid g.section text,
-.mermaid g.task text,
-.mermaid .timeline-node text,
-.mermaid .timeline-event text,
-.mermaid .timeline-event-text,
-.mermaid .event-desc-text,
-.mermaid text.sectionTitle {
-  fill: #0f172a !important;
-  color: #0f172a !important;
-}
 
-[data-md-color-scheme="slate"] .mermaid g.section text,
-[data-md-color-scheme="slate"] .mermaid g.task text,
-[data-md-color-scheme="slate"] .mermaid .timeline-node text,
-[data-md-color-scheme="slate"] .mermaid .timeline-event text,
-[data-md-color-scheme="slate"] .mermaid .timeline-event-text,
-[data-md-color-scheme="slate"] .mermaid .event-desc-text,
-[data-md-color-scheme="slate"] .mermaid text.sectionTitle {
-  fill: #0f172a !important;
-  color: #0f172a !important;
-}
 
 /* Filter Dropdown Styling */
 .filter-dropdown-wrapper {

@@ -72,19 +72,23 @@ export async function serveWiki(targetPath: string): Promise<http.Server> {
 
   const listen = (p: number): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
-      server.listen(p, () => {
-        console.log(`\nWiki static server is running!`);
-        console.log(`URL: http://localhost:${p}\n`);
-        resolve();
-      });
-
-      server.on('error', (err: any) => {
+      const errorHandler = (err: any) => {
         if (err.code === 'EADDRINUSE') {
           console.log(`Port ${p} is in use, trying next port...`);
+          server.removeListener('error', errorHandler);
           resolve(listen(p + 1));
         } else {
           reject(err);
         }
+      };
+
+      server.on('error', errorHandler);
+
+      server.listen(p, () => {
+        console.log(`\nWiki static server is running!`);
+        console.log(`URL: http://localhost:${p}\n`);
+        server.removeListener('error', errorHandler);
+        resolve();
       });
     });
   };

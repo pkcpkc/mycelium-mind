@@ -33,12 +33,27 @@ function loadEnv() {
 // Load env variables
 loadEnv();
 
+// Resolve base model settings
+const baseModelName = process.env.BASE_MODEL_NAME || 'agentic';
+const baseModelApiUrl = process.env.BASE_MODEL_API_URL || 'http://localhost:8000/v1';
+const baseModelApiKey = process.env.BASE_MODEL_API_KEY || 'dummy-key';
+
 export const config = {
   vaultName: process.env.VAULT_NAME || 'LLM-Wiki',
   vaultsRoot: process.env.VAULTS_ROOT || path.join(projectRootDir, 'Vaults'),
-  apiUrl: process.env.API_URL || 'http://localhost:8000/v1',
-  apiKey: process.env.API_KEY || 'dummy-key',
-  agenticModelName: process.env.AGENTIC_MODEL_NAME || 'agentic',
-  ocrModelName: process.env.OCR_MODEL_NAME || 'ocr',
-  imageModelName: process.env.IMAGE_MODEL_NAME || process.env.AGENTIC_MODEL_NAME || 'agentic',
+
+  // Base model config
+  baseModelName,
+  baseModelApiUrl,
+  baseModelApiKey,
+
+  // OCR model config
+  ocrModelName: process.env.OCR_MODEL_NAME || baseModelName,
+  ocrModelApiUrl: process.env.OCR_MODEL_API_URL || baseModelApiUrl,
+  ocrModelApiKey: process.env.OCR_MODEL_API_KEY || baseModelApiKey,
+
+  // Image model config
+  imageModelName: process.env.IMAGE_MODEL_NAME || baseModelName,
+  imageModelApiUrl: process.env.IMAGE_MODEL_API_URL || baseModelApiUrl,
+  imageModelApiKey: process.env.IMAGE_MODEL_API_KEY || baseModelApiKey,
 };

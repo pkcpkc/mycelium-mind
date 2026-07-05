@@ -9,13 +9,15 @@ import {
   cleanMarkdownResponse,
   rebuildFolderIndex,
   rebuildWikiRootIndex,
-  rebuildTagsPage
+  rebuildTagsPage,
+  parseFrontmatterFromString
 } from '../utils/fs-utils.js';
 import { gitCommit, gitCreateBranch, gitCreatePR, enableGitCommits } from '../utils/git.js';
 import { buildSessionGraph, runOverviewScript } from '../utils/overview-runner.js';
 import { checkPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
 import { overviewsWiki } from './overviews.js';
+import { updateCollectionEntitiesForFile } from './overrides.js';
 
 
 
@@ -52,6 +54,27 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
   }
 
   const wikiDir = path.join(absolutePath, 'wiki');
+  let parallelPromptExecution = false;
+  const configPath = path.join(absolutePath, 'config', 'config.yml');
+  if (fs.existsSync(configPath)) {
+    try {
+      const parsed = YAML.parse(fs.readFileSync(configPath, 'utf8'));
+      if (parsed && typeof parsed.parallelPromptExecution === 'boolean') {
+        parallelPromptExecution = parsed.parallelPromptExecution;
+      }
+    } catch (e: any) {
+      console.warn(`Failed to parse config.yml at ${configPath}:`, e.message);
+    }
+  }
+
+  let gitCommitQueue = Promise.resolve();
+  const queuedGitCommit = (filePath: string, message: string) => {
+    gitCommitQueue = gitCommitQueue.then(() => {
+      gitCommit(filePath, message);
+    });
+    return gitCommitQueue;
+  };
+
   const assetsDirParent = path.join(wikiDir, 'assets');
 
   let branchName = '';
@@ -89,10 +112,45 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
   }
   fs.mkdirSync(overviewsDir, { recursive: true });
 
-  // 2. Discover date folders
-  const dateFolders = fs.readdirSync(assetsDirParent).filter(f => {
-    return fs.statSync(path.join(assetsDirParent, f)).isDirectory() && /^\d{4}-\d{2}-\d{2}$/.test(f);
-  }).sort();
+  // 2. Discover timeline events (daily ingestions and overrides)
+  const timelineEvents: (
+    | { type: 'ingestion'; timestamp: string; dateFolder: string }
+    | { type: 'override'; timestamp: string; dirPath: string }
+  )[] = [];
+
+  // Discover Ingestion Events
+  const assetEntries = fs.existsSync(assetsDirParent) ? fs.readdirSync(assetsDirParent) : [];
+  for (const entry of assetEntries) {
+    const fullPath = path.join(assetsDirParent, entry);
+    if (fs.statSync(fullPath).isDirectory() && /^\d{8}-\d{6}$/.test(entry) && entry !== 'overrides') {
+      timelineEvents.push({
+        type: 'ingestion',
+        timestamp: entry,
+        dateFolder: entry
+      });
+    }
+  }
+
+  // Discover Override Events
+  const overridesDir = path.join(assetsDirParent, 'overrides');
+  if (fs.existsSync(overridesDir)) {
+    const overrideEntries = fs.readdirSync(overridesDir);
+    for (const entry of overrideEntries) {
+      const fullPath = path.join(overridesDir, entry);
+      if (fs.statSync(fullPath).isDirectory() && /^\d{8}-\d{6}$/.test(entry)) {
+        timelineEvents.push({
+          type: 'override',
+          timestamp: entry,
+          dirPath: fullPath
+        });
+      }
+    }
+  }
+
+  // Sort chronologically
+  timelineEvents.sort((a, b) => {
+    return a.timestamp.localeCompare(b.timestamp);
+  });
 
   const processedSummaries: { summaryPath: string; frontmatter: any }[] = [];
 
@@ -122,197 +180,22 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
   const dynamicFrontmatter = [baseProperties, ...schemaInstructions].filter(Boolean).join('\n');
   const summaryPrompt = summaryPromptTemplate.replace('$SCHEMA', dynamicFrontmatter);
 
-  // Pre-collect all files to process to determine S
-  const filesToProcess: { dateFolder: string; file: string }[] = [];
-  for (const dateFolder of dateFolders) {
-    const processedPath = path.join(assetsDirParent, dateFolder, 'processed');
-    if (!fs.existsSync(processedPath)) continue;
-
-    const sourcesFiles = fs.readdirSync(processedPath).filter(f => !f.startsWith('.'));
-    const binaryFiles = sourcesFiles.filter(f => !f.endsWith('.md') && !f.endsWith('.txt'));
-
-    for (const file of sourcesFiles) {
-      const ext = path.extname(file).toLowerCase();
-      const baseName = path.basename(file, ext);
-      const isMd = ext === '.md';
-      const hasBinaryCompanion = binaryFiles.some(bf => path.basename(bf, path.extname(bf)) === baseName);
-      if (isMd && hasBinaryCompanion) {
-        continue;
-      }
-      filesToProcess.push({ dateFolder, file });
-    }
-  }
-
-  const totalSummaries = filesToProcess.length;
-  const stats = {
-    summariesSuccess: 0,
-    summariesFailed: 0,
-    entitiesSuccess: {} as Record<string, number>,
-    entitiesFailed: {} as Record<string, number>,
-    overviewsSuccess: 0,
-    overviewsFailed: 0,
-    indexesSuccess: 0,
-    indexesFailed: 0
-  };
-
-  let globalStepIndex = 0;
-  let summaryIdx = 0;
-
-  // 3. For each date folder, discover original sources and text transcriptions
-  for (const item of filesToProcess) {
-    summaryIdx++;
-    globalStepIndex++;
-    const { dateFolder, file } = item;
-
-    console.log(`[Step ${globalStepIndex}] [Summaries ${summaryIdx}/${totalSummaries}] Re-ingesting asset: ${file} from date ${dateFolder}`);
-    console.log(`[Step ${globalStepIndex}] [Summaries ${summaryIdx}/${totalSummaries}] Generating summary for: ${file}`);
-    const summaryStartTime = Date.now();
-
-    const processedPath = path.join(assetsDirParent, dateFolder, 'processed');
-    const sourcesPath = path.join(assetsDirParent, dateFolder, 'sources');
-    const ext = path.extname(file).toLowerCase();
-    const baseName = path.basename(file, ext);
-    const isMd = ext === '.md';
-
-    let rawTextContent = '';
-    let companionMetadataContent = '';
-    const referencedAssets: string[] = [];
-
-    if (isMd || ext === '.txt') {
-      // Direct text file
-      const sourceFilePath = path.join(processedPath, file);
-      rawTextContent = fs.readFileSync(sourceFilePath, 'utf8');
-      referencedAssets.push(`wiki/assets/${dateFolder}/processed/${file}`);
-      if (isMd && fs.existsSync(path.join(sourcesPath, file))) {
-        referencedAssets.push(`wiki/assets/${dateFolder}/sources/${file}`);
-      }
-    } else {
-      // Binary file (find transcription and metadata in sources/)
-      referencedAssets.push(`wiki/assets/${dateFolder}/processed/${file}`);
-
-      // Find transcription file in sources
-      const transcriptionFilename = `${baseName}_transcription.txt`;
-      const transcriptionPath = path.join(sourcesPath, transcriptionFilename);
-      if (fs.existsSync(transcriptionPath)) {
-        rawTextContent = fs.readFileSync(transcriptionPath, 'utf8');
-        referencedAssets.push(`wiki/assets/${dateFolder}/sources/${transcriptionFilename}`);
-      } else {
-        console.warn(`Warning: Transcription file not found at ${transcriptionPath}`);
-        rawTextContent = `[Missing transcription for ${file}]`;
-      }
-
-      // Find companion metadata in sources
-      const companionMd = `${baseName}.md`;
-      const companionPath = path.join(sourcesPath, companionMd);
-      if (fs.existsSync(companionPath)) {
-        companionMetadataContent = fs.readFileSync(companionPath, 'utf8');
-        referencedAssets.push(`wiki/assets/${dateFolder}/processed/${companionMd}`);
-        referencedAssets.push(`wiki/assets/${dateFolder}/sources/${companionMd}`);
-      }
-    }
-
-    // Generate summary
-    let summaryText = '';
-    const combinedInput = companionMetadataContent
-      ? `Companion Metadata Context:\n${companionMetadataContent}\n\nSource Content:\n${rawTextContent}`
-      : rawTextContent;
-
-    if (options?.verbose) {
-      console.log(`[VERBOSE] Summary prompt for ${file} during resync:`);
-      console.log('--------------------------------------------------');
-      console.log(summaryPrompt);
-      console.log('==================================================');
-    }
-
-    try {
-      summaryText = await callAgenticModel([
-        { role: 'system', content: summaryPrompt },
-        { role: 'user', content: combinedInput }
-      ]);
-      summaryText = cleanMarkdownResponse(summaryText);
-      stats.summariesSuccess++;
-      console.log(`[Step ${globalStepIndex}] [Summaries ${summaryIdx}/${totalSummaries}] Done in ${((Date.now() - summaryStartTime) / 1000).toFixed(1)}s`);
-    } catch (e: any) {
-      console.error(`LLM synthesis failed for ${file} during resync:`, e.message);
-      stats.summariesFailed++;
-      continue;
-    }
-
-    let frontmatter: any = {};
-    let bodyContent = summaryText;
-    let frontmatterStr = '';
-
-    const bodySplitIdx = summaryText.search(/\n#[ \t]/);
-    if (bodySplitIdx !== -1) {
-      frontmatterStr = summaryText.slice(0, bodySplitIdx).trim();
-      bodyContent = summaryText.slice(bodySplitIdx).trim();
-    } else {
-      if (summaryText.startsWith('---')) {
-        const parts = summaryText.split('---');
-        if (parts.length >= 3) {
-          frontmatterStr = parts[1].trim();
-          bodyContent = parts.slice(2).join('---').trim();
-        }
-      }
-    }
-
-    if (frontmatterStr.startsWith('---')) {
-      frontmatterStr = frontmatterStr.slice(3).trim();
-    }
-    if (frontmatterStr.endsWith('---')) {
-      frontmatterStr = frontmatterStr.slice(0, -3).trim();
-    }
-
-    if (frontmatterStr) {
-      const cleanFmStr = frontmatterStr.split('\n')
-        .filter(line => !line.trim().startsWith('```'))
-        .join('\n')
-        .trim();
-      try {
-        frontmatter = YAML.parse(cleanFmStr) || {};
-      } catch (e: any) {
-        console.error('Failed to parse frontmatter:', e.message);
-      }
-    }
-
-    frontmatter.type = 'Summary';
-    frontmatter.title = frontmatter.title || baseName;
-    frontmatter.timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
-    frontmatter.assets = referencedAssets;
-
-    const summaryFilename = toSafeFilename(frontmatter.title);
-    const summaryPath = path.join(wikiDir, 'summaries', summaryFilename);
-    const finalSummaryContent = `---\n${YAML.stringify(frontmatter)}---\n${bodyContent}`;
-
-    fs.writeFileSync(summaryPath, finalSummaryContent, 'utf8');
-    gitCommit(summaryPath, `Added summary for ${frontmatter.title}`);
-
-    processedSummaries.push({
-      summaryPath,
-      frontmatter
-    });
-  }
-
   // Pre-load prompt & properties templates for active schemas
   const schemaTemplates: Record<string, { promptTemplate: string; schemaProperties: string } | null> = {};
   for (const schemaName of activeSchemas) {
-    stats.entitiesSuccess[schemaName] = 0;
-    stats.entitiesFailed[schemaName] = 0;
+    schemaTemplates[schemaName] = null;
 
     const schemaPromptPath = path.join(schemasDir, schemaName, 'prompt.md');
     const schemaPropertiesPath = path.join(schemasDir, schemaName, 'schema.yml');
     if (!fs.existsSync(schemaPromptPath) || !fs.existsSync(schemaPropertiesPath)) {
-      schemaTemplates[schemaName] = null;
       continue;
     }
 
     const promptContentRaw = fs.readFileSync(schemaPromptPath, 'utf8');
     let promptTemplate = promptContentRaw;
-    let promptConfig: any = {};
     const frontmatterMatch = promptContentRaw.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
     if (frontmatterMatch) {
       try {
-        promptConfig = YAML.parse(frontmatterMatch[1]) || {};
         promptTemplate = promptContentRaw.slice(frontmatterMatch[0].length);
       } catch (e: any) {
         console.error(`Failed to parse 'prompt.md' frontmatter for plugin ${schemaName} during resync:`, e.message);
@@ -324,12 +207,10 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
     try {
       const doc = YAML.parseDocument(rawSchemaContent);
       if (doc && doc.contents && YAML.isMap(doc.contents)) {
-        // Remove $meta
         const metaIndex = doc.contents.items.findIndex(item => item.key && (item.key as any).value === '$meta');
         if (metaIndex !== -1) {
           doc.contents.items.splice(metaIndex, 1);
         }
-        // Auto-inject missing system keys
         const keys = doc.contents.items.map(item => item.key && (item.key as any).value);
         if (!keys.includes('timestamp')) {
           const node = doc.createNode('$TIMESTAMP');
@@ -353,101 +234,125 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
     };
   }
 
-  // 4. Progressively Compile Entities
-  console.log('Compiling entity pages from new summaries...');
-  const entityTasksBySchema: Record<string, { entityName: string; summaryContent: string; summaryPath: string }[]> = {};
-  for (const schemaName of activeSchemas) {
-    entityTasksBySchema[schemaName] = [];
-  }
-
-  for (const item of processedSummaries) {
-    const summaryContent = fs.readFileSync(item.summaryPath, 'utf8');
-    const entities = item.frontmatter;
-
-    for (const schemaName of activeSchemas) {
-      const template = schemaTemplates[schemaName];
-      if (!template) continue;
-
-      const schemaPromptPath = path.join(schemasDir, schemaName, 'prompt.md');
-      const promptContentRaw = fs.readFileSync(schemaPromptPath, 'utf8');
-      let promptConfig: any = {};
-      const frontmatterMatch = promptContentRaw.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
-      if (frontmatterMatch) {
-        try {
-          promptConfig = YAML.parse(frontmatterMatch[1]) || {};
-        } catch {}
-      }
-
-      let targetFields: string[] = [];
-      if (promptConfig.fields) {
-        if (Array.isArray(promptConfig.fields)) {
-          targetFields = promptConfig.fields;
-        } else if (typeof promptConfig.fields === 'string') {
-          targetFields = [promptConfig.fields];
-        }
-      } else {
-        const singular = schemaName.replace(/s$/, '');
-        targetFields = [schemaName, singular];
-      }
-
-      const summaryKeys = targetFields.filter(k => entities[k] !== undefined);
-      if (summaryKeys.length === 0) continue;
-
-      for (const key of summaryKeys) {
-        let entityList = entities[key];
-
-        if (entityList && typeof entityList === 'object' && !Array.isArray(entityList)) {
-          const nestedKey = Object.keys(entityList).find(k => k.toLowerCase().startsWith(schemaName.toLowerCase()));
-          if (nestedKey) {
-            entityList = (entityList as any)[nestedKey];
-          }
-        }
-
-        if (!Array.isArray(entityList)) continue;
-
-        for (const entityVal of entityList) {
-          let entityName = '';
-          if (typeof entityVal === 'string') {
-            entityName = entityVal.trim();
-          } else if (typeof entityVal === 'object' && entityVal !== null) {
-            entityName = String(entityVal.name || entityVal.title || entityVal.event || '').trim();
-          }
-
-          if (!entityName) continue;
-          entityTasksBySchema[schemaName].push({
-            entityName,
-            summaryContent,
-            summaryPath: item.summaryPath
-          });
-        }
+  // Pre-calculate total summaries
+  let totalSummaries = 0;
+  for (const event of timelineEvents) {
+    if (event.type === 'ingestion') {
+      const processedPath = path.join(assetsDirParent, event.dateFolder, 'processed');
+      if (fs.existsSync(processedPath)) {
+        const sourcesFiles = fs.readdirSync(processedPath).filter(f => !f.startsWith('.'));
+        const binaryFiles = sourcesFiles.filter(f => !f.endsWith('.md') && !f.endsWith('.txt'));
+        const filesToProcess = sourcesFiles.filter(file => {
+          const ext = path.extname(file).toLowerCase();
+          const isMd = ext === '.md';
+          const baseName = path.basename(file, ext);
+          const hasBinaryCompanion = binaryFiles.some(bf => path.basename(bf, path.extname(bf)) === baseName);
+          return !(isMd && hasBinaryCompanion);
+        });
+        totalSummaries += filesToProcess.length;
       }
     }
   }
 
-  const totalEntities = Object.values(entityTasksBySchema).reduce((acc, tasks) => acc + tasks.length, 0);
+  const stats = {
+    summariesSuccess: 0,
+    summariesFailed: 0,
+    entitiesSuccess: {} as Record<string, number>,
+    entitiesFailed: {} as Record<string, number>,
+    overviewsSuccess: 0,
+    overviewsFailed: 0,
+    indexesSuccess: 0,
+    indexesFailed: 0
+  };
 
-  const overviewsPluginDir = path.join(absolutePath, 'plugins', 'overviews');
-  const overviewScripts = fs.existsSync(overviewsPluginDir) ? fs.readdirSync(overviewsPluginDir).filter(f => f.endsWith('.js')) : [];
-  const totalOverviews = overviewScripts.length;
-  const totalIndexes = activeSchemas.length + 4;
-  const totalSteps = totalSummaries + totalEntities + totalOverviews + totalIndexes;
-
-  // Execute entity compilations
   for (const schemaName of activeSchemas) {
-    const tasks = entityTasksBySchema[schemaName];
-    const totalSchemaTasks = tasks.length;
-    let schemaTaskIdx = 0;
+    stats.entitiesSuccess[schemaName] = 0;
+    stats.entitiesFailed[schemaName] = 0;
+  }
 
-    const template = schemaTemplates[schemaName];
-    if (!template) continue;
+  let globalStepIndex = 0;
 
-    for (const task of tasks) {
-      schemaTaskIdx++;
-      globalStepIndex++;
+  // Helper function to compile entities progressive way
+  async function compileEntitiesForSummaries(
+    wikiDir: string,
+    schemasDir: string,
+    activeSchemas: string[],
+    schemaTemplates: Record<string, { promptTemplate: string; schemaProperties: string } | null>,
+    summaries: { summaryPath: string; frontmatter: any }[]
+  ) {
+    const entityTasksBySchema: Record<string, { entityName: string; summaryContent: string; summaryPath: string }[]> = {};
+    for (const schemaName of activeSchemas) {
+      entityTasksBySchema[schemaName] = [];
+    }
 
+    for (const item of summaries) {
+      const summaryContent = fs.readFileSync(item.summaryPath, 'utf8');
+      const entities = item.frontmatter;
+
+      for (const schemaName of activeSchemas) {
+        const template = schemaTemplates[schemaName];
+        if (!template) continue;
+
+        const schemaPromptPath = path.join(schemasDir, schemaName, 'prompt.md');
+        if (!fs.existsSync(schemaPromptPath)) continue;
+
+        let targetFields: string[] = [];
+        const promptContentRaw = fs.readFileSync(schemaPromptPath, 'utf8');
+        let promptConfig: any = {};
+        const frontmatterMatch = promptContentRaw.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+        if (frontmatterMatch) {
+          try {
+            promptConfig = YAML.parse(frontmatterMatch[1]) || {};
+          } catch {}
+        }
+
+        if (promptConfig.fields) {
+          if (Array.isArray(promptConfig.fields)) {
+            targetFields = promptConfig.fields;
+          } else if (typeof promptConfig.fields === 'string') {
+            targetFields = [promptConfig.fields];
+          }
+        } else {
+          const singular = schemaName.replace(/s$/, '');
+          targetFields = [schemaName, singular];
+        }
+
+        const summaryKeys = targetFields.filter(k => entities[k] !== undefined);
+        if (summaryKeys.length === 0) continue;
+
+        for (const key of summaryKeys) {
+          let entityList = entities[key];
+
+          if (entityList && typeof entityList === 'object' && !Array.isArray(entityList)) {
+            const nestedKey = Object.keys(entityList).find(k => k.toLowerCase().startsWith(schemaName.toLowerCase()));
+            if (nestedKey) {
+              entityList = (entityList as any)[nestedKey];
+            }
+          }
+
+          if (!Array.isArray(entityList)) continue;
+
+          for (const entityVal of entityList) {
+            let entityName = '';
+            if (typeof entityVal === 'string') {
+              entityName = entityVal.trim();
+            } else if (typeof entityVal === 'object' && entityVal !== null) {
+              entityName = String(entityVal.name || entityVal.title || '').trim();
+            }
+
+            if (!entityName) continue;
+            entityTasksBySchema[schemaName].push({
+              entityName,
+              summaryContent,
+              summaryPath: item.summaryPath
+            });
+          }
+        }
+      }
+    }
+
+    const runTask = async (schemaName: string, task: any) => {
       const { entityName, summaryContent } = task;
-      console.log(`[Step ${globalStepIndex}/${totalSteps}] [${schemaName} ${schemaTaskIdx}/${totalSchemaTasks}] Compiling: ${entityName}`);
-      const entityStartTime = Date.now();
       const entityFilename = toSafeFilename(entityName);
       const collectionFolder = path.join(wikiDir, 'collections', schemaName);
       fs.mkdirSync(collectionFolder, { recursive: true });
@@ -458,6 +363,7 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
         existingContent = fs.readFileSync(entityPath, 'utf8');
       }
 
+      const template = schemaTemplates[schemaName]!;
       const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
       const evaluatedSchema = template.schemaProperties
         .replace(/\$VALUE/g, entityName)
@@ -471,26 +377,283 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
         .replace(/\$SUMMARY_CONTENT/g, summaryContent);
 
       if (options?.verbose) {
-        console.log(`[VERBOSE] Entity prompt for ${entityName} (${schemaName}) during resync:`);
+        console.log(`[VERBOSE] Entity prompt for ${entityName} (${schemaName}):`);
         console.log('--------------------------------------------------');
         console.log(prompt);
         console.log('==================================================');
       }
 
-      let compiledText = '';
       try {
-        compiledText = await callAgenticModel([{ role: 'user', content: prompt }]);
+        let compiledText = await callAgenticModel([{ role: 'user', content: prompt }]);
         compiledText = cleanMarkdownResponse(compiledText);
         fs.writeFileSync(entityPath, compiledText, 'utf8');
-        gitCommit(entityPath, `Updated ${schemaName} entity card: ${entityName}`);
+        await queuedGitCommit(entityPath, `Updated ${schemaName} entity card: ${entityName}`);
         stats.entitiesSuccess[schemaName]++;
-        console.log(`[Step ${globalStepIndex}/${totalSteps}] [${schemaName} ${schemaTaskIdx}/${totalSchemaTasks}] Done in ${((Date.now() - entityStartTime) / 1000).toFixed(1)}s`);
       } catch (e: any) {
-        console.error(`Failed to compile entity ${entityName} during resync:`, e.message);
+        console.error(`Failed to compile entity ${entityName}:`, e.message);
         stats.entitiesFailed[schemaName]++;
+      }
+    };
+
+    if (parallelPromptExecution) {
+      const allTasks: Promise<void>[] = [];
+      for (const schemaName of activeSchemas) {
+        const tasks = entityTasksBySchema[schemaName];
+        for (const task of tasks) {
+          allTasks.push(runTask(schemaName, task));
+        }
+      }
+      await Promise.all(allTasks);
+    } else {
+      for (const schemaName of activeSchemas) {
+        const tasks = entityTasksBySchema[schemaName];
+        for (const task of tasks) {
+          await runTask(schemaName, task);
+        }
       }
     }
   }
+
+  // 3. Process timeline events chronologically
+  for (const event of timelineEvents) {
+    if (event.type === 'ingestion') {
+      console.log(`Processing Ingestion Event: ${event.timestamp}`);
+      const dateFolder = event.dateFolder;
+      const processedPath = path.join(assetsDirParent, dateFolder, 'processed');
+      if (!fs.existsSync(processedPath)) continue;
+
+      const sourcesFiles = fs.readdirSync(processedPath).filter(f => !f.startsWith('.'));
+      const binaryFiles = sourcesFiles.filter(f => !f.endsWith('.md') && !f.endsWith('.txt'));
+
+      const filesToProcess = sourcesFiles.filter(file => {
+        const ext = path.extname(file).toLowerCase();
+        const isMd = ext === '.md';
+        const baseName = path.basename(file, ext);
+        const hasBinaryCompanion = binaryFiles.some(bf => path.basename(bf, path.extname(bf)) === baseName);
+        return !(isMd && hasBinaryCompanion);
+      });
+
+      const eventSummaries: { summaryPath: string; frontmatter: any }[] = [];
+
+      const processFile = async (file: string) => {
+        globalStepIndex++;
+        const summaryStartTime = Date.now();
+        const ext = path.extname(file).toLowerCase();
+        const baseName = path.basename(file, ext);
+        const isMd = ext === '.md';
+
+        const processedPathLocal = path.join(assetsDirParent, dateFolder, 'processed');
+        const sourcesPathLocal = path.join(assetsDirParent, dateFolder, 'sources');
+
+        let rawTextContent = '';
+        let companionMetadataContent = '';
+        const referencedAssets: string[] = [];
+
+        if (isMd || ext === '.txt') {
+          const sourceFilePath = path.join(processedPathLocal, file);
+          rawTextContent = fs.readFileSync(sourceFilePath, 'utf8');
+          referencedAssets.push(`wiki/assets/${dateFolder}/processed/${file}`);
+          if (isMd && fs.existsSync(path.join(sourcesPathLocal, file))) {
+            referencedAssets.push(`wiki/assets/${dateFolder}/sources/${file}`);
+          }
+        } else {
+          referencedAssets.push(`wiki/assets/${dateFolder}/processed/${file}`);
+
+          const transcriptionFilename = `${baseName}_transcription.txt`;
+          const transcriptionPath = path.join(sourcesPathLocal, transcriptionFilename);
+          if (fs.existsSync(transcriptionPath)) {
+            rawTextContent = fs.readFileSync(transcriptionPath, 'utf8');
+            referencedAssets.push(`wiki/assets/${dateFolder}/sources/${transcriptionFilename}`);
+          } else {
+            console.warn(`Warning: Transcription file not found at ${transcriptionPath}`);
+            rawTextContent = `[Missing transcription for ${file}]`;
+          }
+
+          const companionMd = `${baseName}.md`;
+          const companionPath = path.join(sourcesPathLocal, companionMd);
+          if (fs.existsSync(companionPath)) {
+            companionMetadataContent = fs.readFileSync(companionPath, 'utf8');
+            referencedAssets.push(`wiki/assets/${dateFolder}/processed/${companionMd}`);
+            referencedAssets.push(`wiki/assets/${dateFolder}/sources/${companionMd}`);
+          }
+        }
+
+        const combinedInput = companionMetadataContent
+          ? `Companion Metadata Context:\n${companionMetadataContent}\n\nSource Content:\n${rawTextContent}`
+          : rawTextContent;
+
+        if (options?.verbose) {
+          console.log(`[VERBOSE] Summary prompt for ${file} during resync:`);
+          console.log('--------------------------------------------------');
+          console.log(summaryPrompt);
+          console.log('==================================================');
+        }
+
+        let summaryText = '';
+        try {
+          summaryText = await callAgenticModel([
+            { role: 'system', content: summaryPrompt },
+            { role: 'user', content: combinedInput }
+          ]);
+          summaryText = cleanMarkdownResponse(summaryText);
+          stats.summariesSuccess++;
+          console.log(`[Step ${globalStepIndex}] [Summaries ${globalStepIndex}/${totalSummaries}] Ingested asset: ${file} (Done in ${((Date.now() - summaryStartTime) / 1000).toFixed(1)}s)`);
+        } catch (e: any) {
+          console.error(`LLM synthesis failed for ${file} during resync:`, e.message);
+          stats.summariesFailed++;
+          return;
+        }
+
+        let frontmatter: any = {};
+        let bodyContent = summaryText;
+        let frontmatterStr = '';
+
+        const bodySplitIdx = summaryText.search(/\n#[ \t]/);
+        if (bodySplitIdx !== -1) {
+          frontmatterStr = summaryText.slice(0, bodySplitIdx).trim();
+          bodyContent = summaryText.slice(bodySplitIdx).trim();
+        } else {
+          if (summaryText.startsWith('---')) {
+            const parts = summaryText.split('---');
+            if (parts.length >= 3) {
+              frontmatterStr = parts[1].trim();
+              bodyContent = parts.slice(2).join('---').trim();
+            }
+          }
+        }
+
+        if (frontmatterStr.startsWith('---')) {
+          frontmatterStr = frontmatterStr.slice(3).trim();
+        }
+        if (frontmatterStr.endsWith('---')) {
+          frontmatterStr = frontmatterStr.slice(0, -3).trim();
+        }
+
+        if (frontmatterStr) {
+          const cleanFmStr = frontmatterStr.split('\n')
+            .filter(line => !line.trim().startsWith('```'))
+            .join('\n')
+            .trim();
+          try {
+            frontmatter = YAML.parse(cleanFmStr) || {};
+          } catch (e: any) {
+            console.error('Failed to parse frontmatter:', e.message);
+          }
+        }
+
+        frontmatter.type = 'Summary';
+        frontmatter.title = frontmatter.title || baseName;
+        frontmatter.timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+        frontmatter.assets = referencedAssets;
+
+        const summaryFilename = toSafeFilename(frontmatter.title);
+        const summaryPath = path.join(wikiDir, 'summaries', summaryFilename);
+        const finalSummaryContent = `---\n${YAML.stringify(frontmatter)}---\n${bodyContent}`;
+
+        fs.writeFileSync(summaryPath, finalSummaryContent, 'utf8');
+        await queuedGitCommit(summaryPath, `Added summary for ${frontmatter.title}`);
+
+        eventSummaries.push({ summaryPath, frontmatter });
+        processedSummaries.push({ summaryPath, frontmatter });
+      };
+
+      if (parallelPromptExecution) {
+        const promises = filesToProcess.map(file => processFile(file));
+        await Promise.all(promises);
+      } else {
+        for (const file of filesToProcess) {
+          await processFile(file);
+        }
+      }
+
+      // Progressive entity compilation from the ingestion summaries
+      if (eventSummaries.length > 0) {
+        await compileEntitiesForSummaries(
+          wikiDir,
+          schemasDir,
+          activeSchemas,
+          schemaTemplates,
+          eventSummaries
+        );
+      }
+    } else if (event.type === 'override') {
+      console.log(`Processing Override Event: ${event.timestamp}`);
+      const overridesJsonPath = path.join(event.dirPath, 'overrides.json');
+      if (!fs.existsSync(overridesJsonPath)) {
+        console.warn(`Warning: Overrides JSON file not found at ${overridesJsonPath}`);
+        continue;
+      }
+
+      let overridesList: { file: string; diff: string }[] = [];
+      try {
+        overridesList = JSON.parse(fs.readFileSync(overridesJsonPath, 'utf8'));
+      } catch (err: any) {
+        console.error(`Failed to parse overrides file at ${overridesJsonPath}:`, err.message);
+        continue;
+      }
+
+      const processOverride = async (override: { file: string; diff: string }) => {
+        globalStepIndex++;
+        const targetPath = path.join(absolutePath, override.file);
+        if (!fs.existsSync(targetPath)) {
+          console.warn(`Warning: Target override file ${targetPath} does not exist. Skipping.`);
+          return;
+        }
+
+        const currentContent = fs.readFileSync(targetPath, 'utf8');
+        console.log(`Re-applying override to ${override.file} via LLM`);
+
+        const systemPrompt = `You are a precision text-rewriting agent. Your task is to take an original markdown document and logically apply a git diff to it.
+Ensure you return the full updated markdown document. Do not include any explanation or markdown code block wraps.`;
+        const userPrompt = `Here is the original markdown document:
+<<<<ORIGINAL_DOCUMENT>>>>
+${currentContent}
+<<<<END_ORIGINAL_DOCUMENT>>>>
+
+Here is the git diff containing the edits:
+<<<<GIT_DIFF>>>>
+${override.diff}
+<<<<END_GIT_DIFF>>>>
+
+Please logically apply the changes from the git diff to the original markdown document and return the complete updated document.`;
+
+        let recreatedContent = '';
+        try {
+          const response = await callAgenticModel([
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ]);
+          recreatedContent = cleanMarkdownResponse(response);
+          fs.writeFileSync(targetPath, recreatedContent, 'utf8');
+          await queuedGitCommit(targetPath, `Applied override to ${override.file}`);
+        } catch (e: any) {
+          console.error(`LLM logical-apply failed for ${override.file} during resync:`, e.message);
+          return;
+        }
+
+        const originalFm = parseFrontmatterFromString(currentContent);
+        const newFm = parseFrontmatterFromString(recreatedContent);
+        const isFmChanged = JSON.stringify(originalFm) !== JSON.stringify(newFm);
+
+        if (isFmChanged) {
+          console.log(`Frontmatter changed for ${override.file} during override replay. Updating concerned collection entities...`);
+          await updateCollectionEntitiesForFile(absolutePath, override.file, newFm, recreatedContent, options?.verbose);
+        }
+      };
+
+      if (parallelPromptExecution) {
+        const promises = overridesList.map(item => processOverride(item));
+        await Promise.all(promises);
+      } else {
+        for (const item of overridesList) {
+          await processOverride(item);
+        }
+      }
+    }
+  }
+
+  // Await any remaining git commits
+  await gitCommitQueue;
 
   // 5. Compile Overviews and Rebuild Indexes
   await overviewsWiki(absolutePath, undefined, { verbose: options?.verbose });
@@ -500,8 +663,7 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
   console.log('\nResync complete.');
   console.log(`- Summaries generated: ${stats.summariesSuccess}/${totalSummaries} (${stats.summariesFailed} failed)`);
   for (const schemaName of activeSchemas) {
-    const totalSchemaTasks = entityTasksBySchema[schemaName].length;
-    console.log(`- ${schemaName.charAt(0).toUpperCase() + schemaName.slice(1)} compiled: ${stats.entitiesSuccess[schemaName]}/${totalSchemaTasks} (${stats.entitiesFailed[schemaName]} failed)`);
+    console.log(`- ${schemaName.charAt(0).toUpperCase() + schemaName.slice(1)} compiled: ${stats.entitiesSuccess[schemaName]} (${stats.entitiesFailed[schemaName]} failed)`);
   }
   console.log();
 

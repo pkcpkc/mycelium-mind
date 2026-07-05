@@ -70,12 +70,20 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
 
   const srcJs = path.join(assetsBaseDir, 'publish/collections-cloud/collections-cloud.js');
   const srcCss = path.join(assetsBaseDir, 'publish/collections-cloud/collections-cloud.css');
+  const timelineFilterJs = path.join(assetsBaseDir, 'publish/collections-cloud/timeline-filter.js');
+  const timelineFilterCss = path.join(assetsBaseDir, 'publish/collections-cloud/timeline-filter.css');
   
   if (fs.existsSync(srcJs)) {
     fs.copyFileSync(srcJs, path.join(assetsJsDir, 'collections-cloud.js'));
   }
   if (fs.existsSync(srcCss)) {
     fs.copyFileSync(srcCss, path.join(assetsCssDir, 'collections-cloud.css'));
+  }
+  if (fs.existsSync(timelineFilterJs)) {
+    fs.copyFileSync(timelineFilterJs, path.join(assetsJsDir, 'timeline-filter.js'));
+  }
+  if (fs.existsSync(timelineFilterCss)) {
+    fs.copyFileSync(timelineFilterCss, path.join(assetsCssDir, 'timeline-filter.css'));
   }
 
   // 4.05 Copy custom mermaid-zoom assets
@@ -188,6 +196,8 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
   if (!extraJs.includes(cytoscapeCdn)) extraJs.push(cytoscapeCdn);
   const customJs = 'assets/js/collections-cloud.js';
   if (!extraJs.includes(customJs)) extraJs.push(customJs);
+  const timelineJsAsset = 'assets/js/timeline-filter.js';
+  if (!extraJs.includes(timelineJsAsset)) extraJs.push(timelineJsAsset);
   const zoomJsAsset = 'assets/js/mermaid-zoom.js';
   if (!extraJs.includes(zoomJsAsset)) extraJs.push(zoomJsAsset);
   configData.extra_javascript = extraJs;
@@ -196,6 +206,8 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
   if (!Array.isArray(extraCss)) extraCss = [];
   const customCss = 'assets/css/collections-cloud.css';
   if (!extraCss.includes(customCss)) extraCss.push(customCss);
+  const timelineCssAsset = 'assets/css/timeline-filter.css';
+  if (!extraCss.includes(timelineCssAsset)) extraCss.push(timelineCssAsset);
   const zoomCssAsset = 'assets/css/mermaid-zoom.css';
   if (!extraCss.includes(zoomCssAsset)) extraCss.push(zoomCssAsset);
   configData.extra_css = extraCss;
@@ -277,7 +289,11 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
     const folderName = path.basename(dir);
     const cloudFilename = `${folderName}-cloud.md`;
     for (const file of mdFiles) {
-      if (file === 'index.md' || file === cloudFilename) continue;
+      if (
+        file === 'index.md' ||
+        file === cloudFilename ||
+        (folderName === 'overviews' && file.endsWith('-graphic.md'))
+      ) continue;
       orderedFiles.push(file);
     }
 

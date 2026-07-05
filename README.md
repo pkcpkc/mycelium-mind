@@ -30,8 +30,11 @@ cd mycelium-mind
 # Install Node & Python runtimes via mise
 mise install
 
-# Install project dependencies
+# Install project dependencies (automatically installs Node and Python environment/requirements)
 npm install
+
+# Manually trigger Python setup if needed (re-creates .venv and installs requirements.txt)
+npm run setup
 ```
 
 ### 2. Configure Your Local Model Endpoint
@@ -39,13 +42,19 @@ npm install
 Create a `.env` file in the root of the repository:
 
 ```env
-API_URL="http://localhost:8000/v1"
-API_KEY="your-api-key"
+# Base model settings
+BASE_MODEL_API_URL="http://localhost:8000/v1"
+BASE_MODEL_API_KEY="your-api-key"
+BASE_MODEL_NAME="your-local-llm-model-name" # Used for general text synthesis & compilation (defaults to 'agentic')
 
-# Specific model definitions
-AGENTIC_MODEL_NAME="your-local-llm-model-name" # Used for general text synthesis & compilation (defaults to 'agentic')
-OCR_MODEL_NAME="ocr"                           # Used for OCR on images & PDFs (defaults to 'ocr', falls back to AGENTIC_MODEL_NAME)
-IMAGE_MODEL_NAME="agentic"                     # Reserved for image-specific tasks (defaults to AGENTIC_MODEL_NAME or 'agentic')
+# Specific model configurations (fall back to BASE configs if not defined)
+OCR_MODEL_NAME="ocr"                           # Used for OCR on images & PDFs (defaults to BASE_MODEL_NAME)
+# OCR_MODEL_API_URL="http://localhost:8000/v1"
+# OCR_MODEL_API_KEY="your-api-key"
+
+IMAGE_MODEL_NAME="agentic"                     # Reserved for image-specific tasks (defaults to BASE_MODEL_NAME)
+# IMAGE_MODEL_API_URL="http://localhost:8000/v1"
+# IMAGE_MODEL_API_KEY="your-api-key"
 ```
 
 ### 3. Initialize a Wiki Vault
@@ -75,6 +84,15 @@ This runs the main ingestion pipeline:
 4. Runs sandboxed overview scripts to compile timelines and graphs.
 5. Dynamically builds index tables and relationship clouds.
 6. Commits the changes local to the vault's git repository.
+
+## 💡 Best Practices
+
+For the most efficient and robust workflow, follow these best practices when managing your wiki vault:
+
+1. **Schema & Plugin Setup**: Setup or copy your plugins from the built-in library (using `mm collection [name]` or `mm overview [name]`) or create your own custom schemas under `plugins/collections/`.
+2. **Inbox Ingestion & Sync**: Drop raw documents into the `inbox/` directory and run `mm sync`. It is highly recommended to use the `--pr` flag (e.g., `mm sync ./my-wiki --pr`) to compile changes on a separate git branch and automatically create a pull request.
+3. **Browsing & Publishing**: Compile your static wiki site using `mm publish` to deploy anywhere (e.g., GitHub Pages), or use **Obsidian** locally to browse your interactive graph and markdown pages.
+4. **Manual Edits & Overrides**: If you edit your markdown pages manually or via Obsidian, run `mm overrides` (e.g., `mm overrides ./my-wiki` or `mm overrides ./my-wiki --pr` to automatically branch and create a PR). This updates the frontmatter and concerned collection entities according to your changes, and preserves them to be correctly replayed during any future `mm resync`.
 
 ---
 

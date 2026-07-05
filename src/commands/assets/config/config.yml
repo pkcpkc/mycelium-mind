@@ -1,3 +1,20 @@
 # Settings for generating wiki overviews and charts
 overviews:
   script_timeout_ms: 5000
+
+# Pipeline execution settings
+parallelPromptExecution: false
+
+# local RAG MCP server settings (knowledge-rag)
+rag:
+  transport: "sse"
+  host: "127.0.0.1"
+  port: 8179
+  rate_limiting:
+    enabled: false
+    requests_per_minute: 60
+    burst: 10
+  prometheus:
+    enabled: false
+    port: 9179
+

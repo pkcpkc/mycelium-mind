@@ -28,12 +28,12 @@ vi.mock('../utils/openai-api.js', () => ({
       return Promise.resolve(`---
 type: "Summary"
 title: "Andrej Karpathy"
-tags: ["ai-education"]
+tags: ["ai-education", "neural-networks"]
 concept: ["Deep Learning"]
 person: ["Andrej Karpathy"]
 times:
   - date: "2015"
-    event: "Founding member at OpenAI"
+    title: "Founding member at OpenAI"
 ---
 # Summary of: Andrej Karpathy
 This is a summary description about Deep Learning and Andrej Karpathy.
@@ -123,7 +123,9 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     expect(fs.existsSync(docPath)).toBe(false);
 
     // Verify processed and sources copy
-    const dateToday = new Date().toISOString().split('T')[0];
+    const assetsDir = path.join(wikiPath, 'wiki', 'assets');
+    const assetFolders = fs.readdirSync(assetsDir).filter(f => f !== 'overrides' && fs.statSync(path.join(assetsDir, f)).isDirectory());
+    const dateToday = assetFolders[0];
     const processedCopy = path.join(wikiPath, 'wiki', 'assets', dateToday, 'processed', 'Andrej Karpathy.md');
     const sourceCopy = path.join(wikiPath, 'wiki', 'assets', dateToday, 'sources', 'Andrej Karpathy.md');
     expect(fs.existsSync(processedCopy)).toBe(true);
@@ -180,6 +182,32 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     expect(fs.existsSync(personFile)).toBe(true);
     expect(fs.existsSync(conceptFile)).toBe(true);
     expect(fs.existsSync(timelineFile)).toBe(true);
+  });
+
+  it('sync and resync commands with parallelPromptExecution = true: should execute sync and resync successfully', async () => {
+    // Initialize wiki structure
+    await initWiki(wikiPath, { includeDefaults: true });
+
+    // Enable parallel prompt execution in config.yml
+    const configPath = path.join(wikiPath, 'config', 'config.yml');
+    fs.writeFileSync(configPath, 'parallelPromptExecution: true\n', 'utf8');
+
+    // Write a test document to inbox
+    const docPath = path.join(wikiPath, 'inbox', 'Andrej Karpathy.md');
+    fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning and co-founded OpenAI.', 'utf8');
+
+    // Run sync in parallel
+    await syncWiki(wikiPath);
+
+    // Verify summary generated
+    const summaryFile = path.join(wikiPath, 'wiki', 'summaries', 'Andrej Karpathy.md');
+    expect(fs.existsSync(summaryFile)).toBe(true);
+
+    // Run resync in parallel
+    await resyncWiki(wikiPath);
+
+    // Verify summary still exists
+    expect(fs.existsSync(summaryFile)).toBe(true);
   });
 
   it('publish command: should write cytoscape assets and build standard MkDocs outputs with converted links', async () => {
@@ -356,8 +384,13 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     // Verify social-graph overview and index.md for overviews exists
     const socialGraphFile = path.join(wikiPath, 'wiki', 'overviews', 'social-graph.md');
     const overviewsIndex = path.join(wikiPath, 'wiki', 'overviews', 'index.md');
+    const socialGraphGraphicFile = path.join(wikiPath, 'wiki', 'overviews', 'social-graph-graphic.md');
     expect(fs.existsSync(socialGraphFile)).toBe(true);
     expect(fs.existsSync(overviewsIndex)).toBe(true);
+    expect(fs.existsSync(socialGraphGraphicFile)).toBe(true);
+
+    const indexContent = fs.readFileSync(overviewsIndex, 'utf8');
+    expect(indexContent).not.toContain('social-graph-graphic');
 
     // Test with optional targetHtmlPath
     const targetDir = path.join(TEST_ROOT, 'PublishedSiteOverviews');
@@ -365,6 +398,13 @@ describe('Unified Wiki Compiler CLI Tests', () => {
 
     const { execSync } = await import('child_process');
     expect(execSync).toHaveBeenCalled();
+
+    // Verify mkdocs.yml navigation does not contain social-graph-graphic
+    const mkdocsYmlPath = path.join(wikiPath, '..', 'dist', `build-${path.basename(wikiPath)}`, 'mkdocs.yml');
+    if (fs.existsSync(mkdocsYmlPath)) {
+      const mkdocsYml = fs.readFileSync(mkdocsYmlPath, 'utf8');
+      expect(mkdocsYml).not.toContain('social-graph-graphic');
+    }
   });
 
   describe('Library Collection and Overview commands', () => {

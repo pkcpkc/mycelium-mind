@@ -13,8 +13,9 @@ $SCHEMA
 ## Task Instructions
 
 1. Write an L1 `# Summary of: [Title]`
-2. Provide precise Context Metadata and an Executive Summary.
-3. List chronological Key Highlights with anchors.
+2. Under a Level 2 Heading `## Context Metadata`, provide precise context metadata.
+3. Under a Level 2 Heading `## Executive Summary`, provide a synthesis/summary of the document.
+4. Under a Level 2 Heading `## Key Highlights`, list chronological Key Highlights with anchors.
 
 ## Formatting Rules
 
@@ -33,3 +34,31 @@ $SCHEMA
         item_key_2: "value"
     ```
 - Output ONLY the valid markdown content. Do not include markdown code block wraps.
+
+## Target Output Format (Template)
+
+Ensure your output matches this exact structure (with the raw markdown elements, not wrapped in any code block):
+
+```markdown
+---
+$SCHEMA
+---
+
+# Summary of: [Title]
+
+## Context Metadata
+
+- **Source Document**: [Source Document Name]
+- **Effective Period**: [Effective Period if applicable, otherwise omit or specify N/A]
+- **Issuer**: [Issuer or Authoring Organization]
+- **Document Type**: [Document Type, e.g. Report, Criteria, Article]
+
+## Executive Summary
+
+[Provide a high-level executive summary synthesis of the source document here...]
+
+## Key Highlights
+
+- **[Highlight Anchor 1]**: [Detailed highlight description...]
+- **[Highlight Anchor 2]**: [Detailed highlight description...]
+```

@@ -6,18 +6,17 @@ export interface Message {
   content: string;
 }
 
-let baseURL = config.apiUrl;
-if (baseURL.endsWith('/chat/completions')) {
-  baseURL = baseURL.slice(0, -17);
-}
-
 let _openai: OpenAI | undefined;
 
 function getOpenAI(): OpenAI {
   if (!_openai) {
+    let baseURL = config.baseModelApiUrl;
+    if (baseURL.endsWith('/chat/completions')) {
+      baseURL = baseURL.slice(0, -17);
+    }
     _openai = new OpenAI({
       baseURL: baseURL,
-      apiKey: config.apiKey === 'dummy-key' ? '' : config.apiKey,
+      apiKey: config.baseModelApiKey === 'dummy-key' ? '' : config.baseModelApiKey,
     });
   }
   return _openai;
@@ -30,7 +29,7 @@ export async function callAgenticModel(messages: Message[]): Promise<string> {
   try {
     const openai = getOpenAI();
     const response = await openai.chat.completions.create({
-      model: config.agenticModelName,
+      model: config.baseModelName,
       messages: messages as any[],
     });
 
