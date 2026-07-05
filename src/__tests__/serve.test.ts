@@ -18,6 +18,7 @@ describe('serve command tests', () => {
     fs.writeFileSync(path.join(webDir, 'index.html'), '<h1>Hello Wiki</h1>', 'utf8');
     fs.writeFileSync(path.join(webDir, 'style.css'), 'body { color: red; }', 'utf8');
     fs.writeFileSync(path.join(webDir, 'some page name with spaces.html'), 'spaces are decoded', 'utf8');
+    fs.writeFileSync(path.join(webDir, 'S&P Sovereign Credit Rating Methodology.html'), 'S&P methodology content', 'utf8');
   });
 
   afterEach(async () => {
@@ -83,6 +84,21 @@ describe('serve command tests', () => {
 
     expect(spacesRes.status).toBe(200);
     expect(spacesRes.body).toBe('spaces are decoded');
+
+    // Fetch page with ampersand and spaces
+    const spRes = await new Promise<{ status: number; body: string }>((resolve, reject) => {
+      http.get(`http://localhost:${port}/S%26P%20Sovereign%20Credit%20Rating%20Methodology.html`, (res) => {
+        let body = '';
+        res.on('data', (chunk) => body += chunk);
+        res.on('end', () => resolve({
+          status: res.statusCode || 0,
+          body,
+        }));
+      }).on('error', reject);
+    });
+
+    expect(spRes.status).toBe(200);
+    expect(spRes.body).toBe('S&P methodology content');
 
     // Fetch 404
     const notFoundRes = await new Promise<{ status: number }>((resolve, reject) => {

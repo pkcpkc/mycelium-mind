@@ -60,6 +60,14 @@ export async function serveWiki(targetPath: string): Promise<http.Server> {
   });
 
   const server = http.createServer((req, res) => {
+    if (req.url) {
+      try {
+        const [pathname, search] = req.url.split('?');
+        req.url = decodeURIComponent(pathname) + (search ? '?' + search : '');
+      } catch (err) {
+        // Fallback to original req.url if decoding fails
+      }
+    }
     sirvMiddleware(req, res, () => {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
