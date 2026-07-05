@@ -1,11 +1,13 @@
 {
   "name": "mycelium-mind",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "main": "./build/cli.js",
   "files": [
     "build",
-    "assets"
+    "assets",
+    "scripts",
+    "requirements.txt"
   ],
   "bin": {
     "mycelium-mind": "build/cli.js",
