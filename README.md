@@ -99,7 +99,34 @@ mm rag ./my-first-wiki
 mm rag ./my-first-wiki --transport stdio
 ```
 
-See [**MCP & RAG Search Server Documentation**](docs/mcp.md) for full IDE integration guides and JSON configurations.
+### Quick Integration Example: OpenCode
+
+To configure **OpenCode** to automatically spawn and query your local RAG server, add the server configuration to your project's `opencode.json` (or your global `~/.config/opencode/opencode.json`):
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "mycelium-mind": {
+      "type": "local",
+      "command": [
+        "node",
+        "/absolute/path/to/mycelium-mind/build/cli.js",
+        "rag",
+        "/absolute/path/to/your/wiki",
+        "--transport",
+        "stdio"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
+
+> [!NOTE]
+> Ensure you replace `/absolute/path/to/mycelium-mind/` and `/absolute/path/to/your/wiki` with the actual absolute paths on your machine. OpenCode requires the `command` field to be defined as an array of arguments.
+
+See [**MCP & RAG Search Server Documentation**](docs/mcp.md) for Cursor, Claude Desktop, and other client integration guides.
 
 ## 💡 Best Practices
 
