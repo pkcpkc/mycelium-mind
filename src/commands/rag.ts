@@ -89,8 +89,10 @@ export async function ragWiki(wikiPath: string, flags: RagFlags): Promise<void> 
 
   // 4. Generate config.yaml for knowledge-rag
   const generatedConfig: any = {
-    documents_dir: path.join(absolutePath, 'wiki'),
-    data_dir: ragDataDir,
+    paths: {
+      documents_dir: path.join(absolutePath, 'wiki'),
+      data_dir: ragDataDir,
+    },
     server: {
       transport,
       host,
@@ -158,6 +160,7 @@ export async function ragWiki(wikiPath: string, flags: RagFlags): Promise<void> 
   const env = {
     ...process.env,
     BASE_DIR: ragDir,
+    KNOWLEDGE_RAG_DIR: ragDir,
   };
 
   const child = spawn(executable, runArgs, {

@@ -104,3 +104,30 @@ To connect Cursor to your wiki:
     *   Set **Name**: `mycelium-mind`
     *   Set **Type**: `command`
     *   Set **Command**: `node /path/to/mycelium-mind/build/cli.js rag /absolute/path/to/your/wiki --transport stdio`
+
+### 3. OpenCode (Stdio mode)
+
+Configure your project-specific `opencode.json` (or global `~/.config/opencode/opencode.json`) to register the RAG server as a local MCP server:
+
+```json
+{
+  "mcp": {
+    "mycelium-mind": {
+      "type": "local",
+      "command": [
+        "node",
+        "/path/to/mycelium-mind/build/cli.js",
+        "rag",
+        "/absolute/path/to/your/wiki",
+        "--transport",
+        "stdio"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
+
+> [!NOTE]
+> Ensure you replace `/path/to/mycelium-mind/` and `/absolute/path/to/your/wiki` with your actual absolute directories. Note that OpenCode requires the `command` field to be specified as an array containing the command and all of its arguments.
+

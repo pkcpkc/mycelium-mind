@@ -85,6 +85,22 @@ This runs the main ingestion pipeline:
 5. Dynamically builds index tables and relationship clouds.
 6. Commits the changes local to the vault's git repository.
 
+
+## 🔌 Semantic Search & AI Integration (MCP / RAG)
+
+Mycelium Mind features a built-in **Model Context Protocol (MCP)** server that exposes your offline wiki as an active semantic vector database. This allows AI assistants in clients like **OpenCode**, **Cursor**, or **Claude Desktop** to search and reference your wiki directly.
+
+To start the RAG server:
+```bash
+# Start SSE server (default, on port 8179)
+mm rag ./my-first-wiki
+
+# Start stdio server (for IDE-spawned integrations)
+mm rag ./my-first-wiki --transport stdio
+```
+
+See [**MCP & RAG Search Server Documentation**](docs/mcp.md) for full IDE integration guides and JSON configurations.
+
 ## 💡 Best Practices
 
 For the most efficient and robust workflow, follow these best practices when managing your wiki vault:
@@ -104,4 +120,4 @@ For in-depth guides, layout maps, scripting specifications, and references, see 
 *   [**Custom Collection Plugins**](docs/plugins.md): How to create custom collection pipelines with schemas, prompts, and evaluated placeholders.
 *   [**Custom Overviews & Sandbox Scripting**](docs/overviews.md): Writing custom script plugins inside VM contexts to build reports, directories, and visual charts.
 *   [**Pipeline Architecture & Repository Layout**](docs/architecture.md): A guide to the compiler pipeline stages, directory layouts, runtimes, and testing environment.
-*   [**MCP & RAG Search Server**](docs/mcp.md): Connecting external AI clients (like Cursor or Claude Desktop) to query your wiki semantically.
+*   [**MCP & RAG Search Server**](docs/mcp.md): Connecting external AI clients (like Cursor, Claude Desktop, or OpenCode) to query your wiki semantically.

@@ -58,8 +58,8 @@ describe('rag command tests', () => {
     expect(fs.existsSync(generatedConfigPath)).toBe(true);
 
     const generatedYaml = YAML.parse(fs.readFileSync(generatedConfigPath, 'utf8'));
-    expect(generatedYaml.documents_dir).toBe(path.join(TEST_WIKI_ROOT, 'wiki'));
-    expect(generatedYaml.data_dir).toBe(path.join(TEST_WIKI_ROOT, '.rag', 'data'));
+    expect(generatedYaml.paths.documents_dir).toBe(path.join(TEST_WIKI_ROOT, 'wiki'));
+    expect(generatedYaml.paths.data_dir).toBe(path.join(TEST_WIKI_ROOT, '.rag', 'data'));
     expect(generatedYaml.server.transport).toBe('sse');
     expect(generatedYaml.server.host).toBe('127.0.0.1');
     expect(generatedYaml.server.port).toBe(8179);
@@ -78,6 +78,7 @@ describe('rag command tests', () => {
     expect(args).toContain('--port');
     expect(args).toContain('8179');
     expect(opts.env.BASE_DIR).toBe(path.join(TEST_WIKI_ROOT, '.rag'));
+    expect(opts.env.KNOWLEDGE_RAG_DIR).toBe(path.join(TEST_WIKI_ROOT, '.rag'));
   });
 
   it('should read config.yml and generate matching config.yaml file', async () => {
