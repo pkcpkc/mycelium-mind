@@ -21,7 +21,7 @@ import { buildSessionGraph, runOverviewScript } from '../utils/overview-runner.j
 import { checkPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
 import { overviewsWiki } from './overviews.js';
-import { parseSchema } from '../utils/schema-parser.js';
+import { parseSchema, loadAndInjectSchemaProperties } from '../utils/schema-parser.js';
 
 // Parses properties table from schema YAML
 function parseSchemaProperties(yamlContent: string): string {
@@ -526,17 +526,18 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
     ? fs.readdirSync(schemasDir).filter(f => fs.statSync(path.join(schemasDir, f)).isDirectory())
     : [];
 
-  const entityTasksBySchema: Record<string, { entityName: string; summaryContent: string; summaryPath: string }[]> = {};
+  const schemaTotalTasks: Record<string, number> = {};
+  const schemaTaskCounts: Record<string, number> = {};
   for (const schemaName of activeSchemas) {
-    entityTasksBySchema[schemaName] = [];
+    schemaTotalTasks[schemaName] = 0;
+    schemaTaskCounts[schemaName] = 0;
     stats.entitiesSuccess[schemaName] = 0;
     stats.entitiesFailed[schemaName] = 0;
   }
 
+  // Pre-calculate total entities per schema
   for (const item of processedSummaries) {
-    const summaryContent = fs.readFileSync(item.summaryPath, 'utf8');
     const entities = item.frontmatter;
-
     for (const schemaName of activeSchemas) {
       const singular = schemaName.replace(/s$/, '');
       const summaryKeys = [schemaName, singular].filter(k => entities[k] !== undefined);
@@ -556,128 +557,118 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
         else if (typeof entityVal === 'object' && entityVal !== null) entityName = String(entityVal.name || entityVal.title || '').trim();
 
         if (entityName) {
-          entityTasksBySchema[schemaName].push({ entityName, summaryContent, summaryPath: item.summaryPath });
+          schemaTotalTasks[schemaName]++;
         }
       }
     }
   }
 
-  const totalEntities = Object.values(entityTasksBySchema).reduce((acc, tasks) => acc + tasks.length, 0);
+  const totalEntities = Object.values(schemaTotalTasks).reduce((acc, count) => acc + count, 0);
   const overviewsPluginDir = path.join(absolutePath, 'plugins', 'overviews');
   const overviewScripts = fs.existsSync(overviewsPluginDir) ? fs.readdirSync(overviewsPluginDir).filter(f => f.endsWith('.js')) : [];
   const totalOverviews = overviewScripts.length;
   const totalIndexes = activeSchemas.length + 4;
   const totalSteps = totalSummaries + totalEntities + totalOverviews + totalIndexes;
 
-  // Execute Entity Compilation
-  if (parallelPromptExecution) {
-    console.log(`Executing collection prompts in parallel...`);
-    const allTasks: { schemaName: string; entityName: string; summaryContent: string; summaryPath: string; schemaTaskIdx: number; totalSchemaTasks: number }[] = [];
-    
+  // Process entities summary-by-summary
+  for (const item of processedSummaries) {
+    const summaryContent = fs.readFileSync(item.summaryPath, 'utf8');
+    const entities = item.frontmatter;
+
+    const summaryTasks: { schemaName: string; entityName: string; summaryContent: string; summaryPath: string }[] = [];
     for (const schemaName of activeSchemas) {
-      const tasks = entityTasksBySchema[schemaName];
-      const totalSchemaTasks = tasks.length;
-      let taskIdx = 0;
-      for (const task of tasks) {
-        taskIdx++;
-        allTasks.push({
-          schemaName,
-          entityName: task.entityName,
-          summaryContent: task.summaryContent,
-          summaryPath: task.summaryPath,
-          schemaTaskIdx: taskIdx,
-          totalSchemaTasks
-        });
+      const singular = schemaName.replace(/s$/, '');
+      const summaryKeys = [schemaName, singular].filter(k => entities[k] !== undefined);
+      if (summaryKeys.length === 0) continue;
+
+      let entityList = entities[summaryKeys[0]];
+      if (entityList && typeof entityList === 'object' && !Array.isArray(entityList)) {
+        const nestedKey = Object.keys(entityList).find(k => k.toLowerCase().startsWith(schemaName.toLowerCase()));
+        if (nestedKey) entityList = (entityList as any)[nestedKey];
+      }
+
+      if (!Array.isArray(entityList)) continue;
+
+      for (const entityVal of entityList) {
+        let entityName = '';
+        if (typeof entityVal === 'string') entityName = entityVal.trim();
+        else if (typeof entityVal === 'object' && entityVal !== null) entityName = String(entityVal.name || entityVal.title || '').trim();
+
+        if (entityName) {
+          summaryTasks.push({ schemaName, entityName, summaryContent, summaryPath: item.summaryPath });
+        }
       }
     }
 
-    let finishedEntities = 0;
-    const entityPromises = allTasks.map(async (task) => {
-      const { schemaName, entityName, summaryContent, schemaTaskIdx, totalSchemaTasks } = task;
-      const entityStartTime = Date.now();
-      
-      const entityFilename = toSafeFilename(entityName);
-      const collectionFolder = path.join(wikiDir, 'collections', schemaName);
-      fs.mkdirSync(collectionFolder, { recursive: true });
-      const entityPath = path.join(collectionFolder, entityFilename);
+    if (summaryTasks.length === 0) continue;
 
-      let existingContent = fs.existsSync(entityPath) ? fs.readFileSync(entityPath, 'utf8') : '';
-      const schemaPromptPath = path.join(schemasDir, schemaName, 'prompt.md');
-      const schemaPropertiesPath = path.join(schemasDir, schemaName, 'schema.yml');
-      
-      if (!fs.existsSync(schemaPromptPath) || !fs.existsSync(schemaPropertiesPath)) {
-        stats.entitiesFailed[schemaName]++;
-        return;
-      }
+    if (parallelPromptExecution) {
+      console.log(`Executing collection prompts for summary in parallel: ${path.basename(item.summaryPath)}`);
+      let finishedEntities = 0;
+      const tasksWithIdx = summaryTasks.map(task => {
+        schemaTaskCounts[task.schemaName]++;
+        return {
+          ...task,
+          taskIdx: schemaTaskCounts[task.schemaName]
+        };
+      });
 
-      const promptTemplate = fs.readFileSync(schemaPromptPath, 'utf8');
-      const rawSchemaContent = fs.readFileSync(schemaPropertiesPath, 'utf8');
-      let schemaProperties = rawSchemaContent;
-      try {
-        const doc = YAML.parseDocument(rawSchemaContent);
-        if (doc && doc.contents && YAML.isMap(doc.contents)) {
-          // Remove $meta
-          const metaIndex = doc.contents.items.findIndex(item => item.key && (item.key as any).value === '$meta');
-          if (metaIndex !== -1) {
-            doc.contents.items.splice(metaIndex, 1);
-          }
-          // Auto-inject missing system keys
-          const keys = doc.contents.items.map(item => item.key && (item.key as any).value);
-          if (!keys.includes('timestamp')) {
-            const node = doc.createNode('$TIMESTAMP');
-            node.comment = ' String | Required | ISO-8601 date of synthesis. Auto-set by the system.';
-            doc.set('timestamp', node);
-          }
-          if (!keys.includes('tags')) {
-            const node = doc.createNode(['string'], { flow: true });
-            node.comment = ' Array | Optional | Categorization tags.';
-            doc.set('tags', node);
-          }
-          schemaProperties = doc.toString().trim();
+      const entityPromises = tasksWithIdx.map(async (task) => {
+        const { schemaName, entityName, summaryContent, taskIdx } = task;
+        const entityStartTime = Date.now();
+        
+        const entityFilename = toSafeFilename(entityName);
+        const collectionFolder = path.join(wikiDir, 'collections', schemaName);
+        fs.mkdirSync(collectionFolder, { recursive: true });
+        const entityPath = path.join(collectionFolder, entityFilename);
+
+        let existingContent = fs.existsSync(entityPath) ? fs.readFileSync(entityPath, 'utf8') : '';
+        const schemaPromptPath = path.join(schemasDir, schemaName, 'prompt.md');
+        const schemaPropertiesPath = path.join(schemasDir, schemaName, 'schema.yml');
+        
+        if (!fs.existsSync(schemaPromptPath) || !fs.existsSync(schemaPropertiesPath)) {
+          stats.entitiesFailed[schemaName]++;
+          return;
         }
-      } catch (err: any) {
-        console.error(`Failed to process schema properties for ${schemaName}:`, err.message);
-      }
 
-      const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
-      const evaluatedSchema = schemaProperties
-        .replace(/\$VALUE/g, entityName)
-        .replace(/\$TIMESTAMP/g, timestamp);
+        const promptTemplate = fs.readFileSync(schemaPromptPath, 'utf8');
+        const rawSchemaContent = fs.readFileSync(schemaPropertiesPath, 'utf8');
+        const schemaProperties = loadAndInjectSchemaProperties(rawSchemaContent, schemaName);
 
-      const prompt = promptTemplate
-        .replace(/\$SCHEMA/g, evaluatedSchema)
-        .replace(/\$VALUE/g, entityName)
-        .replace(/\$TIMESTAMP/g, timestamp)
-        .replace(/\$EXISTING_CONTENT/g, existingContent || '(empty)')
-        .replace(/\$SUMMARY_CONTENT/g, summaryContent);
+        const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+        const evaluatedSchema = schemaProperties
+          .replace(/\$VALUE/g, entityName)
+          .replace(/\$TIMESTAMP/g, timestamp);
 
-      try {
-        const compiledText = cleanMarkdownResponse(await callAgenticModel([{ role: 'user', content: prompt }]));
-        fs.writeFileSync(entityPath, compiledText, 'utf8');
-        await queuedGitCommit(entityPath, `Updated ${schemaName} entity card: ${entityName}`);
-        stats.entitiesSuccess[schemaName]++;
-        const currentFinished = ++finishedEntities;
-        console.log(`[Step ${globalStepIndex + currentFinished}/${totalSteps}] [${schemaName} ${schemaTaskIdx}/${totalSchemaTasks}] Done in ${((Date.now() - entityStartTime) / 1000).toFixed(1)}s`);
-      } catch (e: any) {
-        console.error(`Failed to compile entity ${entityName}:`, e.message);
-        stats.entitiesFailed[schemaName]++;
-      }
-    });
+        const prompt = promptTemplate
+          .replace(/\$SCHEMA/g, evaluatedSchema)
+          .replace(/\$VALUE/g, entityName)
+          .replace(/\$TIMESTAMP/g, timestamp)
+          .replace(/\$EXISTING_CONTENT/g, existingContent || '(empty)')
+          .replace(/\$SUMMARY_CONTENT/g, summaryContent);
 
-    await Promise.all(entityPromises);
-    globalStepIndex += allTasks.length;
-  } else {
-    for (const schemaName of activeSchemas) {
-      const tasks = entityTasksBySchema[schemaName];
-      const totalSchemaTasks = tasks.length;
-      let schemaTaskIdx = 0;
+        try {
+          const compiledText = cleanMarkdownResponse(await callAgenticModel([{ role: 'user', content: prompt }]));
+          fs.writeFileSync(entityPath, compiledText, 'utf8');
+          await queuedGitCommit(entityPath, `Updated ${schemaName} entity card: ${entityName}`);
+          stats.entitiesSuccess[schemaName]++;
+          const currentFinished = ++finishedEntities;
+          console.log(`[Step ${globalStepIndex + currentFinished}/${totalSteps}] [${schemaName} ${taskIdx}/${schemaTotalTasks[schemaName]}] Done in ${((Date.now() - entityStartTime) / 1000).toFixed(1)}s`);
+        } catch (e: any) {
+          console.error(`Failed to compile entity ${entityName}:`, e.message);
+          stats.entitiesFailed[schemaName]++;
+        }
+      });
 
-      for (const task of tasks) {
-        schemaTaskIdx++;
+      await Promise.all(entityPromises);
+      globalStepIndex += summaryTasks.length;
+    } else {
+      for (const task of summaryTasks) {
         globalStepIndex++;
-
-        const { entityName, summaryContent } = task;
-        console.log(`[Step ${globalStepIndex}/${totalSteps}] [${schemaName} ${schemaTaskIdx}/${totalSchemaTasks}] Compiling: ${entityName}`);
+        const { schemaName, entityName, summaryContent } = task;
+        schemaTaskCounts[schemaName]++;
+        const taskIdx = schemaTaskCounts[schemaName];
+        console.log(`[Step ${globalStepIndex}/${totalSteps}] [${schemaName} ${taskIdx}/${schemaTotalTasks[schemaName]}] Compiling: ${entityName}`);
         const entityStartTime = Date.now();
         
         const entityFilename = toSafeFilename(entityName);
@@ -696,32 +687,7 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
 
         const promptTemplate = fs.readFileSync(schemaPromptPath, 'utf8');
         const rawSchemaContent = fs.readFileSync(schemaPropertiesPath, 'utf8');
-        let schemaProperties = rawSchemaContent;
-        try {
-          const doc = YAML.parseDocument(rawSchemaContent);
-          if (doc && doc.contents && YAML.isMap(doc.contents)) {
-            // Remove $meta
-            const metaIndex = doc.contents.items.findIndex(item => item.key && (item.key as any).value === '$meta');
-            if (metaIndex !== -1) {
-              doc.contents.items.splice(metaIndex, 1);
-            }
-            // Auto-inject missing system keys
-            const keys = doc.contents.items.map(item => item.key && (item.key as any).value);
-            if (!keys.includes('timestamp')) {
-              const node = doc.createNode('$TIMESTAMP');
-              node.comment = ' String | Required | ISO-8601 date of synthesis. Auto-set by the system.';
-              doc.set('timestamp', node);
-            }
-            if (!keys.includes('tags')) {
-              const node = doc.createNode(['string'], { flow: true });
-              node.comment = ' Array | Optional | Categorization tags.';
-              doc.set('tags', node);
-            }
-            schemaProperties = doc.toString().trim();
-          }
-        } catch (err: any) {
-          console.error(`Failed to process schema properties for ${schemaName}:`, err.message);
-        }
+        const schemaProperties = loadAndInjectSchemaProperties(rawSchemaContent, schemaName);
 
         const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
         const evaluatedSchema = schemaProperties
@@ -740,7 +706,7 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
           fs.writeFileSync(entityPath, compiledText, 'utf8');
           gitCommit(entityPath, `Updated ${schemaName} entity card: ${entityName}`);
           stats.entitiesSuccess[schemaName]++;
-          console.log(`[Step ${globalStepIndex}/${totalSteps}] [${schemaName} ${schemaTaskIdx}/${totalSchemaTasks}] Done in ${((Date.now() - entityStartTime) / 1000).toFixed(1)}s`);
+          console.log(`[Step ${globalStepIndex}/${totalSteps}] [${schemaName} ${taskIdx}/${schemaTotalTasks[schemaName]}] Done in ${((Date.now() - entityStartTime) / 1000).toFixed(1)}s`);
         } catch (e: any) {
           console.error(`Failed to compile entity ${entityName}:`, e.message);
           stats.entitiesFailed[schemaName]++;
@@ -759,7 +725,7 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
   console.log('\nSync pipeline complete.');
   console.log(`- Summaries generated: ${stats.summariesSuccess}/${totalSummaries} (${stats.summariesFailed} failed)`);
   for (const schemaName of activeSchemas) {
-    const totalSchemaTasks = entityTasksBySchema[schemaName].length;
+    const totalSchemaTasks = schemaTotalTasks[schemaName];
     console.log(`- ${schemaName.charAt(0).toUpperCase() + schemaName.slice(1)} compiled: ${stats.entitiesSuccess[schemaName]}/${totalSchemaTasks} (${stats.entitiesFailed[schemaName]} failed)`);
   }
   console.log();

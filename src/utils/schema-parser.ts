@@ -98,3 +98,37 @@ export function parseSchema(content: string): ParsedSchema {
     fields
   };
 }
+
+/**
+ * Loads a schema YAML file, strips $meta block, auto-injects default keys (timestamp, tags) if missing,
+ * and returns the processed YAML string.
+ */
+export function loadAndInjectSchemaProperties(rawSchemaContent: string, schemaName?: string): string {
+  try {
+    const doc = YAML.parseDocument(rawSchemaContent);
+    if (doc && doc.contents && YAML.isMap(doc.contents)) {
+      // Remove $meta
+      const metaIndex = doc.contents.items.findIndex(item => item.key && (item.key as any).value === '$meta');
+      if (metaIndex !== -1) {
+        doc.contents.items.splice(metaIndex, 1);
+      }
+      // Auto-inject missing system keys
+      const keys = doc.contents.items.map(item => item.key && (item.key as any).value);
+      if (!keys.includes('timestamp')) {
+        const node = doc.createNode('$TIMESTAMP');
+        node.comment = ' String | Required | ISO-8601 date of synthesis. Auto-set by the system.';
+        doc.set('timestamp', node);
+      }
+      if (!keys.includes('tags')) {
+        const node = doc.createNode(['string'], { flow: true });
+        node.comment = ' Array | Optional | Categorization tags.';
+        doc.set('tags', node);
+      }
+      return doc.toString().trim();
+    }
+  } catch (err: any) {
+    const nameInfo = schemaName ? ` for ${schemaName}` : '';
+    console.error(`Failed to process schema properties${nameInfo}:`, err.message);
+  }
+  return rawSchemaContent;
+}

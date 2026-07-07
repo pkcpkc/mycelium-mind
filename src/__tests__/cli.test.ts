@@ -67,14 +67,17 @@ Deep learning details.
 }));
 
 describe('Unified Wiki Compiler CLI Tests', () => {
-  const wikiPath = path.join(TEST_ROOT, 'TestWiki');
+  let testDir: string;
+  let wikiPath: string;
 
   beforeEach(() => {
-    fs.mkdirSync(TEST_ROOT, { recursive: true });
+    testDir = path.join(TEST_ROOT, `TestWiki_${Math.random().toString(36).slice(2, 11)}`);
+    wikiPath = path.join(testDir, 'TestWiki');
+    fs.mkdirSync(testDir, { recursive: true });
   });
 
   afterEach(() => {
-    fs.rmSync(TEST_ROOT, { recursive: true, force: true });
+    fs.rmSync(testDir, { recursive: true, force: true });
     vi.clearAllMocks();
   });
 
@@ -207,7 +210,45 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     await resyncWiki(wikiPath);
 
     // Verify summary still exists
+  });
+
+  it('resync command: should support --collection targeting one collection while keeping summaries', async () => {
+    // Initialize wiki structure
+    await initWiki(wikiPath, { includeDefaults: true });
+
+    // Write a test document to inbox
+    const docPath = path.join(wikiPath, 'inbox', 'Andrej Karpathy.md');
+    fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning and co-founded OpenAI.', 'utf8');
+
+    // Sync to create initial summaries and collection cards
+    await syncWiki(wikiPath);
+
+    const summaryFile = path.join(wikiPath, 'wiki', 'summaries', 'Andrej Karpathy.md');
+    const personFile = path.join(wikiPath, 'wiki', 'collections', 'persons', 'Andrej Karpathy.md');
+    const conceptFile = path.join(wikiPath, 'wiki', 'collections', 'concepts', 'Deep Learning.md');
+
     expect(fs.existsSync(summaryFile)).toBe(true);
+    expect(fs.existsSync(personFile)).toBe(true);
+    expect(fs.existsSync(conceptFile)).toBe(true);
+
+    // Modify summary file to check if it is preserved (not regenerated)
+    fs.appendFileSync(summaryFile, '\nCustomSummaryModification', 'utf8');
+
+    // Remove one person card and concept card to verify targeted rebuilding
+    fs.rmSync(personFile);
+    fs.rmSync(conceptFile);
+
+    // Run resync specifically for the 'persons' collection
+    await resyncWiki(wikiPath, { collection: 'persons' });
+
+    // Verify summary was NOT regenerated (custom modification is intact)
+    expect(fs.readFileSync(summaryFile, 'utf8')).toContain('CustomSummaryModification');
+
+    // Verify targeted collection (persons) entity card was recreated
+    expect(fs.existsSync(personFile)).toBe(true);
+
+    // Verify non-targeted collection (concepts) entity card was NOT recreated
+    expect(fs.existsSync(conceptFile)).toBe(false);
   });
 
   it('publish command: should write cytoscape assets and build standard MkDocs outputs with converted links', async () => {
@@ -217,7 +258,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     await syncWiki(wikiPath);
 
     // Write a test target directory for publish
-    const targetDir = path.join(TEST_ROOT, 'PublishedSite');
+    const targetDir = path.join(testDir, 'PublishedSite');
     
     // We mock execSync for mkdocs since we don't assume mkdocs is globally available in the test runner
     const { execSync } = await import('child_process');
@@ -393,7 +434,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     expect(indexContent).not.toContain('social-graph-graphic');
 
     // Test with optional targetHtmlPath
-    const targetDir = path.join(TEST_ROOT, 'PublishedSiteOverviews');
+    const targetDir = path.join(testDir, 'PublishedSiteOverviews');
     await overviewsWiki(wikiPath, targetDir);
 
     const { execSync } = await import('child_process');
@@ -444,7 +485,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
       expect(exitSpy).not.toHaveBeenCalled();
 
       // 5. Test custom from library path
-      const customLibPath = path.join(TEST_ROOT, 'custom-lib');
+      const customLibPath = path.join(testDir, 'custom-lib');
       fs.mkdirSync(path.join(customLibPath, 'collections', 'custom-col'), { recursive: true });
       fs.writeFileSync(path.join(customLibPath, 'collections', 'custom-col', 'schema.yml'), 'test: data');
 
@@ -491,7 +532,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
       expect(exitSpy).not.toHaveBeenCalled();
 
       // 5. Test custom from library path
-      const customLibPath = path.join(TEST_ROOT, 'custom-lib');
+      const customLibPath = path.join(testDir, 'custom-lib');
       fs.mkdirSync(path.join(customLibPath, 'overviews'), { recursive: true });
       fs.writeFileSync(path.join(customLibPath, 'overviews', 'custom-ov.js'), 'console.log("custom");');
 

@@ -23,6 +23,7 @@ async function main() {
     rateLimit: undefined as number | undefined,
     prometheusPort: undefined as number | undefined,
     chromadbWal: false,
+    collection: undefined as string | undefined,
   };
 
   const positional: string[] = [];
@@ -48,6 +49,8 @@ async function main() {
       flags.prometheusPort = parseInt(args[++i], 10);
     } else if (arg === '--chromadb-wal') {
       flags.chromadbWal = true;
+    } else if (arg === '--collection') {
+      flags.collection = args[++i];
     } else if (arg.startsWith('--')) {
       // Ignore or log unknown options
     } else {
@@ -84,6 +87,7 @@ async function main() {
     console.error('  --rate-limit <rpm>                    - Enable rate limiting with specified RPM');
     console.error('  --prometheus-port <port>              - Enable Prometheus scraping on specified port');
     console.error('  --chromadb-wal                        - Enable ChromaDB Write-Ahead Logging (WAL) mode');
+    console.error('  --collection <name>                   - Target a specific collection to rebuild (resync only)');
     exit(1);
   }
 

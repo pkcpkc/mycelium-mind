@@ -56,11 +56,15 @@ mm sync ./my-vault -v
 Wipes the compiled entity and summary states and fully re-ingests/re-compiles all source material from archived assets. This is useful when you tweak collection prompts, update schema definitions, or modify overview scripts and want to rebuild the entire wiki from scratch.
 
 **Options**:
+- `--collection <name>`: Target a specific collection to rebuild (e.g. `persons`). Keeps existing summaries intact, cleans only the targeted collection's folder, compiles cards for this collection, and applies corresponding overrides.
 - Supports the same `-v, --verbose`, `--branch`, and `--pr` options as `sync`.
 
 ```bash
 # Rebuild the wiki from archived assets
 mm resync
+
+# Rebuild only the 'persons' collection, keeping summaries intact
+mm resync --collection persons
 ```
 
 ---

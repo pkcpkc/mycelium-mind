@@ -104,3 +104,4 @@ For in-depth guides, layout maps, scripting specifications, and references, see 
 *   [**Custom Collection Plugins**](docs/plugins.md): How to create custom collection pipelines with schemas, prompts, and evaluated placeholders.
 *   [**Custom Overviews & Sandbox Scripting**](docs/overviews.md): Writing custom script plugins inside VM contexts to build reports, directories, and visual charts.
 *   [**Pipeline Architecture & Repository Layout**](docs/architecture.md): A guide to the compiler pipeline stages, directory layouts, runtimes, and testing environment.
+*   [**MCP & RAG Search Server**](docs/mcp.md): Connecting external AI clients (like Cursor or Claude Desktop) to query your wiki semantically.

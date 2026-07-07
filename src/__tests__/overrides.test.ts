@@ -13,11 +13,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TEST_ROOT = path.resolve(__dirname, '..', '..', 'temp-overrides-tests-vaults');
 
+let mockDiffOutput = 'wiki/summaries/Andrej Karpathy.md\n';
+let mockStatusOutput = '';
+
 vi.mock('child_process', () => {
   return {
     execSync: vi.fn((cmd: string, options?: any) => {
       if (cmd.includes('git diff HEAD --name-only -- wiki')) {
-        return Buffer.from('wiki/summaries/Andrej Karpathy.md\n');
+        return Buffer.from(mockDiffOutput);
       }
       if (cmd.includes('git diff HEAD -- "wiki/summaries/Andrej Karpathy.md"')) {
         return Buffer.from('diff --git a/wiki/summaries/Andrej Karpathy.md b/wiki/summaries/Andrej Karpathy.md\n--- a/wiki/summaries/Andrej Karpathy.md\n+++ b/wiki/summaries/Andrej Karpathy.md\n@@ -3,1 +3,2 @@\n-title: Andrej Karpathy\n+title: Andrej Karpathy Edited\n');
@@ -31,6 +34,9 @@ person: ["Andrej Karpathy"]
 # Andrej Karpathy
 Pioneering AI engineer.
 `);
+      }
+      if (cmd.includes('git status --porcelain -- wiki')) {
+        return Buffer.from(mockStatusOutput);
       }
       return Buffer.from('');
     })
@@ -80,6 +86,8 @@ describe('Wiki Overrides and Chronological Replay Tests', () => {
 
   beforeEach(() => {
     fs.mkdirSync(TEST_ROOT, { recursive: true });
+    mockDiffOutput = 'wiki/summaries/Andrej Karpathy.md\n';
+    mockStatusOutput = '';
   });
 
   afterEach(() => {
@@ -159,5 +167,22 @@ Pioneering AI engineer.
     const finalSummaryContent = fs.readFileSync(summaryFile, 'utf8');
     expect(finalSummaryContent).toContain('title: "Andrej Karpathy Edited"');
     expect(finalSummaryContent).toContain('Pioneering AI engineer (edited).');
+  });
+
+  it('should print a notice if there are no modified files but untracked files are present', async () => {
+    await initWiki(wikiPath, { includeDefaults: true });
+    mockDiffOutput = '';
+    mockStatusOutput = '?? wiki/summaries/Untracked_File.md\n';
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await overridesWiki(wikiPath);
+
+    const loggedOutput = logSpy.mock.calls.map(call => call[0] || '').join('\n');
+    expect(loggedOutput).toContain('No modified markdown files found in the wiki folder.');
+    expect(loggedOutput).toContain('Notice: You have untracked markdown files in the wiki directory.');
+    expect(loggedOutput).toContain('git add wiki/');
+
+    logSpy.mockRestore();
   });
 });

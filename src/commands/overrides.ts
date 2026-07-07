@@ -12,6 +12,7 @@ import {
 import { gitCommit, gitCreateBranch, gitCreatePR, enableGitCommits } from '../utils/git.js';
 import { checkPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
+import { loadAndInjectSchemaProperties } from '../utils/schema-parser.js';
 
 /**
  * Standardly compiles or updates a collection entity card.
@@ -42,31 +43,7 @@ async function compileEntityCard(
 
   const promptTemplate = fs.readFileSync(schemaPromptPath, 'utf8');
   const rawSchemaContent = fs.readFileSync(schemaPropertiesPath, 'utf8');
-  let schemaProperties = rawSchemaContent;
-
-  try {
-    const doc = YAML.parseDocument(rawSchemaContent);
-    if (doc && doc.contents && YAML.isMap(doc.contents)) {
-      const metaIndex = doc.contents.items.findIndex(item => item.key && (item.key as any).value === '$meta');
-      if (metaIndex !== -1) {
-        doc.contents.items.splice(metaIndex, 1);
-      }
-      const keys = doc.contents.items.map(item => item.key && (item.key as any).value);
-      if (!keys.includes('timestamp')) {
-        const node = doc.createNode('$TIMESTAMP');
-        node.comment = ' String | Required | ISO-8601 date of synthesis. Auto-set by the system.';
-        doc.set('timestamp', node);
-      }
-      if (!keys.includes('tags')) {
-        const node = doc.createNode(['string'], { flow: true });
-        node.comment = ' Array | Optional | Categorization tags.';
-        doc.set('tags', node);
-      }
-      schemaProperties = doc.toString().trim();
-    }
-  } catch (err: any) {
-    console.error(`Failed to process schema properties for ${schemaName}:`, err.message);
-  }
+  const schemaProperties = loadAndInjectSchemaProperties(rawSchemaContent, schemaName);
 
   const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
   const evaluatedSchema = schemaProperties
@@ -217,6 +194,15 @@ export async function overridesWiki(
 
   if (modifiedFiles.length === 0) {
     console.log('No modified markdown files found in the wiki folder.');
+    try {
+      const untrackedOutput = execSync('git status --porcelain -- wiki', { cwd: absolutePath }).toString();
+      const hasUntracked = untrackedOutput.split('\n').some(line => line.startsWith('?? ') && line.endsWith('.md'));
+      if (hasUntracked) {
+        console.log('\nNotice: You have untracked markdown files in the wiki directory.');
+        console.log('If you want to include them in overrides, please stage them first using:');
+        console.log('  git add wiki/');
+      }
+    } catch {}
     return;
   }
 

@@ -36,4 +36,9 @@ Merge the new definitions, key details, and related concepts from the summary co
 - If the existing concept content is empty, generate a new Concept page from scratch matching the Target Output Format template exactly.
 - If the existing concept page already exists, merge the new details, definitions, and relationships into the existing document. Do NOT overwrite existing definitions; append and synthesize new information.
 - All internal links must be simple Obsidian wikilinks (e.g. `[[Deep Learning]]`).
+  - **Internal Link Normalization Rules (CRITICAL to avoid duplicates):**
+    When linking to other concepts, persons, or entities, format the link text using strict normalization:
+    - **Case Normalization:** Always use Title Case (e.g., `[[Sovereign Debt]]`, not `[[sovereign debt]]`).
+    - **Singularization:** Always link to the singular form of the noun/concept (e.g., `[[Neural Network]]`, not `[[Neural Networks]]`), unless the term is inherently plural (e.g., `[[United States]]`).
+    - **Punctuation & Spacing:** Use standard spaces, not hyphens or underscores (e.g., `[[Deep Learning]]`, not `[[Deep-Learning]]`).
 - Output ONLY the valid markdown content. Do not include markdown code block wraps.

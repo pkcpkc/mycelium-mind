@@ -18,6 +18,7 @@ import { checkPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
 import { overviewsWiki } from './overviews.js';
 import { updateCollectionEntitiesForFile } from './overrides.js';
+import { loadAndInjectSchemaProperties } from '../utils/schema-parser.js';
 
 
 
@@ -37,7 +38,7 @@ function parseSchemaProperties(yamlContent: string): string {
 /**
  * Recreates the wiki by re-summarizing and re-compiling from existing assets.
  */
-export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; verbose?: boolean }): Promise<void> {
+export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; verbose?: boolean; collection?: string }): Promise<void> {
   enableGitCommits(!!options?.pr);
   const absolutePath = path.resolve(wikiPath);
 
@@ -92,19 +93,49 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
     return;
   }
 
+  // Load plugin schemas
+  const schemasDir = path.join(absolutePath, 'plugins', 'collections');
+  const schemaInstructions: string[] = [];
+  const schemaKeys: string[] = [];
+  const activeSchemas = fs.existsSync(schemasDir)
+    ? fs.readdirSync(schemasDir).filter(f => fs.statSync(path.join(schemasDir, f)).isDirectory())
+    : [];
+
+  let schemasToCompile = [...activeSchemas];
+  if (options?.collection) {
+    if (!activeSchemas.includes(options.collection)) {
+      throw new Error(`Collection '${options.collection}' not found in active plugins.`);
+    }
+    schemasToCompile = [options.collection];
+  }
+
   // 1. Clear generated folders
   console.log('Cleaning generated folders...');
   const summariesDir = path.join(wikiDir, 'summaries');
-  if (fs.existsSync(summariesDir)) {
-    fs.rmSync(summariesDir, { recursive: true, force: true });
+  if (!options?.collection) {
+    if (fs.existsSync(summariesDir)) {
+      fs.rmSync(summariesDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(summariesDir, { recursive: true });
+  } else {
+    if (!fs.existsSync(summariesDir)) {
+      fs.mkdirSync(summariesDir, { recursive: true });
+    }
   }
-  fs.mkdirSync(summariesDir, { recursive: true });
 
   const collectionsDir = path.join(wikiDir, 'collections');
-  if (fs.existsSync(collectionsDir)) {
-    fs.rmSync(collectionsDir, { recursive: true, force: true });
+  if (options?.collection) {
+    const targetCollDir = path.join(collectionsDir, options.collection);
+    if (fs.existsSync(targetCollDir)) {
+      fs.rmSync(targetCollDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(targetCollDir, { recursive: true });
+  } else {
+    if (fs.existsSync(collectionsDir)) {
+      fs.rmSync(collectionsDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(collectionsDir, { recursive: true });
   }
-  fs.mkdirSync(collectionsDir, { recursive: true });
 
   const overviewsDir = path.join(wikiDir, 'overviews');
   if (fs.existsSync(overviewsDir)) {
@@ -152,19 +183,31 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
     return a.timestamp.localeCompare(b.timestamp);
   });
 
+  // Build a map of existing summaries keyed by their processed asset paths if we are doing a targeted collection resync
+  const summaryMap = new Map<string, { summaryPath: string; frontmatter: any }>();
+  if (options?.collection && fs.existsSync(summariesDir)) {
+    const files = fs.readdirSync(summariesDir).filter(f => f.endsWith('.md'));
+    for (const file of files) {
+      const summaryPath = path.join(summariesDir, file);
+      try {
+        const content = fs.readFileSync(summaryPath, 'utf8');
+        const frontmatter = parseFrontmatterFromString(content);
+        if (frontmatter && Array.isArray(frontmatter.assets)) {
+          for (const asset of frontmatter.assets) {
+            summaryMap.set(asset, { summaryPath, frontmatter });
+          }
+        }
+      } catch (err: any) {
+        console.warn(`[WARNING] Failed to parse existing summary at ${summaryPath}:`, err.message);
+      }
+    }
+  }
+
   const processedSummaries: { summaryPath: string; frontmatter: any }[] = [];
 
   // Load summary templates
   const summaryPromptTemplate = fs.readFileSync(path.join(absolutePath, 'config', 'summary', 'prompt.md'), 'utf8');
   const summaryBaseSchema = fs.readFileSync(path.join(absolutePath, 'config', 'summary', 'schema.yml'), 'utf8');
-
-  // Load plugin schemas
-  const schemasDir = path.join(absolutePath, 'plugins', 'collections');
-  const schemaInstructions: string[] = [];
-  const schemaKeys: string[] = [];
-  const activeSchemas = fs.existsSync(schemasDir)
-    ? fs.readdirSync(schemasDir).filter(f => fs.statSync(path.join(schemasDir, f)).isDirectory())
-    : [];
 
   for (const folder of activeSchemas) {
     const extensionPath = path.join(schemasDir, folder, 'summary-schema-extension.yml');
@@ -203,30 +246,7 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
     }
 
     const rawSchemaContent = fs.readFileSync(schemaPropertiesPath, 'utf8');
-    let schemaProperties = rawSchemaContent;
-    try {
-      const doc = YAML.parseDocument(rawSchemaContent);
-      if (doc && doc.contents && YAML.isMap(doc.contents)) {
-        const metaIndex = doc.contents.items.findIndex(item => item.key && (item.key as any).value === '$meta');
-        if (metaIndex !== -1) {
-          doc.contents.items.splice(metaIndex, 1);
-        }
-        const keys = doc.contents.items.map(item => item.key && (item.key as any).value);
-        if (!keys.includes('timestamp')) {
-          const node = doc.createNode('$TIMESTAMP');
-          node.comment = ' String | Required | ISO-8601 date of synthesis. Auto-set by the system.';
-          doc.set('timestamp', node);
-        }
-        if (!keys.includes('tags')) {
-          const node = doc.createNode(['string'], { flow: true });
-          node.comment = ' Array | Optional | Categorization tags.';
-          doc.set('tags', node);
-        }
-        schemaProperties = doc.toString().trim();
-      }
-    } catch (err: any) {
-      console.error(`Failed to process schema properties for ${schemaName}:`, err.message);
-    }
+    const schemaProperties = loadAndInjectSchemaProperties(rawSchemaContent, schemaName);
 
     schemaTemplates[schemaName] = {
       promptTemplate,
@@ -265,7 +285,7 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
     indexesFailed: 0
   };
 
-  for (const schemaName of activeSchemas) {
+  for (const schemaName of schemasToCompile) {
     stats.entitiesSuccess[schemaName] = 0;
     stats.entitiesFailed[schemaName] = 0;
   }
@@ -280,14 +300,11 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
     schemaTemplates: Record<string, { promptTemplate: string; schemaProperties: string } | null>,
     summaries: { summaryPath: string; frontmatter: any }[]
   ) {
-    const entityTasksBySchema: Record<string, { entityName: string; summaryContent: string; summaryPath: string }[]> = {};
-    for (const schemaName of activeSchemas) {
-      entityTasksBySchema[schemaName] = [];
-    }
-
     for (const item of summaries) {
       const summaryContent = fs.readFileSync(item.summaryPath, 'utf8');
       const entities = item.frontmatter;
+
+      const summaryTasks: { schemaName: string; entityName: string; summaryContent: string; summaryPath: string }[] = [];
 
       for (const schemaName of activeSchemas) {
         const template = schemaTemplates[schemaName];
@@ -341,7 +358,8 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
             }
 
             if (!entityName) continue;
-            entityTasksBySchema[schemaName].push({
+            summaryTasks.push({
+              schemaName,
               entityName,
               summaryContent,
               summaryPath: item.summaryPath
@@ -349,66 +367,59 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
           }
         }
       }
-    }
 
-    const runTask = async (schemaName: string, task: any) => {
-      const { entityName, summaryContent } = task;
-      const entityFilename = toSafeFilename(entityName);
-      const collectionFolder = path.join(wikiDir, 'collections', schemaName);
-      fs.mkdirSync(collectionFolder, { recursive: true });
-      const entityPath = path.join(collectionFolder, entityFilename);
+      if (summaryTasks.length === 0) continue;
 
-      let existingContent = '';
-      if (fs.existsSync(entityPath)) {
-        existingContent = fs.readFileSync(entityPath, 'utf8');
-      }
+      const runTask = async (schemaName: string, task: any) => {
+        const { entityName, summaryContent } = task;
+        const entityFilename = toSafeFilename(entityName);
+        const collectionFolder = path.join(wikiDir, 'collections', schemaName);
+        fs.mkdirSync(collectionFolder, { recursive: true });
+        const entityPath = path.join(collectionFolder, entityFilename);
 
-      const template = schemaTemplates[schemaName]!;
-      const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
-      const evaluatedSchema = template.schemaProperties
-        .replace(/\$VALUE/g, entityName)
-        .replace(/\$TIMESTAMP/g, timestamp);
-
-      const prompt = template.promptTemplate
-        .replace(/\$SCHEMA/g, evaluatedSchema)
-        .replace(/\$VALUE/g, entityName)
-        .replace(/\$TIMESTAMP/g, timestamp)
-        .replace(/\$EXISTING_CONTENT/g, existingContent || '(empty)')
-        .replace(/\$SUMMARY_CONTENT/g, summaryContent);
-
-      if (options?.verbose) {
-        console.log(`[VERBOSE] Entity prompt for ${entityName} (${schemaName}):`);
-        console.log('--------------------------------------------------');
-        console.log(prompt);
-        console.log('==================================================');
-      }
-
-      try {
-        let compiledText = await callAgenticModel([{ role: 'user', content: prompt }]);
-        compiledText = cleanMarkdownResponse(compiledText);
-        fs.writeFileSync(entityPath, compiledText, 'utf8');
-        await queuedGitCommit(entityPath, `Updated ${schemaName} entity card: ${entityName}`);
-        stats.entitiesSuccess[schemaName]++;
-      } catch (e: any) {
-        console.error(`Failed to compile entity ${entityName}:`, e.message);
-        stats.entitiesFailed[schemaName]++;
-      }
-    };
-
-    if (parallelPromptExecution) {
-      const allTasks: Promise<void>[] = [];
-      for (const schemaName of activeSchemas) {
-        const tasks = entityTasksBySchema[schemaName];
-        for (const task of tasks) {
-          allTasks.push(runTask(schemaName, task));
+        let existingContent = '';
+        if (fs.existsSync(entityPath)) {
+          existingContent = fs.readFileSync(entityPath, 'utf8');
         }
-      }
-      await Promise.all(allTasks);
-    } else {
-      for (const schemaName of activeSchemas) {
-        const tasks = entityTasksBySchema[schemaName];
-        for (const task of tasks) {
-          await runTask(schemaName, task);
+
+        const template = schemaTemplates[schemaName]!;
+        const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+        const evaluatedSchema = template.schemaProperties
+          .replace(/\$VALUE/g, entityName)
+          .replace(/\$TIMESTAMP/g, timestamp);
+
+        const prompt = template.promptTemplate
+          .replace(/\$SCHEMA/g, evaluatedSchema)
+          .replace(/\$VALUE/g, entityName)
+          .replace(/\$TIMESTAMP/g, timestamp)
+          .replace(/\$EXISTING_CONTENT/g, existingContent || '(empty)')
+          .replace(/\$SUMMARY_CONTENT/g, summaryContent);
+
+        if (options?.verbose) {
+          console.log(`[VERBOSE] Entity prompt for ${entityName} (${schemaName}):`);
+          console.log('--------------------------------------------------');
+          console.log(prompt);
+          console.log('==================================================');
+        }
+
+        try {
+          let compiledText = await callAgenticModel([{ role: 'user', content: prompt }]);
+          compiledText = cleanMarkdownResponse(compiledText);
+          fs.writeFileSync(entityPath, compiledText, 'utf8');
+          await queuedGitCommit(entityPath, `Updated ${schemaName} entity card: ${entityName}`);
+          stats.entitiesSuccess[schemaName]++;
+        } catch (e: any) {
+          console.error(`Failed to compile entity ${entityName}:`, e.message);
+          stats.entitiesFailed[schemaName]++;
+        }
+      };
+
+      if (parallelPromptExecution) {
+        const promises = summaryTasks.map(task => runTask(task.schemaName, task));
+        await Promise.all(promises);
+      } else {
+        for (const task of summaryTasks) {
+          await runTask(task.schemaName, task);
         }
       }
     }
@@ -476,6 +487,17 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
             referencedAssets.push(`wiki/assets/${dateFolder}/processed/${companionMd}`);
             referencedAssets.push(`wiki/assets/${dateFolder}/sources/${companionMd}`);
           }
+        }
+
+        const primaryAssetKey = referencedAssets[0];
+        const cachedSummary = summaryMap.get(primaryAssetKey);
+
+        if (options?.collection && cachedSummary) {
+          stats.summariesSuccess++;
+          console.log(`[Step ${globalStepIndex}] [Summaries ${globalStepIndex}/${totalSummaries}] Using cached summary for asset: ${file}`);
+          eventSummaries.push(cachedSummary);
+          processedSummaries.push(cachedSummary);
+          return;
         }
 
         const combinedInput = companionMetadataContent
@@ -571,7 +593,7 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
         await compileEntitiesForSummaries(
           wikiDir,
           schemasDir,
-          activeSchemas,
+          schemasToCompile,
           schemaTemplates,
           eventSummaries
         );
@@ -593,6 +615,14 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
       }
 
       const processOverride = async (override: { file: string; diff: string }) => {
+        const normalizedFile = override.file.replace(/\\/g, '/');
+        if (options?.collection) {
+          const collectionPrefix = `wiki/collections/${options.collection}/`;
+          if (!normalizedFile.startsWith(collectionPrefix)) {
+            // Skip override for non-target collections when running targeted collection resync
+            return;
+          }
+        }
         globalStepIndex++;
         const targetPath = path.join(absolutePath, override.file);
         if (!fs.existsSync(targetPath)) {
@@ -662,7 +692,7 @@ Please logically apply the changes from the git diff to the original markdown do
   // Print final summary stats
   console.log('\nResync complete.');
   console.log(`- Summaries generated: ${stats.summariesSuccess}/${totalSummaries} (${stats.summariesFailed} failed)`);
-  for (const schemaName of activeSchemas) {
+  for (const schemaName of schemasToCompile) {
     console.log(`- ${schemaName.charAt(0).toUpperCase() + schemaName.slice(1)} compiled: ${stats.entitiesSuccess[schemaName]} (${stats.entitiesFailed[schemaName]} failed)`);
   }
   console.log();
