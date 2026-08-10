@@ -62,7 +62,10 @@ Pioneering AI engineer (edited).
 type: "Person"
 title: "Andrej Karpathy"
 description: "Pioneering AI engineer and educator."
-timestamp: "2026-06-24T10:38:00Z"
+status: "stable"
+generated:
+  by: "agentic-compiler"
+  at: "2026-06-24T10:38:00Z"
 ---
 # Andrej Karpathy
 AI researcher and educator.

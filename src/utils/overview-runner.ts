@@ -60,7 +60,7 @@ export async function buildSessionGraph(wikiPath: string): Promise<EntityMetadat
     const entity: EntityMetadata = {
       name: metadata.title || metadata.name || basenameNoExt,
       type: metadata.type || '',
-      timestamp: metadata.timestamp || '',
+      timestamp: metadata.generated?.at || metadata.timestamp || '',
       tags,
       properties: metadata,
       filePath: path.relative(wikiPath, file).replace(/\\/g, '/')

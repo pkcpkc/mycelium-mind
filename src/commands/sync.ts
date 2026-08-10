@@ -356,9 +356,20 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
         try { frontmatter = YAML.parse(cleanFmStr) || {}; } catch (e: any) { console.error('Failed to parse frontmatter:', e.message); }
       }
 
+      const modelName = config.baseModelName || 'mycelium-mind-compiler';
+      const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+
       frontmatter.type = 'Summary';
       frontmatter.title = frontmatter.title || baseName;
-      frontmatter.timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      frontmatter.generated = {
+        by: `agentic/${modelName}`,
+        at: timestamp
+      };
+      frontmatter.status = 'stable';
+      frontmatter.sources = referencedAssets.map(asset => ({
+        resource: `/assets/${asset}`,
+        title: asset
+      }));
       frontmatter.assets = referencedAssets;
 
       const summaryFilename = toSafeFilename(frontmatter.title);
@@ -504,9 +515,20 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
         try { frontmatter = YAML.parse(cleanFmStr) || {}; } catch (e: any) { console.error('Failed to parse frontmatter:', e.message); }
       }
 
+      const modelName = config.baseModelName || 'mycelium-mind-compiler';
+      const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+
       frontmatter.type = 'Summary';
       frontmatter.title = frontmatter.title || baseName;
-      frontmatter.timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      frontmatter.generated = {
+        by: `agentic/${modelName}`,
+        at: timestamp
+      };
+      frontmatter.status = 'stable';
+      frontmatter.sources = referencedAssets.map(asset => ({
+        resource: `/assets/${asset}`,
+        title: asset
+      }));
       frontmatter.assets = referencedAssets;
 
       const summaryFilename = toSafeFilename(frontmatter.title);

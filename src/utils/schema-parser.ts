@@ -112,13 +112,30 @@ export function loadAndInjectSchemaProperties(rawSchemaContent: string, schemaNa
       if (metaIndex !== -1) {
         doc.contents.items.splice(metaIndex, 1);
       }
-      // Auto-inject missing system keys
+      // Auto-inject missing system keys for OKF v0.2 conformance
       const keys = doc.contents.items.map(item => item.key && (item.key as any).value);
-      if (!keys.includes('timestamp')) {
-        const node = doc.createNode('$TIMESTAMP');
-        node.comment = ' String | Required | ISO-8601 date of synthesis. Auto-set by the system.';
-        doc.set('timestamp', node);
+      
+      if (!keys.includes('generated')) {
+        const generatedNode = doc.createNode({
+          by: 'string', // Actor identifier
+          at: '$TIMESTAMP' // Timestamp placeholder
+        });
+        generatedNode.comment = ' Object | Required | Synthesis metadata (author and time).';
+        doc.set('generated', generatedNode);
       }
+
+      if (!keys.includes('status')) {
+        const statusNode = doc.createNode('stable');
+        statusNode.comment = ' String | Required | Lifecycle state (draft | stable | deprecated).';
+        doc.set('status', statusNode);
+      }
+
+      if (!keys.includes('sources')) {
+        const sourcesNode = doc.createNode([], { flow: true });
+        sourcesNode.comment = ' Array | Optional | Provenance references.';
+        doc.set('sources', sourcesNode);
+      }
+
       if (!keys.includes('tags')) {
         const node = doc.createNode(['string'], { flow: true });
         node.comment = ' Array | Optional | Categorization tags.';

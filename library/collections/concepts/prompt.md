@@ -25,7 +25,7 @@ $SUMMARY_CONTENT
 Ensure your output matches this exact structure.
 
 ---
-[YAML frontmatter matching the Schema Specification above. Ensure type is "Concept", title is "$VALUE", timestamp is "$TIMESTAMP", and other fields match the schema.]
+[YAML frontmatter matching the Schema Specification above. Ensure type is "Concept", title is "$VALUE", status is "stable", generated is { by: "agentic-compiler", at: "$TIMESTAMP" }, and other fields match the schema.]
 ---
 # $VALUE
 

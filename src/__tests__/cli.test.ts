@@ -44,7 +44,10 @@ type: "Person"
 title: "Andrej Karpathy"
 description: "Pioneering AI engineer and educator."
 tags: ["ai-education"]
-timestamp: "2026-06-24T10:38:00Z"
+status: "stable"
+generated:
+  by: "agentic-compiler"
+  at: "2026-06-24T10:38:00Z"
 ---
 # Andrej Karpathy
 AI researcher and educator.
@@ -55,7 +58,10 @@ type: "Concept"
 title: "Deep Learning"
 description: "A subset of machine learning."
 tags: ["machine-learning"]
-timestamp: "2026-06-24T10:38:00Z"
+status: "stable"
+generated:
+  by: "agentic-compiler"
+  at: "2026-06-24T10:38:00Z"
 ---
 # Deep Learning
 Deep learning details.

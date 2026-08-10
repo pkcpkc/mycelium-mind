@@ -19,6 +19,7 @@ import { initWiki } from './init.js';
 import { overviewsWiki } from './overviews.js';
 import { updateCollectionEntitiesForFile } from './overrides.js';
 import { loadAndInjectSchemaProperties } from '../utils/schema-parser.js';
+import { config } from '../utils/config.js';
 
 
 
@@ -563,9 +564,20 @@ export async function resyncWiki(wikiPath: string, options?: { pr?: boolean; ver
           }
         }
 
+        const modelName = config.baseModelName || 'mycelium-mind-compiler';
+        const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+
         frontmatter.type = 'Summary';
         frontmatter.title = frontmatter.title || baseName;
-        frontmatter.timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+        frontmatter.generated = {
+          by: `agentic/${modelName}`,
+          at: timestamp
+        };
+        frontmatter.status = 'stable';
+        frontmatter.sources = referencedAssets.map(asset => ({
+          resource: `/assets/${asset}`,
+          title: asset
+        }));
         frontmatter.assets = referencedAssets;
 
         const summaryFilename = toSafeFilename(frontmatter.title);
