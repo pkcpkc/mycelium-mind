@@ -38,15 +38,14 @@ Runs the main incremental compiler pipeline on new documents dropped in `inbox/`
 
 **Options**:
 - `-v, --verbose`: Prints assembled LLM prompts (summaries and entity card merges) to standard output before calling the model API.
-- `--branch`: Creates and checkouts a temporary git branch (e.g. `sync-YYYYMMDD-HHMMSS`) before compilation, committing all updates there.
-- `--pr`: Pushes the sync branch to origin and triggers `gh pr create` (requires the GitHub CLI).
+- `--no-pr`: Disables pushing the sync branch to origin and opening a pull request (PR creation is enabled by default, requiring the GitHub CLI).
 
 ```bash
-# Sync the current directory vault
+# Sync the current directory vault (creates branch and PR by default)
 mm sync
 
-# Sync a specific vault in verbose mode
-mm sync ./my-vault -v
+# Sync a specific vault in verbose mode without creating a PR
+mm sync ./my-vault -v --no-pr
 ```
 
 ---
@@ -57,7 +56,7 @@ Wipes the compiled entity and summary states and fully re-ingests/re-compiles al
 
 **Options**:
 - `--collection <name>`: Target a specific collection to rebuild (e.g. `persons`). Keeps existing summaries intact, cleans only the targeted collection's folder, compiles cards for this collection, and applies corresponding overrides.
-- Supports the same `-v, --verbose`, `--branch`, and `--pr` options as `sync`.
+- Supports the same `-v, --verbose` and `--no-pr` options as `sync`.
 
 ```bash
 # Rebuild the wiki from archived assets
@@ -156,13 +155,6 @@ First start the server via `mm rag` in the terminal, then configure the client:
 ## ⚙️ Wiki Configuration (`config/config.yml`)
 
 Each wiki vault has a configuration file located at `config/config.yml` that governs pipeline execution settings and option variables.
-
-### Pipeline Settings
-
-- **`parallelPromptExecution`** (boolean): 
-  Controls whether LLM summarizations (during `sync`) and collection entity card compiles are executed concurrently or sequentially.
-  - `true`: Speeds up the compilation process significantly by running LLM calls in parallel (highly recommended when using robust local servers or cloud APIs).
-  - `false` (default): Runs LLM calls sequentially to prevent rate limits or context starvation on smaller local backends (like standard llama.cpp or Ollama single-instance deployments).
 
 ### RAG Settings (knowledge-rag)
 

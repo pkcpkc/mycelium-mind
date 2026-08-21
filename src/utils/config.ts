@@ -57,3 +57,52 @@ export const config = {
   imageModelApiUrl: process.env.IMAGE_MODEL_API_URL || baseModelApiUrl,
   imageModelApiKey: process.env.IMAGE_MODEL_API_KEY || baseModelApiKey,
 };
+
+import YAML from 'yaml';
+
+export interface IngestionSettings {
+  concurrency: number;
+  inboxChunkSize: number;
+  maxSummariesPerEntity: number;
+}
+
+/**
+ * Loads ingestion configuration from config/config.yml.
+ */
+export function loadIngestionSettings(absoluteWikiRoot: string): IngestionSettings {
+  let concurrency = 4;
+  let inboxChunkSize = 10;
+  let maxSummariesPerEntity = 5;
+
+  const configPath = path.join(absoluteWikiRoot, 'config', 'config.yml');
+  if (fs.existsSync(configPath)) {
+    try {
+      const parsed = YAML.parse(fs.readFileSync(configPath, 'utf8'));
+      if (parsed) {
+        if (parsed.parallelPromptExecution === false) {
+          concurrency = 1;
+        }
+        if (parsed.ingestion) {
+          if (typeof parsed.ingestion.concurrency === 'number') {
+            concurrency = parsed.ingestion.concurrency;
+          }
+          if (typeof parsed.ingestion.inbox_chunk_size === 'number') {
+            inboxChunkSize = parsed.ingestion.inbox_chunk_size;
+          } else if (typeof parsed.ingestion.inboxChunkSize === 'number') {
+            inboxChunkSize = parsed.ingestion.inboxChunkSize;
+          }
+          if (typeof parsed.ingestion.max_summaries_per_entity === 'number') {
+            maxSummariesPerEntity = parsed.ingestion.max_summaries_per_entity;
+          } else if (typeof parsed.ingestion.maxSummariesPerEntity === 'number') {
+            maxSummariesPerEntity = parsed.ingestion.maxSummariesPerEntity;
+          }
+        }
+      }
+    } catch (e: any) {
+      console.warn(`Failed to parse config.yml at ${configPath}:`, e.message);
+    }
+  }
+
+  return { concurrency, inboxChunkSize, maxSummariesPerEntity };
+}
+

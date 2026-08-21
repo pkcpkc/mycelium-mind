@@ -133,9 +133,9 @@ See [**MCP & RAG Search Server Documentation**](docs/mcp.md) for Cursor, Claude 
 For the most efficient and robust workflow, follow these best practices when managing your wiki vault:
 
 1. **Schema & Plugin Setup**: Setup or copy your plugins from the built-in library (using `mm collection [name]` or `mm overview [name]`) or create your own custom schemas under `plugins/collections/`.
-2. **Inbox Ingestion & Sync**: Drop raw documents into the `inbox/` directory and run `mm sync`. It is highly recommended to use the `--pr` flag (e.g., `mm sync ./my-wiki --pr`) to compile changes on a separate git branch and automatically create a pull request.
+2. **Inbox Ingestion & Sync**: Drop raw documents into the `inbox/` directory and run `mm sync`. By default, this compiles changes on a separate git branch and automatically creates a pull request (use `--no-pr` to disable).
 3. **Browsing & Publishing**: Compile your static wiki site using `mm publish` to deploy anywhere (e.g., GitHub Pages), or use **Obsidian** locally to browse your interactive graph and markdown pages.
-4. **Manual Edits & Overrides**: If you edit your markdown pages manually or via Obsidian, run `mm overrides` (e.g., `mm overrides ./my-wiki` or `mm overrides ./my-wiki --pr` to automatically branch and create a PR). This updates the frontmatter and concerned collection entities according to your changes, and preserves them to be correctly replayed during any future `mm resync`.
+4. **Manual Edits & Overrides**: If you edit your markdown pages manually or via Obsidian, run `mm overrides` (use `--no-pr` to skip branch/PR creation). This updates the frontmatter and concerned collection entities according to your changes, and preserves them to be correctly replayed during any future `mm resync`.
 
 ---
 

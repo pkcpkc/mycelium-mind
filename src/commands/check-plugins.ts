@@ -187,3 +187,18 @@ export async function checkPlugins(pluginPath: string): Promise<void> {
     process.exit(1);
   }
 }
+
+/**
+ * Validates all collection plugins registered in plugins/collections/ folder.
+ */
+export async function validateAllPlugins(wikiRoot: string): Promise<void> {
+  const absolutePath = path.resolve(wikiRoot);
+  const pluginsCollectionsDir = path.join(absolutePath, 'plugins', 'collections');
+  if (fs.existsSync(pluginsCollectionsDir)) {
+    const folders = fs.readdirSync(pluginsCollectionsDir).filter(f => fs.statSync(path.join(pluginsCollectionsDir, f)).isDirectory());
+    for (const folder of folders) {
+      await checkPlugins(path.join(pluginsCollectionsDir, folder));
+    }
+  }
+}
+

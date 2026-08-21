@@ -193,13 +193,9 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     expect(fs.existsSync(timelineFile)).toBe(true);
   });
 
-  it('sync and resync commands with parallelPromptExecution = true: should execute sync and resync successfully', async () => {
+  it('sync and resync commands with parallel execution: should execute sync and resync successfully', async () => {
     // Initialize wiki structure
     await initWiki(wikiPath, { includeDefaults: true });
-
-    // Enable parallel prompt execution in config.yml
-    const configPath = path.join(wikiPath, 'config', 'config.yml');
-    fs.writeFileSync(configPath, 'parallelPromptExecution: true\n', 'utf8');
 
     // Write a test document to inbox
     const docPath = path.join(wikiPath, 'inbox', 'Andrej Karpathy.md');
@@ -293,7 +289,7 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     // Reset inbox file for the next run
     fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning.', 'utf8');
 
-    // 2. Run sync with options
+    // 2. Run sync with options { pr: true }
     await syncWiki(wikiPath, { pr: true, verbose: true });
 
     expect(spyBranch).toHaveBeenCalled();
@@ -307,18 +303,37 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     spyBranch.mockClear();
     spyPR.mockClear();
 
+    // 2b. Run sync with options { pr: false } (--no-pr flag behavior)
+    fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning.', 'utf8');
+    await syncWiki(wikiPath, { pr: false });
+    expect(spyBranch).not.toHaveBeenCalled();
+    expect(spyPR).not.toHaveBeenCalled();
+    expect(gitUtils.isGitCommitsEnabled()).toBe(false);
+
+    spyBranch.mockClear();
+    spyPR.mockClear();
+
     // 3. Run resync WITHOUT options
     await resyncWiki(wikiPath);
     expect(spyBranch).not.toHaveBeenCalled();
     expect(spyPR).not.toHaveBeenCalled();
     expect(gitUtils.isGitCommitsEnabled()).toBe(false);
 
-    // 4. Run resync with options
+    // 4. Run resync with options { pr: true }
     await resyncWiki(wikiPath, { pr: true, verbose: true });
 
     expect(spyBranch).toHaveBeenCalled();
     expect(spyPR).toHaveBeenCalled();
     expect(gitUtils.isGitCommitsEnabled()).toBe(true);
+
+    spyBranch.mockClear();
+    spyPR.mockClear();
+
+    // 5. Run resync with options { pr: false } (--no-pr flag behavior)
+    await resyncWiki(wikiPath, { pr: false });
+    expect(spyBranch).not.toHaveBeenCalled();
+    expect(spyPR).not.toHaveBeenCalled();
+    expect(gitUtils.isGitCommitsEnabled()).toBe(false);
 
     spyBranch.mockRestore();
     spyPR.mockRestore();

@@ -6,72 +6,17 @@ import { callAgenticModel } from '../utils/openai-api.js';
 import {
   getFormattedDateTime,
   parseFrontmatterFromString,
-  toSafeFilename,
   cleanMarkdownResponse
 } from '../utils/fs-utils.js';
 import { gitCommit, gitCreateBranch, gitCreatePR, enableGitCommits } from '../utils/git.js';
-import { checkPlugins } from './check-plugins.js';
+import { validateAllPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
-import { loadAndInjectSchemaProperties } from '../utils/schema-parser.js';
-
-/**
- * Standardly compiles or updates a collection entity card.
- */
-async function compileEntityCard(
-  absolutePath: string,
-  schemaName: string,
-  entityName: string,
-  summaryContent: string,
-  verbose?: boolean
-): Promise<void> {
-  const wikiDir = path.join(absolutePath, 'wiki');
-  const schemasDir = path.join(absolutePath, 'plugins', 'collections');
-  const collectionFolder = path.join(wikiDir, 'collections', schemaName);
-  fs.mkdirSync(collectionFolder, { recursive: true });
-
-  const entityFilename = toSafeFilename(entityName);
-  const entityPath = path.join(collectionFolder, entityFilename);
-
-  const existingContent = fs.existsSync(entityPath) ? fs.readFileSync(entityPath, 'utf8') : '';
-  const schemaPromptPath = path.join(schemasDir, schemaName, 'prompt.md');
-  const schemaPropertiesPath = path.join(schemasDir, schemaName, 'schema.yml');
-
-  if (!fs.existsSync(schemaPromptPath) || !fs.existsSync(schemaPropertiesPath)) {
-    console.warn(`Warning: Schema prompt or schema properties missing for ${schemaName}. Skipping ${entityName}.`);
-    return;
-  }
-
-  const promptTemplate = fs.readFileSync(schemaPromptPath, 'utf8');
-  const rawSchemaContent = fs.readFileSync(schemaPropertiesPath, 'utf8');
-  const schemaProperties = loadAndInjectSchemaProperties(rawSchemaContent, schemaName);
-
-  const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
-  const evaluatedSchema = schemaProperties
-    .replace(/\$VALUE/g, entityName)
-    .replace(/\$TIMESTAMP/g, timestamp);
-
-  const prompt = promptTemplate
-    .replace(/\$SCHEMA/g, evaluatedSchema)
-    .replace(/\$VALUE/g, entityName)
-    .replace(/\$TIMESTAMP/g, timestamp)
-    .replace(/\$EXISTING_CONTENT/g, existingContent || '(empty)')
-    .replace(/\$SUMMARY_CONTENT/g, summaryContent);
-
-  if (verbose) {
-    console.log(`[VERBOSE] Entity prompt for ${entityName} (${schemaName}):`);
-    console.log('--------------------------------------------------');
-    console.log(prompt);
-    console.log('==================================================');
-  }
-
-  try {
-    const compiledText = cleanMarkdownResponse(await callAgenticModel([{ role: 'user', content: prompt }]));
-    fs.writeFileSync(entityPath, compiledText, 'utf8');
-    gitCommit(entityPath, `Updated ${schemaName} entity card: ${entityName}`);
-  } catch (e: any) {
-    console.error(`Failed to compile entity ${entityName}:`, e.message);
-  }
-}
+import {
+  loadCollectionSchemaTemplates,
+  compileEntityCard,
+  extractEntityTasksForSummary
+} from '../core/compiler-engine.js';
+import { SummaryFrontmatter } from '../core/types.js';
 
 /**
  * Helper to update concerned collection entities for a modified file.
@@ -79,7 +24,7 @@ async function compileEntityCard(
 export async function updateCollectionEntitiesForFile(
   absolutePath: string,
   file: string,
-  newFm: any,
+  newFm: SummaryFrontmatter | Record<string, unknown>,
   summaryContent: string,
   verbose?: boolean
 ): Promise<void> {
@@ -87,59 +32,30 @@ export async function updateCollectionEntitiesForFile(
   if (!fs.existsSync(schemasDir)) return;
 
   const activeSchemas = fs.readdirSync(schemasDir).filter(f => fs.statSync(path.join(schemasDir, f)).isDirectory());
+  const schemaTemplates = loadCollectionSchemaTemplates(absolutePath, activeSchemas);
+  const targetPath = path.join(absolutePath, file);
 
-  for (const schemaName of activeSchemas) {
-    const schemaPromptPath = path.join(schemasDir, schemaName, 'prompt.md');
-    if (!fs.existsSync(schemaPromptPath)) continue;
+  const summaryItem = { summaryPath: targetPath, frontmatter: newFm };
+  const tasks = extractEntityTasksForSummary(summaryItem, activeSchemas, schemaTemplates);
 
-    let targetFields: string[] = [];
-    const promptContentRaw = fs.readFileSync(schemaPromptPath, 'utf8');
-    let promptConfig: any = {};
-    const frontmatterMatch = promptContentRaw.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
-    if (frontmatterMatch) {
-      try {
-        promptConfig = YAML.parse(frontmatterMatch[1]) || {};
-      } catch {}
-    }
+  for (const task of tasks) {
+    const { schemaName, entityName } = task;
+    const template = schemaTemplates[schemaName];
+    if (!template) continue;
 
-    if (promptConfig.fields) {
-      if (Array.isArray(promptConfig.fields)) {
-        targetFields = promptConfig.fields;
-      } else if (typeof promptConfig.fields === 'string') {
-        targetFields = [promptConfig.fields];
-      }
-    } else {
-      const singular = schemaName.replace(/s$/, '');
-      targetFields = [schemaName, singular];
-    }
-
-    const summaryKeys = targetFields.filter(k => newFm[k] !== undefined);
-    if (summaryKeys.length === 0) continue;
-
-    for (const key of summaryKeys) {
-      let entityList = newFm[key];
-      if (entityList && typeof entityList === 'object' && !Array.isArray(entityList)) {
-        const nestedKey = Object.keys(entityList).find(k => k.toLowerCase().startsWith(schemaName.toLowerCase()));
-        if (nestedKey) {
-          entityList = (entityList as any)[nestedKey];
-        }
-      }
-
-      if (!Array.isArray(entityList)) continue;
-
-      for (const entityVal of entityList) {
-        let entityName = '';
-        if (typeof entityVal === 'string') {
-          entityName = entityVal.trim();
-        } else if (typeof entityVal === 'object' && entityVal !== null) {
-          entityName = String(entityVal.name || entityVal.title || '').trim();
-        }
-
-        if (entityName) {
-          console.log(`Compiling entity card standard-way: ${entityName} (${schemaName})`);
-          await compileEntityCard(absolutePath, schemaName, entityName, summaryContent, verbose);
-        }
-      }
+    console.log(`Compiling entity card standard-way: ${entityName} (${schemaName})`);
+    try {
+      const { entityPath } = await compileEntityCard({
+        absoluteWikiRoot: absolutePath,
+        schemaName,
+        entityName,
+        summaryContent,
+        template,
+        verbose,
+      });
+      gitCommit(entityPath, `Updated ${schemaName} entity card: ${entityName}`);
+    } catch (e: any) {
+      console.error(`Failed to compile entity ${entityName}:`, e.message);
     }
   }
 }
@@ -159,13 +75,7 @@ export async function overridesWiki(
   await initWiki(absolutePath, { overwrite: false });
 
   // Run check-plugin implicitly on all plugins before overrides
-  const pluginsCollectionsDir = path.join(absolutePath, 'plugins', 'collections');
-  if (fs.existsSync(pluginsCollectionsDir)) {
-    const folders = fs.readdirSync(pluginsCollectionsDir).filter(f => fs.statSync(path.join(pluginsCollectionsDir, f)).isDirectory());
-    for (const folder of folders) {
-      await checkPlugins(path.join(pluginsCollectionsDir, folder));
-    }
-  }
+  await validateAllPlugins(absolutePath);
 
   // Create branch if requested
   let branchName = '';
@@ -224,30 +134,19 @@ export async function overridesWiki(
 
     overridesList.push({
       file,
-      diff: fileDiff
+      diff: fileDiff,
     });
 
     // 3. Re-create the edited document using the LLM with logical-apply prompt
     console.log(`Re-creating manually edited document via LLM: ${file}`);
-    const systemPrompt = `You are a precision text-rewriting agent. Your task is to take an original markdown document and logically apply a git diff to it.
-Ensure you return the full updated markdown document. Do not include any explanation or markdown code block wraps.`;
-    const userPrompt = `Here is the original markdown document:
-<<<<ORIGINAL_DOCUMENT>>>>
-${originalContent}
-<<<<END_ORIGINAL_DOCUMENT>>>>
-
-Here is the git diff containing the edits:
-<<<<GIT_DIFF>>>>
-${fileDiff}
-<<<<END_GIT_DIFF>>>>
-
-Please logically apply the changes from the git diff to the original markdown document and return the complete updated document.`;
+    const systemPrompt = `You are a precision text-rewriting agent. Your task is to take an original markdown document and logically apply a git diff to it.\nEnsure you return the full updated markdown document. Do not include any explanation or markdown code block wraps.`;
+    const userPrompt = `Here is the original markdown document:\n<<<<ORIGINAL_DOCUMENT>>>>\n${originalContent}\n<<<<END_ORIGINAL_DOCUMENT>>>>\n\nHere is the git diff containing the edits:\n<<<<GIT_DIFF>>>>\n${fileDiff}\n<<<<END_GIT_DIFF>>>>\n\nPlease logically apply the changes from the git diff to the original markdown document and return the complete updated document.`;
 
     let recreatedContent = '';
     try {
       const response = await callAgenticModel([
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
+        { role: 'user', content: userPrompt },
       ]);
       recreatedContent = cleanMarkdownResponse(response);
     } catch (e: any) {

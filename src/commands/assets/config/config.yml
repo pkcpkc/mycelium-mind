@@ -1,9 +1,12 @@
+# Ingestion pipeline settings (optimal for local runners like oMLX / llama.cpp / Ollama)
+ingestion:
+  concurrency: 4                 # Concurrency limit for LLM calls (4-6 recommended for continuous batching)
+  inbox_chunk_size: 10           # Process inbox in macro-batches of 10 documents
+  max_summaries_per_entity: 5    # Max summaries merged into a single entity update prompt
+
 # Settings for generating wiki overviews and charts
 overviews:
   script_timeout_ms: 5000
-
-# Pipeline execution settings
-parallelPromptExecution: false
 
 # local RAG MCP server settings (knowledge-rag)
 rag:
@@ -17,4 +20,3 @@ rag:
   prometheus:
     enabled: false
     port: 9179
-
