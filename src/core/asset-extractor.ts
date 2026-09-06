@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execFileSync } from 'child_process';
-import { config } from '../utils/config.js';
+import { callOcrModel } from '../utils/openai-api.js';
 import { ExtractedAssetContent } from './types.js';
 
 /**
@@ -12,50 +12,7 @@ export async function ocrImage(imgPath: string): Promise<string> {
   const format = ext === '.jpg' ? 'jpeg' : ext.slice(1);
   const base64Img = fs.readFileSync(imgPath).toString('base64');
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  if (config.ocrModelApiKey && config.ocrModelApiKey !== 'dummy-key') {
-    headers['Authorization'] = `Bearer ${config.ocrModelApiKey}`;
-  }
-
-  const payload = {
-    model: config.ocrModelName,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Perform OCR on this image and return the text. Do not include markdown code block wraps.',
-          },
-          {
-            type: 'image_url',
-            image_url: {
-              url: `data:image/${format};base64,${base64Img}`,
-            },
-          },
-        ],
-      },
-    ],
-  };
-
-  const response = await fetch(config.ocrModelApiUrl, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const data = (await response.json()) as any;
-  const content = data?.choices?.[0]?.message?.content;
-  if (!content) {
-    throw new Error('Empty OCR response content');
-  }
-  return content.trim();
+  return await callOcrModel(base64Img, format);
 }
 
 /**
