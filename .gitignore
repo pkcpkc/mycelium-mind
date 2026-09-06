@@ -8,3 +8,17 @@ node_modules
 
 dist/
 build/
+
+# Databases & local agent storage
+*.db
+*.sqlite
+*.sqlite3
+headroom_memory.db
+
+# Test artifacts & scratch
+temp-*/
+temp-cli-tests-vaults/
+
+# Package tarballs
+*.tgz
+*.tar.gz
