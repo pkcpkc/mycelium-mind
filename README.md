@@ -148,3 +148,21 @@ For in-depth guides, layout maps, scripting specifications, and references, see 
 *   [**Custom Overviews & Sandbox Scripting**](docs/overviews.md): Writing custom script plugins inside VM contexts to build reports, directories, and visual charts.
 *   [**Pipeline Architecture & Repository Layout**](docs/architecture.md): A guide to the compiler pipeline stages, directory layouts, runtimes, and testing environment.
 *   [**MCP & RAG Search Server**](docs/mcp.md): Connecting external AI clients (like Cursor, Claude Desktop, or OpenCode) to query your wiki semantically.
+
+---
+
+## 🚀 Release Process
+
+To publish a new version of `mycelium-mind` to npm:
+
+1. **Log in to npm**:
+   ```bash
+   npm login
+   ```
+2. **Publish the package with public access**:
+   ```bash
+   npm publish --access public
+   ```
+
+*(The `prepare` script automatically runs `npm run build` prior to publishing).*
+

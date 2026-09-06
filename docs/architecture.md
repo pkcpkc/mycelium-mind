@@ -85,3 +85,21 @@ The test suite runs on [Vitest](https://vitest.dev/) to mock and validate compil
 # Run Vitest test suite
 mise exec -- npm run test
 ```
+
+---
+
+## 📦 Release & Publishing
+
+To publish a new release to npm:
+
+1. **Authenticate with npm**:
+   ```bash
+   npm login
+   ```
+2. **Publish the package**:
+   ```bash
+   npm publish --access public
+   ```
+
+*(Note: `npm run build` is automatically invoked by the `prepare` lifecycle hook in `package.json` before publishing).*
+

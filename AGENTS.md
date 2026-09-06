@@ -43,3 +43,22 @@ When performing edits or running tests on **Mycelium Mind**:
 
 1.  **Use the correct binaries & runtime manager:** Do not invoke global python or node runtimes if they diverge from `.mise.toml`. Prefix command executions with `mise exec --` or run files directly from `.venv/bin/`.
 2.  **Rely on TokenSave:** Use `tokensave` queries to explore file structures and symbol definitions before resorting to reading large directories or files.
+
+---
+
+## Release Process
+
+To publish a new release of `mycelium-mind` to npm:
+
+1. **Authenticate with npm**:
+   ```bash
+   npm login
+   ```
+2. **Publish the package**:
+   ```bash
+   npm publish --access public
+   ```
+
+> [!NOTE]
+> The `prepare` script in `package.json` automatically runs `npm run build` before publishing.
+
