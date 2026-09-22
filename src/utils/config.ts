@@ -21,7 +21,14 @@ function loadEnv() {
       const separatorIdx = trimmed.indexOf('=');
       if (separatorIdx === -1) continue;
       const key = trimmed.slice(0, separatorIdx).trim();
-      const value = trimmed.slice(separatorIdx + 1).trim().replace(/^['"]|['"]$/g, '');
+      const raw = trimmed.slice(separatorIdx + 1).trim();
+      let value: string;
+      const quoted = raw.match(/^(['"])(.*?)\1/);
+      if (quoted) {
+        value = quoted[2];
+      } else {
+        value = raw.replace(/\s+#.*$/, '').trim();
+      }
       // Only set in process.env if not already set by host environment
       if (!(key in process.env)) {
         process.env[key] = value;
