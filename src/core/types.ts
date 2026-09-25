@@ -70,6 +70,30 @@ export interface IngestionConfig {
   maxSummariesPerEntity?: number;
 }
 
+export interface NotebookModelEntryConfig {
+  name?: string;
+  provider?: string;
+  apiUrl?: string;
+  api_url?: string;
+  apiKey?: string;
+  api_key?: string;
+}
+
+export interface NotebookModelsConfig {
+  chat?: string | NotebookModelEntryConfig;
+  summary?: string | NotebookModelEntryConfig;
+  transformation?: string | NotebookModelEntryConfig;
+  embedding?: string | NotebookModelEntryConfig;
+  stt?: string | NotebookModelEntryConfig;
+  tts?: string | NotebookModelEntryConfig;
+  podcast?: string | NotebookModelEntryConfig;
+  provider?: string;
+  apiUrl?: string;
+  api_url?: string;
+  apiKey?: string;
+  api_key?: string;
+}
+
 export interface WikiConfig {
   parallelPromptExecution?: boolean;
   ingestion?: IngestionConfig;
@@ -97,6 +121,28 @@ export interface WikiConfig {
       port?: number;
     };
   };
+  notebook?: {
+    url?: string;
+    apiKey?: string;
+    api_key?: string;
+    name?: string;
+    target?: string;
+    id?: string;
+    notebook_id?: string;
+    filter?: {
+      collections?: boolean;
+      summaries?: boolean;
+      overviews?: boolean;
+    };
+    concurrency?: number;
+    model_api_url?: string;
+    modelApiUrl?: string;
+    model_api_key?: string;
+    modelApiKey?: string;
+    model_provider?: string;
+    modelProvider?: string;
+    models?: NotebookModelsConfig;
+  };
   [key: string]: any;
 }
 
@@ -112,4 +158,16 @@ export interface CliFlags {
   prometheusPort?: number;
   chromadbWal?: boolean;
   collection?: string;
+  notebook?: string;
+  notebookId?: string;
+  notebookUrl?: string;
+  apiKey?: string;
+  prune?: boolean;
+  dryRun?: boolean;
+  filter?: string;
+  colima?: boolean;
+  concurrency?: number;
+  configure?: boolean;
 }
+
+

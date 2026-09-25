@@ -1,3 +1,13 @@
+# Centralized AI Models (Single source of truth for Compiler, Overviews, and Open Notebook)
+models:
+  base: "agentic"                 # Main LLM for chat, summaries & entity synthesis
+  ocr: "ocr"                      # Vision/OCR model for scanned documents, PDFs & images
+  image: "agentic"                # Image understanding & multimodal analysis
+  embedding: "embeddings"         # Embedding model for vector indexing
+  stt: "stt"                      # Speech-to-Text model for audio files (.mp3, .wav, .m4a)
+  tts: "tts"                      # Text-to-Speech model for voice & podcast synthesis
+  api_url: "http://127.0.0.1:8000/v1"
+
 # Ingestion pipeline settings (optimal for local runners like oMLX / llama.cpp / Ollama)
 ingestion:
   concurrency: 4                 # Concurrency limit for LLM calls (4-6 recommended for continuous batching)
@@ -20,3 +30,18 @@ rag:
   prometheus:
     enabled: false
     port: 9179
+
+# Open Notebook integration & auto-provisioning settings
+notebook:
+  target: "[MM] Knowledge Base"
+  url: "http://localhost:5055"
+  # model_api_url: "http://127.0.0.1:8000/v1" # Optional: overrides models.api_url verbatim (e.g. bare metal)
+  # model_provider: "openai"                  # Optional: overrides models.provider
+  # model_api_key: "my-key"                   # Optional: overrides models.api_key
+  # models:
+  #   chat: "custom-notebook-chat-model"      # Optional: divergent model slots for notebook
+  filter:
+    collections: true
+    summaries: true
+    overviews: true
+  concurrency: 1

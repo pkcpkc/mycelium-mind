@@ -1,4 +1,6 @@
-import OpenAI from 'openai';
+import * as fs from 'fs';
+import * as path from 'path';
+import OpenAI, { toFile } from 'openai';
 import { config } from './config.js';
 
 export interface Message {
@@ -46,6 +48,58 @@ export function getOpenAI(
     _clients.set(cacheKey, client);
   }
   return client;
+}
+
+/**
+ * Detects whether an API error is non-recoverable (invalid credentials, connection refused, model not found).
+ */
+export function isNonRecoverableError(e: any): boolean {
+  if (!e) return false;
+  const status = e.status || e.statusCode || e.response?.status;
+  if (status === 401 || status === 403 || status === 404) {
+    return true;
+  }
+  const code = e.code || e.cause?.code;
+  if (code === 'ECONNREFUSED' || code === 'ENOTFOUND') {
+    return true;
+  }
+  const msg = String(e.message || '').toLowerCase();
+  if (
+    msg.includes('401') ||
+    msg.includes('invalid api key') ||
+    msg.includes('incorrect api key') ||
+    msg.includes('unauthorized') ||
+    msg.includes('forbidden') ||
+    msg.includes('econnrefused') ||
+    msg.includes('enotfound') ||
+    msg.includes('account_deactivated') ||
+    msg.includes('model not found')
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Performs a lightweight preflight check against the model endpoint.
+ * Throws a fatal error if credentials or connection are non-recoverable.
+ */
+export async function preflightModelCheck(): Promise<void> {
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
+    return;
+  }
+  try {
+    const openai = getOpenAI(config.baseModelApiUrl, config.baseModelApiKey, 'BASE_MODEL_API_URL');
+    await openai.chat.completions.create({
+      model: config.baseModelName,
+      messages: [{ role: 'user', content: 'ping' }],
+      max_tokens: 1,
+    });
+  } catch (e: any) {
+    if (isNonRecoverableError(e)) {
+      throw new Error(`Model preflight check failed: ${e.message}. Check your models config and BASE_MODEL_API_KEY in .env.`);
+    }
+  }
 }
 
 /**
@@ -107,3 +161,28 @@ export async function callOcrModel(base64Img: string, format: string): Promise<s
     throw e;
   }
 }
+
+/**
+ * Calls the OpenAI-compatible Speech-to-Text (STT) model to transcribe an audio file.
+ */
+export async function callSttModel(audioFilePath: string): Promise<string> {
+  try {
+    const openai = getOpenAI(config.sttModelApiUrl, config.sttModelApiKey, 'STT_MODEL_API_URL');
+    const fileBuffer = fs.readFileSync(audioFilePath);
+    const file = await toFile(fileBuffer, path.basename(audioFilePath));
+    const response = await openai.audio.transcriptions.create({
+      model: config.sttModelName,
+      file,
+    });
+
+    const text = typeof response === 'string' ? response : response.text;
+    if (!text || !text.trim()) {
+      throw new Error('Empty STT transcription response');
+    }
+    return text.trim();
+  } catch (e: any) {
+    console.error('STT API call failed via OpenAI SDK:', e.message);
+    throw e;
+  }
+}
+

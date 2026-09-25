@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import YAML from 'yaml';
 import { config } from '../utils/config.js';
-import { callAgenticModel } from '../utils/openai-api.js';
+import { callAgenticModel, isNonRecoverableError } from '../utils/openai-api.js';
 import {
   toSafeFilename,
   cleanMarkdownResponse
@@ -482,6 +482,9 @@ export async function compileEntitiesFromSummaries(options: BatchCompileEntities
         onEntityCompiled(schemaName, entityName, sources.length, duration, taskIdx, schemaTotalTasks[schemaName]);
       }
     } catch (e: any) {
+      if (isNonRecoverableError(e)) {
+        throw e;
+      }
       console.error(`Failed to compile entity ${entityName}:`, e.message);
       stats.entitiesFailed[schemaName]++;
     }

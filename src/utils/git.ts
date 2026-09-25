@@ -134,4 +134,42 @@ export function createGitCommitQueue(): GitCommitQueue {
   return { queuedGitCommit, awaitGitCommits };
 }
 
+/**
+ * Returns the current checked out git branch in the wiki repository.
+ */
+export function gitGetCurrentBranch(wikiPath: string): string {
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
+    return 'main';
+  }
+  try {
+    const absolutePath = path.resolve(wikiPath);
+    return runGit(['rev-parse', '--abbrev-ref', 'HEAD'], absolutePath, 'pipe').trim() || 'main';
+  } catch {
+    return 'main';
+  }
+}
+
+/**
+ * Discards uncommitted modifications and returns to targetBranch, deleting the aborted branch if specified.
+ */
+export function gitRollbackBranch(wikiPath: string, targetBranch?: string, branchToDelete?: string): void {
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
+    return;
+  }
+  try {
+    const absolutePath = path.resolve(wikiPath);
+    runGit(['checkout', '--', '.'], absolutePath, 'ignore');
+    runGit(['clean', '-fd'], absolutePath, 'ignore');
+    if (targetBranch) {
+      runGit(['checkout', targetBranch], absolutePath, 'ignore');
+    }
+    if (branchToDelete && branchToDelete !== targetBranch) {
+      runGit(['branch', '-D', branchToDelete], absolutePath, 'ignore');
+      console.log(`Rolled back to branch '${targetBranch}' and deleted aborted branch '${branchToDelete}'.`);
+    }
+  } catch (e: any) {
+    console.error(`Failed during git rollback:`, e.message);
+  }
+}
+
 

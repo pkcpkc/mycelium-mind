@@ -71,7 +71,8 @@ if (allPersons.size > 0) {
   graphicBody += '```mermaid\nflowchart LR\n';
   for (const name of personList) {
     const nodeId = nameToIdMap.get(name);
-    graphicBody += `    ${nodeId}["${name}"]\n`;
+    const safeName = name.replace(/"/g, "'");
+    graphicBody += `    ${nodeId}["${safeName}"]\n`;
   }
 
   const printedEdges = new Set();
@@ -81,7 +82,8 @@ if (allPersons.size > 0) {
     if (idA && idB) {
       const edgeKey = `${idA}-${rel.relation}-${idB}`;
       if (!printedEdges.has(edgeKey)) {
-        graphicBody += `    ${idA} -- "${rel.relation}" --> ${idB}\n`;
+        const safeRelation = rel.relation.replace(/"/g, "'");
+        graphicBody += `    ${idA} -- "${safeRelation}" --> ${idB}\n`;
         printedEdges.add(edgeKey);
       }
     }

@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
+import YAML from 'yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,8 +38,39 @@ function loadEnv() {
   }
 }
 
-// Load env variables
+// Helper to load non-sensitive model settings from config/config.yml
+function loadYamlConfig() {
+  const configPath = path.join(process.cwd(), 'config', 'config.yml');
+  if (fs.existsSync(configPath)) {
+    try {
+      const parsed = YAML.parse(fs.readFileSync(configPath, 'utf8'));
+      if (parsed?.models) {
+        const m = parsed.models;
+        if (m.base || m.base_model) {
+          process.env.BASE_MODEL_NAME = m.base || m.base_model;
+        }
+        if (m.api_url || m.apiUrl) {
+          process.env.BASE_MODEL_API_URL = m.api_url || m.apiUrl;
+        }
+        if (m.ocr || m.ocr_model) {
+          process.env.OCR_MODEL_NAME = m.ocr || m.ocr_model;
+        }
+        if (m.image || m.image_model) {
+          process.env.IMAGE_MODEL_NAME = m.image || m.image_model;
+        }
+        if (m.stt || m.stt_model) {
+          process.env.STT_MODEL_NAME = m.stt || m.stt_model;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+}
+
+// Load env variables and config.yml
 loadEnv();
+loadYamlConfig();
 
 // Resolve base model settings
 const baseModelName = process.env.BASE_MODEL_NAME || 'agentic';
@@ -63,9 +95,12 @@ export const config = {
   imageModelName: process.env.IMAGE_MODEL_NAME || baseModelName,
   imageModelApiUrl: process.env.IMAGE_MODEL_API_URL || baseModelApiUrl,
   imageModelApiKey: process.env.IMAGE_MODEL_API_KEY || baseModelApiKey,
-};
 
-import YAML from 'yaml';
+  // STT (Speech-to-Text) model config
+  sttModelName: process.env.STT_MODEL_NAME || 'stt',
+  sttModelApiUrl: process.env.STT_MODEL_API_URL || baseModelApiUrl,
+  sttModelApiKey: process.env.STT_MODEL_API_KEY || baseModelApiKey,
+};
 
 export interface IngestionSettings {
   concurrency: number;

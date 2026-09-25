@@ -52,6 +52,26 @@ function parseCliArgs(args: string[]): { command: string | undefined; positional
       flags.chromadbWal = true;
     } else if (arg === '--collection') {
       flags.collection = args[++i];
+    } else if (arg === '--notebook') {
+      flags.notebook = args[++i];
+    } else if (arg === '--notebook-id') {
+      flags.notebookId = args[++i];
+    } else if (arg === '--notebook-url') {
+      flags.notebookUrl = args[++i];
+    } else if (arg === '--api-key') {
+      flags.apiKey = args[++i];
+    } else if (arg === '--prune') {
+      flags.prune = true;
+    } else if (arg === '--dry-run') {
+      flags.dryRun = true;
+    } else if (arg === '--filter') {
+      flags.filter = args[++i];
+    } else if (arg === '--colima') {
+      flags.colima = true;
+    } else if (arg === '--concurrency') {
+      flags.concurrency = parseInt(args[++i], 10);
+    } else if (arg === '--no-configure') {
+      flags.configure = false;
     } else if (arg.startsWith('--')) {
       // Unknown option
     } else {
@@ -81,10 +101,11 @@ function printHelp(): void {
   console.error('  contradictions [wiki-path]            - Scan the wiki pages for contradictions (default: .)');
   console.error('  check-plugins [plugin-path]           - Verify plugin schema and prompt configurations (default: .)');
   console.error('  rag [wiki-path] [options]             - Start knowledge-rag MCP server (default: .)');
+  console.error('  notebook [subcommand] [wiki-path]     - Manage Open Notebook (push|start|stop|status|list|create|configure|colima)');
   console.error('Options:');
   console.error('  --no-pr                               - Do not create a branch, commit changes, push, and open a pull request');
   console.error('  -v, --verbose                         - Show assembled final LLM prompts in the console');
-  console.error('  -f, --force, --overwrite              - Overwrite existing files when installing templates');
+  console.error('  -f, --force, --overwrite              - Overwrite existing files when installing templates / force sync');
   console.error('  --from <path>                         - Use custom library path instead of the built-in library');
   console.error('  --transport <stdio|sse>               - MCP transport mode: stdio | sse (default: sse)');
   console.error('  --port <number>                       - Port for SSE transport (default: 8179)');
@@ -93,6 +114,15 @@ function printHelp(): void {
   console.error('  --prometheus-port <port>              - Enable Prometheus scraping on specified port');
   console.error('  --chromadb-wal                        - Enable ChromaDB Write-Ahead Logging (WAL) mode');
   console.error('  --collection <name>                   - Target a specific collection to rebuild (resync only)');
+  console.error('  --notebook <name>                     - Target Open Notebook by name');
+  console.error('  --notebook-id <id>                    - Target Open Notebook by ID');
+  console.error('  --notebook-url <url>                  - Open Notebook API base URL (default: http://localhost:5055)');
+  console.error('  --api-key <key>                       - Optional API key for Open Notebook authentication');
+  console.error('  --prune                               - Delete remote sources in Open Notebook that were deleted in the vault');
+  console.error('  --dry-run                             - Preview changes without writing to Open Notebook');
+  console.error('  --filter <all|collections|summaries>  - Filter documents pushed to Open Notebook (default: all)');
+  console.error('  --colima                              - Also start/stop Colima runtime when managing Open Notebook');
+  console.error('  --no-configure                        - Skip automatic model configuration when starting Open Notebook');
 }
 
 async function main() {
@@ -155,6 +185,11 @@ async function main() {
       case 'rag': {
         const { ragWiki } = await import('./commands/rag.js');
         await ragWiki(wikiPath, flags);
+        break;
+      }
+      case 'notebook': {
+        const { manageNotebook } = await import('./commands/notebook.js');
+        await manageNotebook(positional, flags);
         break;
       }
       default:

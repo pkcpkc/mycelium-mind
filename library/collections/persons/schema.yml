@@ -1,7 +1,7 @@
 $meta:
   type: Schema
-  title: "Person Concept Schema"
-  description: "Defines the custom fields extracted into summary frontmatter for Person entities."
+  title: "Person Entity Schema"
+  description: "Defines the custom frontmatter fields for individual Person entity cards."
 
-persons: [string] # Array | Required | List of individuals extracted from source.
-relationships: [string] # Array | Required | List of relationships between extracted persons (e.g. personA, relation, personB).
+role: string # String | Optional | The person's role or title.
+organization: string # String | Optional | The primary organization the person is affiliated with.
