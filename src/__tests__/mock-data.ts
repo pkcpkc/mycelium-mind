@@ -49,20 +49,60 @@ export function getMockTimelineGraph(): EntityMetadata[] {
 export function getMockSocialGraph(): EntityMetadata[] {
   return [
     {
-      name: 'Rel Summary',
+      name: 'General Summary',
       type: 'Summary',
       timestamp: '2026-07-05T12:00:00Z',
       tags: [],
-      filePath: 'summaries/RelSummary.md',
+      filePath: 'summaries/GeneralSummary.md',
       properties: {
-        title: 'Rel Summary',
+        title: 'General Summary'
+      }
+    },
+    {
+      name: 'Alice Smith',
+      type: 'Person',
+      timestamp: '2026-07-05T12:00:00Z',
+      tags: [],
+      filePath: 'collections/persons/Alice Smith.md',
+      properties: {
+        title: 'Alice Smith',
         relationships: [
           {
-            personA: 'Alice Smith',
-            relation: 'colleague of',
-            personB: 'Bob Jones'
-          },
-          'Charlie Brown, mentor of, Alice Smith'
+            person: 'Bob Jones',
+            relation: 'colleague of'
+          }
+        ]
+      }
+    },
+    {
+      name: 'Charlie Brown',
+      type: 'Person',
+      timestamp: '2026-07-05T12:00:00Z',
+      tags: [],
+      filePath: 'collections/persons/Charlie Brown.md',
+      properties: {
+        title: 'Charlie Brown',
+        relationships: [
+          {
+            person: 'Alice Smith',
+            relation: 'mentor of'
+          }
+        ]
+      }
+    },
+    {
+      name: 'Bob Jones',
+      type: 'Person',
+      timestamp: '2026-07-05T12:00:00Z',
+      tags: [],
+      filePath: 'collections/persons/Bob Jones.md',
+      properties: {
+        title: 'Bob Jones',
+        relationships: [
+          {
+            person: 'Dana White',
+            relation: 'advises'
+          }
         ]
       }
     }

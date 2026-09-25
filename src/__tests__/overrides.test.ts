@@ -44,6 +44,7 @@ Pioneering AI engineer.
 });
 
 vi.mock('../utils/openai-api.js', () => ({
+  preflightModelCheck: vi.fn(() => Promise.resolve()),
   callAgenticModel: vi.fn((messages: any[]) => {
     const userMsg = messages[messages.length - 1].content;
     const systemMsg = messages[0]?.content || '';

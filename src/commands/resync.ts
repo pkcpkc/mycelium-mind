@@ -34,14 +34,14 @@ export async function resyncWiki(
   enableGitCommits(!!options?.pr);
   const absolutePath = path.resolve(wikiPath);
 
-  // Preflight check model endpoint connectivity & credentials before modifying vault
-  await preflightModelCheck();
-
   // Implicitly create folders/files for the wiki if missing
   await initWiki(absolutePath, { overwrite: false });
 
   // Run check-plugin implicitly on all plugins before resync
   await validateAllPlugins(absolutePath);
+
+  // Preflight check model endpoint connectivity & credentials before modifying vault
+  await preflightModelCheck();
 
   const wikiDir = path.join(absolutePath, 'wiki');
   const { concurrency, maxSummariesPerEntity } = loadIngestionSettings(absolutePath);

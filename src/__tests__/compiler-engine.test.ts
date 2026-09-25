@@ -1,14 +1,23 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   parseSchemaProperties,
   deduplicateEntityTasks,
   EntityCompileTask,
-  filterCompanionFiles
+  filterCompanionFiles,
+  sanitizeYamlString,
+  repairFrontmatterWithLLM,
+  synthesizeSummary
 } from '../core/compiler-engine.js';
 import { loadIngestionSettings } from '../utils/config.js';
 import { extractArchivedAsset } from '../core/asset-extractor.js';
+import { callAgenticModel } from '../utils/openai-api.js';
+
+vi.mock('../utils/openai-api.js', () => ({
+  callAgenticModel: vi.fn(),
+  isNonRecoverableError: vi.fn(() => false),
+}));
 
 describe('Compiler Engine Unit Tests', () => {
   it('should strip $meta and extract clean YAML properties schema', () => {
@@ -144,7 +153,85 @@ tags:
 
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
+
+  describe('Frontmatter Sanitization & LLM Repair', () => {
+    it('should sanitize YAML string removing code fences and delimiters', () => {
+      const raw = '```yaml\n---\ntitle: Test\nstatus: active\n---\n```';
+      const clean = sanitizeYamlString(raw);
+      expect(clean).toBe('title: Test\nstatus: active');
+    });
+
+    it('should successfully repair malformed frontmatter via LLM', async () => {
+      const brokenYaml = `
+findings:
+  - "Constitutional Court declaring tax court reforms as adequate progress"
+  "Magistrate recruitment continuing at a good pace"
+`;
+      const repairedYaml = `
+findings:
+  - "Constitutional Court declaring tax court reforms as adequate progress"
+  - "Magistrate recruitment continuing at a good pace"
+`;
+
+      vi.mocked(callAgenticModel).mockResolvedValueOnce(repairedYaml);
+
+      const parsed = await repairFrontmatterWithLLM(brokenYaml, 'All mapping items must start at the same column');
+      expect(parsed).toBeDefined();
+      expect(parsed.findings).toHaveLength(2);
+      expect(parsed.findings[0]).toBe('Constitutional Court declaring tax court reforms as adequate progress');
+      expect(parsed.findings[1]).toBe('Magistrate recruitment continuing at a good pace');
+      expect(callAgenticModel).toHaveBeenCalledTimes(1);
+    });
+
+    it('should fallback to empty object if LLM repair fails all attempts', async () => {
+      vi.mocked(callAgenticModel).mockResolvedValue('still: invalid: yaml: :::');
+
+      const parsed = await repairFrontmatterWithLLM('broken', 'syntax error', 2);
+      expect(parsed).toEqual({});
+    });
+
+    it('should self-heal in synthesizeSummary when LLM initially produces invalid YAML frontmatter', async () => {
+      // First LLM call: generates full summary with broken frontmatter (missing list dash bullet)
+      const brokenSummaryResponse = `---
+title: "2025 Rule of Law Report Hungary"
+findings:
+  - "Constitutional Court declaring tax court reforms as adequate progress"
+  "Magistrate recruitment continuing at a good pace with 578 new ordinary judges"
+---
+# 2025 Rule of Law Report Hungary
+
+The European Commission published its annual Rule of Law report.`;
+
+      // Second LLM call: repairFrontmatterWithLLM generates fixed YAML
+      const repairedYamlResponse = "```yaml\n" +
+        'title: "2025 Rule of Law Report Hungary"\n' +
+        'findings:\n' +
+        '  - "Constitutional Court declaring tax court reforms as adequate progress"\n' +
+        '  - "Magistrate recruitment continuing at a good pace with 578 new ordinary judges"\n' +
+        "```";
+
+      vi.mocked(callAgenticModel)
+        .mockResolvedValueOnce(brokenSummaryResponse)
+        .mockResolvedValueOnce(repairedYamlResponse);
+
+      const result = await synthesizeSummary(
+        'Raw source text of Hungary report',
+        undefined,
+        '2025 Rule of Law Report Hungary',
+        'Summarize this document with schema',
+        ['wiki/assets/20260705-000000/sources/EU Commission (2025) 2025 Rule of Law Report Hungary.md']
+      );
+
+      expect(result.frontmatter.title).toBe('2025 Rule of Law Report Hungary');
+      expect(result.frontmatter.type).toBe('Summary');
+      expect((result.frontmatter as any).findings).toHaveLength(2);
+      expect((result.frontmatter as any).findings[1]).toBe('Magistrate recruitment continuing at a good pace with 578 new ordinary judges');
+      expect(result.bodyContent).toContain('# 2025 Rule of Law Report Hungary');
+      expect(result.fullMarkdown).toContain('Magistrate recruitment continuing at a good pace');
+    });
+  });
 });
+
 
 
 

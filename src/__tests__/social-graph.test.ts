@@ -38,6 +38,7 @@ describe('Default social-graph.js script tests', () => {
     const socialContent = fs.readFileSync(socialFile, 'utf8');
     expect(socialContent).toContain('| [[Alice Smith]] | colleague of | [[Bob Jones]] |');
     expect(socialContent).toContain('| [[Charlie Brown]] | mentor of | [[Alice Smith]] |');
+    expect(socialContent).toContain('| [[Bob Jones]] | advises | [[Dana White]] |');
 
     const graphicContent = fs.readFileSync(socialGraphicFile, 'utf8');
     expect(graphicContent).toContain('mermaid');

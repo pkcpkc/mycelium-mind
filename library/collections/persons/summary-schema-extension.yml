@@ -7,8 +7,3 @@ persons: # Array | Optional | List of key individuals mentioned in the text.
   - name: string # String | Required | The name of the person (e.g., "Andrej Karpathy", "Geoffrey Hinton").
     role: string # String | Optional | The role or title of the person.
     organization: string # String | Optional | The primary organization or affiliation.
-
-relationships: # Array | Optional | List of interactions, advisory, reporting, supervisory, or collaborative relationships between individuals mentioned in the document.
-  - personA: string # String | Required | The name of the first person (matching the persons list).
-    relation: string # String | Required | The relationship or interaction (e.g., "colleague of", "advises", "subordinate to", "collaborates with", "mentored by").
-    personB: string # String | Required | The name of the second person (matching the persons list).

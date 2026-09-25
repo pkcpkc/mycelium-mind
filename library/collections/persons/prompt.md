@@ -36,22 +36,24 @@ Ensure your output matches this exact structure.
 
 ## Affiliations & Roles
 
-- [Role] at [[Organization]]
+- **Role**: [Role/Title]
+- **Organization**: [[Organization]]
+
+## Key Relationships
+
+- **[[Connected Person A]]**: [Relationship/Interaction descriptor, e.g. Co-author, Advisor, Colleague]
 
 ## Biography & Context
 
 [Biographical narrative synthesized from summaries...]
-
-## Collaborators
-
-[[Collaborator A]], [[Collaborator B]]
 
 ## Instructions
 
 Merge the details from the summary context into the existing biography for `$VALUE`.
 
 - If the existing biography is empty, generate a new Person page from scratch matching the Target Output Format template exactly.
-- If the page already exists, merge the new details and collaborations without overwriting.
+- If the page already exists, merge the new details and relationships without overwriting existing facts.
+- Identify interpersonal, advisory, reporting, supervisory, or collaborative relationships with other individuals. In the frontmatter, populate the 'relationships' list with objects: `{ person: "Full Name", relation: "descriptor" }`. In the markdown body, list them under '## Key Relationships' using wikilinks.
 - All internal links must be simple Obsidian wikilinks (e.g. `[[Andrej Karpathy]]`).
   - **Internal Link Normalization Rules (CRITICAL to avoid duplicates):**
     When linking to other concepts, persons, or entities, format the link text using strict normalization:

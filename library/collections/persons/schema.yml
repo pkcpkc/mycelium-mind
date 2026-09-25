@@ -5,3 +5,6 @@ $meta:
 
 role: string # String | Optional | The person's role or title.
 organization: string # String | Optional | The primary organization the person is affiliated with.
+relationships: # Array | Optional | Key interpersonal or professional relationships with other individuals.
+  - person: string # String | Required | The name of the connected person (e.g., "Geoffrey Hinton").
+    relation: string # String | Required | The relationship or interaction (e.g., "colleague of", "advises", "collaborates with", "mentored by").

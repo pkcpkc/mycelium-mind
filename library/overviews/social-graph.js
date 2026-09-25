@@ -1,26 +1,24 @@
-const summaries = getSummaries();
 const relationships = [];
 const allPersons = new Set();
 
-for (const s of summaries) {
-  const rels = s.relationships;
+// Extract relationships defined as attributes on Person entities
+const persons = typeof getCollection === 'function' ? getCollection('persons') : [];
+for (const p of persons) {
+  const personName = (p.title || p.name || '').trim();
+  if (!personName) continue;
+
+  const rels = p.relationships;
   if (Array.isArray(rels)) {
     for (const rel of rels) {
-      if (rel && typeof rel === 'object' && rel.personA && rel.relation && rel.personB) {
-        relationships.push({
-          personA: String(rel.personA).trim(),
-          relation: String(rel.relation).trim(),
-          personB: String(rel.personB).trim(),
-          source: s.title || s.name
-        });
-      } else if (typeof rel === 'string') {
-        const parts = rel.split(',').map(p => p.trim());
-        if (parts.length >= 3) {
+      if (rel && typeof rel === 'object') {
+        const target = String(rel.person || rel.personB || rel.target || rel.name || '').trim();
+        const relation = String(rel.relation || rel.connection || rel.role || 'connected to').trim();
+        if (target) {
           relationships.push({
-            personA: parts[0],
-            relation: parts[1],
-            personB: parts[2],
-            source: s.title || s.name
+            personA: personName,
+            relation: relation,
+            personB: target,
+            source: personName
           });
         }
       }

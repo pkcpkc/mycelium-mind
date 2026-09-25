@@ -69,6 +69,71 @@ export function loadSummaryPromptTemplate(absoluteWikiRoot: string): {
 }
 
 /**
+ * Strips code fences, delimiters, and surrounding whitespace from a YAML string.
+ */
+export function sanitizeYamlString(str: string): string {
+  let cleaned = cleanMarkdownResponse(str).trim();
+  if (cleaned.startsWith('---')) cleaned = cleaned.slice(3).trim();
+  if (cleaned.endsWith('---')) cleaned = cleaned.slice(0, -3).trim();
+  return cleaned
+    .split('\n')
+    .filter(line => !line.trim().startsWith('```'))
+    .join('\n')
+    .trim();
+}
+
+/**
+ * Repairs malformed YAML frontmatter using the default agentic LLM.
+ */
+export async function repairFrontmatterWithLLM(
+  brokenYaml: string,
+  errorMessage: string,
+  maxAttempts: number = 2
+): Promise<any> {
+  let currentBroken = brokenYaml;
+  let currentError = errorMessage;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    console.warn(`[Frontmatter Repair] Attempt ${attempt}/${maxAttempts} to fix malformed YAML via default model...`);
+    try {
+      const repairPrompt = `You are a YAML repair specialist. The following YAML frontmatter failed to parse:
+
+Error:
+${currentError}
+
+Broken YAML:
+${currentBroken}
+
+Instructions:
+1. Fix all syntax, indentation, and structure errors (e.g. missing list bullets '-', unescaped characters, misaligned keys).
+2. Preserve all existing keys, values, and comments exactly as intended.
+3. Return ONLY the repaired, valid YAML without any surrounding markdown code blocks (no \`\`\`yaml) or conversational text.`;
+
+      const response = await callAgenticModel([
+        { role: 'system', content: 'You are an expert YAML syntax validator and repair agent. Output valid YAML only.' },
+        { role: 'user', content: repairPrompt },
+      ]);
+
+      const cleaned = sanitizeYamlString(response);
+      const parsed = YAML.parse(cleaned);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        console.log(`[Frontmatter Repair] Successfully repaired YAML frontmatter on attempt ${attempt}.`);
+        return parsed;
+      }
+    } catch (err: any) {
+      if (isNonRecoverableError(err)) {
+        throw err;
+      }
+      currentError = err.message || String(err);
+      console.warn(`[Frontmatter Repair] Attempt ${attempt} failed: ${currentError}`);
+    }
+  }
+
+  console.error('[Frontmatter Repair] All repair attempts failed. Falling back to empty frontmatter.');
+  return {};
+}
+
+/**
  * Synthesizes a summary from raw content + companion metadata using LLM.
  */
 export async function synthesizeSummary(
@@ -105,20 +170,18 @@ export async function synthesizeSummary(
     }
   }
 
-  if (frontmatterStr.startsWith('---')) frontmatterStr = frontmatterStr.slice(3).trim();
-  if (frontmatterStr.endsWith('---')) frontmatterStr = frontmatterStr.slice(0, -3).trim();
-
   if (frontmatterStr) {
-    const cleanFmStr = frontmatterStr
-      .split('\n')
-      .filter(line => !line.trim().startsWith('```'))
-      .join('\n')
-      .trim();
+    const cleanFmStr = sanitizeYamlString(frontmatterStr);
     try {
       frontmatter = YAML.parse(cleanFmStr) || {};
     } catch (e: any) {
-      console.error('Failed to parse frontmatter:', e.message);
+      console.warn(`[Frontmatter Syntax Error] Failed to parse frontmatter: ${e.message}`);
+      frontmatter = await repairFrontmatterWithLLM(cleanFmStr, e.message);
     }
+  }
+
+  if (!frontmatter || typeof frontmatter !== 'object' || Array.isArray(frontmatter)) {
+    frontmatter = {};
   }
 
   const modelName = config.baseModelName || 'mycelium-mind-compiler';

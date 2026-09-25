@@ -29,6 +29,12 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
   enableGitCommits(!!options?.pr);
   const absolutePath = path.resolve(wikiPath);
 
+  // Implicitly create folders/files for the wiki if missing
+  await initWiki(absolutePath, { overwrite: false });
+
+  // Run check-plugin implicitly on all plugins before sync
+  await validateAllPlugins(absolutePath);
+
   const inboxDir = path.join(absolutePath, 'inbox');
   if (!fs.existsSync(inboxDir)) {
     console.log('Inbox directory does not exist. Skipping sync.');
@@ -46,12 +52,6 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
 
   // Preflight check model endpoint before touching git branches or files
   await preflightModelCheck();
-
-  // Implicitly create folders/files for the wiki if missing
-  await initWiki(absolutePath, { overwrite: false });
-
-  // Run check-plugin implicitly on all plugins before sync
-  await validateAllPlugins(absolutePath);
 
   const { concurrency, inboxChunkSize, maxSummariesPerEntity } = loadIngestionSettings(absolutePath);
   const { queuedGitCommit, awaitGitCommits } = createGitCommitQueue();

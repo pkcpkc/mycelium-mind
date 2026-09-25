@@ -51,6 +51,19 @@ flowchart TD
 
 ---
 
+## 📓 Open Notebook Integration
+
+![Open Notebook Research Workbench](assets/open-notebook-ui.png)
+
+Mycelium Mind integrates optionally with [**Open Notebook**](https://github.com/lfnovo/open-notebook)—an open-source, self-hosted alternative to Google's NotebookLM.
+
+While Mycelium Mind acts as your **curated library of record** (Git-backed, schema-validated, entity-linked markdown), Open Notebook provides an **interactive research workbench**:
+- **Multi-source grounded chat**: Select specific cards or summaries and ask questions with cited footnotes.
+- **AI-generated podcasts**: Create multi-speaker conversational audio overviews from your synthesized knowledge.
+- **Ad-hoc research sandbox**: Mix your compiled vault knowledge with temporary PDFs, web URLs, or YouTube links directly in the Open Notebook UI.
+
+---
+
 ## 🧩 Dynamic Plugin Architecture (Collections & Overviews)
 
 ```mermaid
@@ -403,15 +416,6 @@ See [**MCP & RAG Search Server Documentation**](docs/mcp.md) for Cursor, Claude 
 
 
 ## 📓 Open Notebook Integration
-
-![Open Notebook Research Workbench](assets/open-notebook-ui.png)
-
-Mycelium Mind integrates optionally with [**Open Notebook**](https://github.com/lfnovo/open-notebook)—an open-source, self-hosted alternative to Google's NotebookLM.
-
-While Mycelium Mind acts as your **curated library of record** (Git-backed, schema-validated, entity-linked markdown), Open Notebook provides an **interactive research workbench**:
-- **Multi-source grounded chat**: Select specific cards or summaries and ask questions with cited footnotes.
-- **AI-generated podcasts**: Create multi-speaker conversational audio overviews from your synthesized knowledge.
-- **Ad-hoc research sandbox**: Mix your compiled vault knowledge with temporary PDFs, web URLs, or YouTube links directly in the Open Notebook UI.
 
 ### 1. Launch Open Notebook (Colima or Docker on macOS)
 
