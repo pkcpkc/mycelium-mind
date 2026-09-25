@@ -1,0 +1,31 @@
+title: Mycelium Mind
+description: A fully offline, schema-driven, multi-vault compiler pipeline and wiki engine.
+theme: jekyll-theme-primer
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+exclude:
+  - build/
+  - dist/
+  - node_modules/
+  - scripts/
+  - src/
+  - temp-cli-tests-vaults/
+  - .tokensave/
+  - .venv/
+  - Brewfile
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - vitest.config.ts
+  - requirements.txt
+  - headroom_memory.db

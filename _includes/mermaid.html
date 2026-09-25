@@ -1,0 +1,56 @@
+<style>
+  /* Mermaid diagram styling for GitHub Pages */
+  .mermaid {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .mermaid svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+  }
+</style>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'default'
+  });
+
+  const renderMermaid = async () => {
+    // Select all code blocks produced by Jekyll / Rouge / Kramdown for mermaid
+    const codeBlocks = document.querySelectorAll(
+      'pre code.language-mermaid, pre.language-mermaid code, div.language-mermaid pre code, .language-mermaid pre code'
+    );
+
+    for (const code of codeBlocks) {
+      // Find the outermost syntax highlighter container or pre element
+      const container = code.closest('.highlighter-rouge') || code.closest('.language-mermaid') || code.closest('pre');
+      const pre = document.createElement('pre');
+      pre.className = 'mermaid';
+      pre.textContent = code.textContent;
+      container.replaceWith(pre);
+    }
+
+    try {
+      await mermaid.run({
+        querySelector: '.mermaid',
+        suppressErrors: true
+      });
+    } catch (err) {
+      console.error('[Mermaid] Rendering error:', err);
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderMermaid);
+  } else {
+    renderMermaid();
+  }
+</script>
