@@ -10,11 +10,12 @@ The compilation cycle parses source markdown files and builds structured entity 
 
 ```mermaid
 graph TD
-    Inbox[Raw Ingest Files under inbox/] -->|1. sync command| SummaryExtraction[Extract Summaries + Move Sources to assets/]
-    SummaryExtraction -->|2. sync command| EntityCompilation[Synthesize/Merge Collection Entities]
-    EntityCompilation -->|3. sync command| OverviewGeneration[Execute Sandboxed Overview Scripts]
-    OverviewGeneration -->|4. sync command| IndexRebuilding[Generate relations clouds, folder indexes, & root index.md]
-    IndexRebuilding -->|5. sync command| GitIsolation[Git commit local to Wiki repo]
+    Inbox[Raw Files in inbox/ .md, .pdf, images, audio] -->|1. Pre-step: OCR / STT| AssetExtraction[Extract OCR text & Transcribe audio to text]
+    AssetExtraction -->|2. sync command| SummaryExtraction[Extract Summaries + Move Sources to assets/]
+    SummaryExtraction -->|3. sync command| EntityCompilation[Synthesize/Merge Collection Entities]
+    EntityCompilation -->|4. sync command| OverviewGeneration[Execute Sandboxed Overview Scripts]
+    OverviewGeneration -->|5. sync command| IndexRebuilding[Generate relations clouds, folder indexes, & root index.md]
+    IndexRebuilding -->|6. sync command| GitIsolation[Git commit local to Wiki repo]
 
     Anytime[Existing assets/] -->|resync command| WipeAndRebuild[Wipe generated summaries/entities & repeat ingestion]
 

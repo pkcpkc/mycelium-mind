@@ -14,11 +14,18 @@ export async function asyncPool<T, R>(
   const limit = Math.max(1, concurrency);
   const results: R[] = new Array(items.length);
   let nextIndex = 0;
+  let abortError: any = null;
 
   const worker = async (): Promise<void> => {
     while (nextIndex < items.length) {
+      if (abortError) break;
       const index = nextIndex++;
-      results[index] = await taskFn(items[index], index);
+      try {
+        results[index] = await taskFn(items[index], index);
+      } catch (err) {
+        abortError = err;
+        throw err;
+      }
     }
   };
 

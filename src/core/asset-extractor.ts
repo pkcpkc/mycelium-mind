@@ -1,8 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execFileSync } from 'child_process';
-import { callOcrModel } from '../utils/openai-api.js';
+import { callOcrModel, callSttModel } from '../utils/openai-api.js';
+import { config } from '../utils/config.js';
 import { ExtractedAssetContent } from './types.js';
+
+export const AUDIO_EXTENSIONS = ['.mp3', '.wav', '.m4a', '.ogg', '.flac', '.aac', '.opus', '.webm', '.wma'];
 
 /**
  * Runs OCR on an image file using the configured multimodal LLM.
@@ -13,6 +16,13 @@ export async function ocrImage(imgPath: string): Promise<string> {
   const base64Img = fs.readFileSync(imgPath).toString('base64');
 
   return await callOcrModel(base64Img, format);
+}
+
+/**
+ * Transcribes an audio file using the configured STT model.
+ */
+export async function transcribeAudio(audioPath: string): Promise<string> {
+  return await callSttModel(audioPath);
 }
 
 /**
@@ -86,6 +96,14 @@ export async function extractAsset(
     } else if (ext === '.pdf') {
       const tempPdfDir = path.join(destDirs.absoluteWikiRoot, 'inbox', `temp-pdf-${baseName}`);
       extractedText = await processPdf(filePath, tempPdfDir);
+    } else if (AUDIO_EXTENSIONS.includes(ext)) {
+      try {
+        console.log(`Transcribing audio file: ${fileName} using STT model (${config.sttModelName})...`);
+        extractedText = await transcribeAudio(filePath);
+      } catch (e: any) {
+        console.error(`STT failed for audio ${fileName}:`, e.message);
+        extractedText = `[Transcription failed for audio ${fileName}]`;
+      }
     } else {
       extractedText = `[Audio/Binary transcription placeholder for ${fileName}]`;
     }

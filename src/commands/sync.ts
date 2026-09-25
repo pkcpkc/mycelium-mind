@@ -4,7 +4,7 @@ import {
   toSafeFilename,
   getFormattedDateTime
 } from '../utils/fs-utils.js';
-import { gitCreatePR, gitCreateBranch, enableGitCommits, createGitCommitQueue } from '../utils/git.js';
+import { gitCreatePR, gitCreateBranch, enableGitCommits, createGitCommitQueue, gitGetCurrentBranch, gitRollbackBranch } from '../utils/git.js';
 import { validateAllPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
 import { overviewsWiki } from './overviews.js';
@@ -20,6 +20,7 @@ import {
 import { CompilerStats, SummaryFrontmatter } from '../core/types.js';
 import { asyncPool } from '../utils/async-pool.js';
 import { loadIngestionSettings } from '../utils/config.js';
+import { isNonRecoverableError, preflightModelCheck } from '../utils/openai-api.js';
 
 /**
  * Syncs the inbox folder with the wiki database.
@@ -28,28 +29,7 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
   enableGitCommits(!!options?.pr);
   const absolutePath = path.resolve(wikiPath);
 
-  // Implicitly create folders/files for the wiki if missing
-  await initWiki(absolutePath, { overwrite: false });
-
-  // Run check-plugin implicitly on all plugins before sync
-  await validateAllPlugins(absolutePath);
-
   const inboxDir = path.join(absolutePath, 'inbox');
-  const { concurrency, inboxChunkSize, maxSummariesPerEntity } = loadIngestionSettings(absolutePath);
-  const { queuedGitCommit, awaitGitCommits } = createGitCommitQueue();
-
-  const wikiDir = path.join(absolutePath, 'wiki');
-
-  let branchName = '';
-  if (options?.pr) {
-    const timestamp = new Date().toISOString()
-      .replace(/[-:]/g, '')
-      .replace('T', '-')
-      .split('.')[0];
-    branchName = `sync-${timestamp}`;
-    gitCreateBranch(absolutePath, branchName);
-  }
-
   if (!fs.existsSync(inboxDir)) {
     console.log('Inbox directory does not exist. Skipping sync.');
     return;
@@ -64,7 +44,33 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
     return;
   }
 
-  const dateToday = getFormattedDateTime();
+  // Preflight check model endpoint before touching git branches or files
+  await preflightModelCheck();
+
+  // Implicitly create folders/files for the wiki if missing
+  await initWiki(absolutePath, { overwrite: false });
+
+  // Run check-plugin implicitly on all plugins before sync
+  await validateAllPlugins(absolutePath);
+
+  const { concurrency, inboxChunkSize, maxSummariesPerEntity } = loadIngestionSettings(absolutePath);
+  const { queuedGitCommit, awaitGitCommits } = createGitCommitQueue();
+
+  const wikiDir = path.join(absolutePath, 'wiki');
+
+  const initialBranch = gitGetCurrentBranch(absolutePath);
+  let branchName = '';
+  if (options?.pr) {
+    const timestamp = new Date().toISOString()
+      .replace(/[-:]/g, '')
+      .replace('T', '-')
+      .split('.')[0];
+    branchName = `sync-${timestamp}`;
+    gitCreateBranch(absolutePath, branchName);
+  }
+
+  try {
+    const dateToday = getFormattedDateTime();
   const assetsDateDir = path.join(wikiDir, 'assets', dateToday);
   const processedDir = path.join(assetsDateDir, 'processed');
   const sourcesDir = path.join(assetsDateDir, 'sources');
@@ -164,6 +170,9 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
           companionInboxFile: companionMdPath,
         });
       } catch (e: any) {
+        if (isNonRecoverableError(e)) {
+          throw e;
+        }
         console.error(`LLM synthesis failed for ${file}:`, e.message);
         stats.summariesFailed++;
       }
@@ -203,6 +212,10 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
     await awaitGitCommits();
   }
 
+  if (totalSummaries > 0 && stats.summariesSuccess === 0) {
+    throw new Error(`Sync failed: 0 of ${totalSummaries} summaries could be generated.`);
+  }
+
   // 3. Compile Overviews and Rebuild Indexes
   await overviewsWiki(absolutePath, undefined, { verbose: options?.verbose });
   enableGitCommits(!!options?.pr);
@@ -212,6 +225,12 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
   if (options?.pr && branchName) {
     gitCreatePR(absolutePath, branchName);
   }
+} catch (err: any) {
+  if (branchName) {
+    gitRollbackBranch(absolutePath, initialBranch, branchName);
+  }
+  throw err;
+}
 }
 
 

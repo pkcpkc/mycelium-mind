@@ -1,0 +1,47 @@
+# Open Notebook (lfnovo/open-notebook) Docker Compose Template
+# Self-hosted interactive frontend for Mycelium Mind
+#
+# Quickstart:
+#   docker compose -f scripts/docker/open-notebook.docker-compose.yml up -d
+#
+# Access:
+#   Frontend UI: http://localhost:8502
+#   Backend API: http://localhost:5055
+#   Swagger Docs: http://localhost:5055/docs
+
+services:
+  surrealdb:
+    image: surrealdb/surrealdb:v2
+    container_name: open-notebook-surrealdb
+    restart: unless-stopped
+    user: root
+    command: ["start", "--log", "info", "--user", "root", "--pass", "root", "rocksdb:/mydata/database.db"]
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - open_notebook_surreal_data:/mydata
+    environment:
+      - SURREAL_EXPERIMENTAL_GRAPHQL=true
+
+  open-notebook:
+    image: lfnovo/open_notebook:v1-latest
+    container_name: open-notebook-app
+    restart: unless-stopped
+    depends_on:
+      - surrealdb
+    ports:
+      - "5055:5055"
+      - "8502:8502"
+    environment:
+      - OPEN_NOTEBOOK_ENCRYPTION_KEY=mycelium-mind-secret-encryption-key-32chars!
+      - SURREAL_URL=ws://surrealdb:8000/rpc
+      - SURREAL_USER=root
+      - SURREAL_PASSWORD=root
+      - SURREAL_NAMESPACE=open_notebook
+      - SURREAL_DATABASE=open_notebook
+    volumes:
+      - open_notebook_app_data:/app/data
+
+volumes:
+  open_notebook_surreal_data:
+  open_notebook_app_data:

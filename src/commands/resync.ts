@@ -5,12 +5,12 @@ import {
   cleanMarkdownResponse,
   parseFrontmatterFromString
 } from '../utils/fs-utils.js';
-import { gitCreatePR, gitCreateBranch, enableGitCommits, createGitCommitQueue } from '../utils/git.js';
+import { gitCreatePR, gitCreateBranch, enableGitCommits, createGitCommitQueue, gitGetCurrentBranch, gitRollbackBranch } from '../utils/git.js';
 import { validateAllPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
 import { overviewsWiki } from './overviews.js';
 import { updateCollectionEntitiesForFile } from './overrides.js';
-import { callAgenticModel } from '../utils/openai-api.js';
+import { callAgenticModel, isNonRecoverableError, preflightModelCheck } from '../utils/openai-api.js';
 import { asyncPool } from '../utils/async-pool.js';
 import { loadIngestionSettings } from '../utils/config.js';
 import { extractArchivedAsset } from '../core/asset-extractor.js';
@@ -34,6 +34,9 @@ export async function resyncWiki(
   enableGitCommits(!!options?.pr);
   const absolutePath = path.resolve(wikiPath);
 
+  // Preflight check model endpoint connectivity & credentials before modifying vault
+  await preflightModelCheck();
+
   // Implicitly create folders/files for the wiki if missing
   await initWiki(absolutePath, { overwrite: false });
 
@@ -46,6 +49,7 @@ export async function resyncWiki(
 
   const assetsDirParent = path.join(wikiDir, 'assets');
 
+  const initialBranch = gitGetCurrentBranch(absolutePath);
   let branchName = '';
   if (options?.pr) {
     const timestamp = new Date().toISOString()
@@ -56,10 +60,11 @@ export async function resyncWiki(
     gitCreateBranch(absolutePath, branchName);
   }
 
-  if (!fs.existsSync(assetsDirParent)) {
-    console.log('No assets folder found. Cannot resync.');
-    return;
-  }
+  try {
+    if (!fs.existsSync(assetsDirParent)) {
+      console.log('No assets folder found. Cannot resync.');
+      return;
+    }
 
   // Load plugin schemas
   const schemasDir = path.join(absolutePath, 'plugins', 'collections');
@@ -246,6 +251,9 @@ export async function resyncWiki(
             stats.summariesSuccess++;
             summaryItem = { summaryPath, frontmatter };
           } catch (e: any) {
+            if (isNonRecoverableError(e)) {
+              throw e;
+            }
             console.error(`LLM synthesis failed for asset ${file}:`, e.message);
             stats.summariesFailed++;
           }
@@ -314,10 +322,17 @@ export async function resyncWiki(
             await updateCollectionEntitiesForFile(absolutePath, override.file, newFm, recreatedContent, options?.verbose);
           }
         } catch (e: any) {
+          if (isNonRecoverableError(e)) {
+            throw e;
+          }
           console.error(`Failed to replay override for ${override.file}:`, e.message);
         }
       }
     }
+  }
+
+  if (totalSummaries > 0 && stats.summariesSuccess === 0) {
+    throw new Error(`Resync failed: 0 of ${totalSummaries} summaries could be generated.`);
   }
 
   await awaitGitCommits();
@@ -331,5 +346,13 @@ export async function resyncWiki(
   if (options?.pr && branchName) {
     gitCreatePR(absolutePath, branchName);
   }
+} catch (err: any) {
+  if (branchName) {
+    gitRollbackBranch(absolutePath, initialBranch, branchName);
+  } else {
+    gitRollbackBranch(absolutePath, initialBranch);
+  }
+  throw err;
+}
 }
 
