@@ -280,12 +280,15 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     const spyBranch = vi.spyOn(gitUtils, 'gitCreateBranch');
     const spyPR = vi.spyOn(gitUtils, 'gitCreatePR');
 
-    // 1. Run sync WITHOUT options (should not commit or branch or pr or tag)
+    // 1. Run sync WITHOUT options (PR creation is the default)
     await syncWiki(wikiPath);
 
-    expect(spyBranch).not.toHaveBeenCalled();
-    expect(spyPR).not.toHaveBeenCalled();
-    expect(gitUtils.isGitCommitsEnabled()).toBe(false);
+    expect(spyBranch).toHaveBeenCalled();
+    expect(spyPR).toHaveBeenCalled();
+    expect(gitUtils.isGitCommitsEnabled()).toBe(true);
+
+    spyBranch.mockClear();
+    spyPR.mockClear();
 
     // Reset inbox file for the next run
     fs.writeFileSync(docPath, '# Andrej Karpathy\nI like deep learning.', 'utf8');
@@ -314,11 +317,14 @@ describe('Unified Wiki Compiler CLI Tests', () => {
     spyBranch.mockClear();
     spyPR.mockClear();
 
-    // 3. Run resync WITHOUT options
+    // 3. Run resync WITHOUT options (PR creation is the default)
     await resyncWiki(wikiPath);
-    expect(spyBranch).not.toHaveBeenCalled();
-    expect(spyPR).not.toHaveBeenCalled();
-    expect(gitUtils.isGitCommitsEnabled()).toBe(false);
+    expect(spyBranch).toHaveBeenCalled();
+    expect(spyPR).toHaveBeenCalled();
+    expect(gitUtils.isGitCommitsEnabled()).toBe(true);
+
+    spyBranch.mockClear();
+    spyPR.mockClear();
 
     // 4. Run resync with options { pr: true }
     await resyncWiki(wikiPath, { pr: true, verbose: true });

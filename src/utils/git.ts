@@ -61,6 +61,30 @@ export function gitCommit(filePath: string, message: string): void {
 }
 
 /**
+ * Stages every change (including deletions) under the given pathspec and commits it.
+ * Catches files removed by folder wipes or written while per-file commits were disabled.
+ */
+export function gitCommitAll(wikiPath: string, pathspec: string, message: string): void {
+  if (!commitsEnabled) {
+    return;
+  }
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
+    return;
+  }
+  try {
+    const absolutePath = path.resolve(wikiPath);
+    runGit(['add', '-A', '--', pathspec], absolutePath, 'ignore');
+    const staged = runGit(['diff', '--cached', '--name-only'], absolutePath, 'pipe').trim();
+    if (staged) {
+      runGit(['commit', '-m', message], absolutePath, 'ignore');
+      console.log(`Git Commit: "${message}"`);
+    }
+  } catch (e: any) {
+    console.error(`Failed to create git commit for ${pathspec}:`, e.message);
+  }
+}
+
+/**
  * Creates and checkouts a new git branch in the wiki repository.
  */
 export function gitCreateBranch(wikiPath: string, branchName: string): void {

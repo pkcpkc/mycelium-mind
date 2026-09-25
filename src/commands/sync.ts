@@ -4,7 +4,7 @@ import {
   toSafeFilename,
   getFormattedDateTime
 } from '../utils/fs-utils.js';
-import { gitCreatePR, gitCreateBranch, enableGitCommits, createGitCommitQueue, gitGetCurrentBranch, gitRollbackBranch } from '../utils/git.js';
+import { gitCreatePR, gitCreateBranch, gitCommitAll, enableGitCommits, createGitCommitQueue, gitGetCurrentBranch, gitRollbackBranch } from '../utils/git.js';
 import { validateAllPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
 import { overviewsWiki } from './overviews.js';
@@ -26,7 +26,8 @@ import { isNonRecoverableError, preflightModelCheck } from '../utils/openai-api.
  * Syncs the inbox folder with the wiki database.
  */
 export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbose?: boolean }): Promise<void> {
-  enableGitCommits(!!options?.pr);
+  const pr = options?.pr !== false;
+  enableGitCommits(pr);
   const absolutePath = path.resolve(wikiPath);
 
   // Implicitly create folders/files for the wiki if missing
@@ -60,7 +61,7 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
 
   const initialBranch = gitGetCurrentBranch(absolutePath);
   let branchName = '';
-  if (options?.pr) {
+  if (pr) {
     const timestamp = new Date().toISOString()
       .replace(/[-:]/g, '')
       .replace('T', '-')
@@ -218,11 +219,12 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
 
   // 3. Compile Overviews and Rebuild Indexes
   await overviewsWiki(absolutePath, undefined, { verbose: options?.verbose });
-  enableGitCommits(!!options?.pr);
+  enableGitCommits(pr);
 
   printCompilerStats(stats, activeSchemas, totalSummaries, 'Sync');
 
-  if (options?.pr && branchName) {
+  if (pr && branchName) {
+    gitCommitAll(absolutePath, 'wiki', 'Sync: removed stale pages, updated overviews and indexes');
     gitCreatePR(absolutePath, branchName);
   }
 } catch (err: any) {
