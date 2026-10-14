@@ -7,8 +7,6 @@ import { manageCollection, manageOverview } from '../commands/library.js';
 import { syncWiki } from '../commands/sync.js';
 import { publishWiki } from '../commands/publish.js';
 import { resyncWiki } from '../commands/resync.js';
-import { callAgenticModel } from '../utils/openai-api.js';
-import * as childProcess from 'child_process';
 import { runOverviewScript } from '../utils/overview-runner.js';
 
 const __filename = fileURLToPath(import.meta.url);

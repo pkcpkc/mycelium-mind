@@ -70,12 +70,15 @@ export class OpenNotebookClient {
 
   /**
    * Checks whether the Open Notebook API server is reachable and responsive.
+   * An optional timeout (ms) bounds each probe request.
    */
-  async checkHealth(): Promise<boolean> {
+  async checkHealth(timeoutMs?: number): Promise<boolean> {
+    const signal = () => (timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined);
     try {
       const res = await this.fetchFn(`${this.baseUrl}/health`, {
         method: 'GET',
         headers: this.getHeaders(),
+        signal: signal(),
       });
       if (res.ok) return true;
 
@@ -83,6 +86,7 @@ export class OpenNotebookClient {
       const fallback = await this.fetchFn(`${this.baseUrl}/api/notebooks`, {
         method: 'GET',
         headers: this.getHeaders(),
+        signal: signal(),
       });
       return fallback.ok || fallback.status === 401;
     } catch {

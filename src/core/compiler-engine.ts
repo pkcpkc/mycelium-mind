@@ -9,6 +9,7 @@ import {
 } from '../utils/fs-utils.js';
 import { parseSchema, loadAndInjectSchemaProperties } from '../utils/schema-parser.js';
 import { asyncPool } from '../utils/async-pool.js';
+import { trackEngineWrite } from '../utils/git.js';
 import { CompilerStats, SummaryFrontmatter } from './types.js';
 
 export interface SchemaTemplateInfo {
@@ -442,6 +443,7 @@ Adhere strictly to the schema specification, link normalization rules, and targe
     ]);
     finalCompiledText = cleanMarkdownResponse(rawResponse);
     fs.writeFileSync(entityPath, finalCompiledText, 'utf8');
+    trackEngineWrite(entityPath);
   }
 
   return { entityPath, compiledText: finalCompiledText };

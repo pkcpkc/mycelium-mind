@@ -3,29 +3,31 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import { initWiki } from '../commands/init.js';
-import { syncWiki } from '../commands/sync.js';
 import { resyncWiki } from '../commands/resync.js';
 import { overridesWiki } from '../commands/overrides.js';
 import { callAgenticModel } from '../utils/openai-api.js';
-import * as childProcess from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TEST_ROOT = path.resolve(__dirname, '..', '..', 'temp-overrides-tests-vaults');
 
-let mockDiffOutput = 'wiki/summaries/Andrej Karpathy.md\n';
+let mockDiffOutput = 'wiki/summaries/Andrej Karpathy.md\0';
 let mockStatusOutput = '';
+
+let mockFileDiff = 'diff --git a/wiki/summaries/Andrej Karpathy.md b/wiki/summaries/Andrej Karpathy.md\n--- a/wiki/summaries/Andrej Karpathy.md\n+++ b/wiki/summaries/Andrej Karpathy.md\n@@ -3,1 +3,2 @@\n-title: Andrej Karpathy\n+title: Andrej Karpathy Edited\n';
 
 vi.mock('child_process', () => {
   return {
-    execSync: vi.fn((cmd: string, options?: any) => {
-      if (cmd.includes('git diff HEAD --name-only -- wiki')) {
+    execSync: vi.fn(() => Buffer.from('')),
+    execFileSync: vi.fn((cmd: string, args: string[] = []) => {
+      const joined = args.join(' ');
+      if (joined === 'diff HEAD --name-only -z -- wiki') {
         return Buffer.from(mockDiffOutput);
       }
-      if (cmd.includes('git diff HEAD -- "wiki/summaries/Andrej Karpathy.md"')) {
-        return Buffer.from('diff --git a/wiki/summaries/Andrej Karpathy.md b/wiki/summaries/Andrej Karpathy.md\n--- a/wiki/summaries/Andrej Karpathy.md\n+++ b/wiki/summaries/Andrej Karpathy.md\n@@ -3,1 +3,2 @@\n-title: Andrej Karpathy\n+title: Andrej Karpathy Edited\n');
+      if (joined === 'diff HEAD -- wiki/summaries/Andrej Karpathy.md') {
+        return Buffer.from(mockFileDiff);
       }
-      if (cmd.includes('git show HEAD:"wiki/summaries/Andrej Karpathy.md"')) {
+      if (joined === 'show HEAD:wiki/summaries/Andrej Karpathy.md') {
         return Buffer.from(`---
 type: "Summary"
 title: "Andrej Karpathy"
@@ -35,7 +37,7 @@ person: ["Andrej Karpathy"]
 Pioneering AI engineer.
 `);
       }
-      if (cmd.includes('git status --porcelain -- wiki')) {
+      if (joined === 'ls-files --others --exclude-standard -z -- wiki') {
         return Buffer.from(mockStatusOutput);
       }
       return Buffer.from('');
@@ -90,7 +92,7 @@ describe('Wiki Overrides and Chronological Replay Tests', () => {
 
   beforeEach(() => {
     fs.mkdirSync(TEST_ROOT, { recursive: true });
-    mockDiffOutput = 'wiki/summaries/Andrej Karpathy.md\n';
+    mockDiffOutput = 'wiki/summaries/Andrej Karpathy.md\0';
     mockStatusOutput = '';
   });
 
@@ -142,6 +144,44 @@ Pioneering AI engineer.
     expect(recreatedContent).toContain('Pioneering AI engineer (edited).');
   });
 
+  it('should not overwrite a file edited again while the LLM was re-creating it', async () => {
+    await initWiki(wikiPath, { includeDefaults: true });
+    const summaryFile = path.join(wikiPath, 'wiki', 'summaries', 'Andrej Karpathy.md');
+    fs.mkdirSync(path.dirname(summaryFile), { recursive: true });
+    fs.writeFileSync(summaryFile, '# Andrej Karpathy\nfirst edit\n', 'utf8');
+
+    vi.mocked(callAgenticModel).mockImplementationOnce(async () => {
+      // The user keeps typing while the model call is in flight
+      fs.writeFileSync(summaryFile, '# Andrej Karpathy\nsecond edit\n', 'utf8');
+      return '# Andrej Karpathy\nLLM result\n';
+    });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await overridesWiki(wikiPath);
+
+    expect(fs.readFileSync(summaryFile, 'utf8')).toBe('# Andrej Karpathy\nsecond edit\n');
+    expect(warnSpy.mock.calls.flat().join('\n')).toContain('changed while being re-created');
+    // Skipped attempts must not be recorded for replay
+    expect(fs.existsSync(path.join(wikiPath, 'wiki', 'assets', 'overrides'))).toBe(false);
+    warnSpy.mockRestore();
+  });
+
+  it('should not write an overrides snapshot when re-creation fails', async () => {
+    await initWiki(wikiPath, { includeDefaults: true });
+    const summaryFile = path.join(wikiPath, 'wiki', 'summaries', 'Andrej Karpathy.md');
+    fs.mkdirSync(path.dirname(summaryFile), { recursive: true });
+    fs.writeFileSync(summaryFile, '# Andrej Karpathy\nedit\n', 'utf8');
+
+    vi.mocked(callAgenticModel).mockRejectedValueOnce(new Error('Connection error.'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await overridesWiki(wikiPath);
+
+    expect(fs.readFileSync(summaryFile, 'utf8')).toBe('# Andrej Karpathy\nedit\n');
+    expect(fs.existsSync(path.join(wikiPath, 'wiki', 'assets', 'overrides'))).toBe(false);
+    errorSpy.mockRestore();
+  });
+
   it('should replay overrides progressively during resyncWiki', async () => {
     await initWiki(wikiPath, { includeDefaults: true });
 
@@ -176,7 +216,7 @@ Pioneering AI engineer.
   it('should print a notice if there are no modified files but untracked files are present', async () => {
     await initWiki(wikiPath, { includeDefaults: true });
     mockDiffOutput = '';
-    mockStatusOutput = '?? wiki/summaries/Untracked_File.md\n';
+    mockStatusOutput = 'wiki/summaries/Untracked_File.md\0';
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 

@@ -1,6 +1,10 @@
 # Mycelium Mind CLI Command Reference 🧠
 
-The `mycelium-mind` CLI tool can be executed using its binary alias `mm` or through `npx mm`. 
+The `mycelium-mind` CLI tool can be executed using its binary alias `mm` or through `npx mm`. The CLI is built on [Commander.js](https://github.com/tj/commander.js/) and follows standard conventions:
+
+- **`--help` / `-h`** is available on every command and subcommand.
+- **`--version` / `-V`** prints the current package version.
+- Options are scoped to their respective command — run `mm <command> --help` for details.
 
 All commands that require a `<wiki-path>` parameter (e.g., `sync`, `resync`, `publish`, `check-plugins`) have it configured as **optional** and default to `.` (the current working directory) if omitted.
 
@@ -40,8 +44,10 @@ Runs the main incremental compiler pipeline on new documents dropped in `inbox/`
 7. **Git Isolation**: Commits all compiled outputs local to the vault's git repository.
 
 **Options**:
-- `-v, --verbose`: Prints assembled LLM prompts (summaries and entity card merges) to standard output before calling the model API.
-- `--no-pr`: Disables pushing the sync branch to origin and opening a pull request (PR creation is enabled by default, requiring the GitHub CLI).
+| Flag | Description |
+| :--- | :--- |
+| `-v, --verbose` | Print assembled LLM prompts (summaries and entity card merges) to standard output before calling the model API. |
+| `--no-pr` | Disable pushing the sync branch to origin and opening a pull request (PR creation is enabled by default, requiring the GitHub CLI). |
 
 ```bash
 # Sync the current directory vault (creates branch and PR by default)
@@ -58,8 +64,11 @@ mm sync ./my-vault -v --no-pr
 Wipes the compiled entity and summary states and fully re-ingests/re-compiles all source material from archived assets. This is useful when you tweak collection prompts, update schema definitions, or modify overview scripts and want to rebuild the entire wiki from scratch.
 
 **Options**:
-- `--collection <name>`: Target a specific collection to rebuild (e.g. `persons`). Keeps existing summaries intact, cleans only the targeted collection's folder, compiles cards for this collection, and applies corresponding overrides.
-- Supports the same `-v, --verbose` and `--no-pr` options as `sync`.
+| Flag | Description |
+| :--- | :--- |
+| `--collection <name>` | Target a specific collection to rebuild (e.g. `persons`). Keeps existing summaries intact, cleans only the targeted collection's folder, compiles cards for this collection, and applies corresponding overrides. |
+| `-v, --verbose` | Print assembled LLM prompts to standard output. |
+| `--no-pr` | Disable branch/PR creation. |
 
 ```bash
 # Rebuild the wiki from archived assets
@@ -71,7 +80,7 @@ mm resync --collection persons
 
 ---
 
-### `check-plugins [wiki-path]`
+### `check-plugins [plugin-path]`
 
 Scans and validates all collection plugins inside the vault's `plugins/collections/` directory in a single scan:
 - **Schema Validation**: Validates `schema.yml` formatting and syntax, reporting any parsing issues.
@@ -100,17 +109,154 @@ mm publish . ./dist/site
 
 ---
 
+### `overviews [wiki-path] [target-html]`
+
+Re-compiles the overview markdown files and rebuilds folder/root indexes from the existing compiled entity cards, without making any LLM calls. If `[target-html]` is provided, also compiles the static MkDocs site at the end.
+
+```bash
+# Re-create overviews and indexes
+mm overviews
+
+# Re-create overviews and compile static site
+mm overviews . ./dist/site
+```
+
+---
+
+### `overrides [wiki-path] [options]`
+
+Detects manual edits made to compiled markdown pages (e.g. via Obsidian), saves them as override snapshots, and re-applies them during future rebuilds.
+
+**Options**:
+| Flag | Description |
+| :--- | :--- |
+| `--no-pr` | Disable branch/PR creation. |
+| `-v, --verbose` | Print assembled LLM prompts to standard output. |
+
+```bash
+# Save manual edits and recreate affected documents
+mm overrides
+
+# Skip PR creation
+mm overrides --no-pr
+```
+
+---
+
+### `watch [wiki-path] [options]`
+
+Runs continuously and keeps the vault processed as you work:
+
+- **Inbox drops** — files added to `inbox/` are batched (2s quiet period) and ingested with the same pipeline as `mm sync`.
+- **Manual edits** — changes to `wiki/**/*.md` are debounced per file and re-created with the same pipeline as `mm overrides`.
+- **Open Notebook** — after each run, changed documents are pushed incrementally (as `mm notebook push`). The service is probed on startup and before every push (1.5s timeout); when it is down, the push is skipped and watching continues.
+- **Startup sweep** — on launch, edits made while the watcher was offline and files already waiting in `inbox/` are processed first.
+
+Results are committed to the **current branch** (no branch or PR is created). Edit detection uses `git diff HEAD`, so the vault must be a git repository with at least one commit; without one, only inbox ingestion runs. Because the engine commits its own writes, they never register as manual edits — and a file whose re-creation fails (e.g. model endpoint down) is not retried until you edit it again, so watch mode cannot loop.
+
+Runs are serialized: events arriving during a run are queued and handled once it finishes, with pending edits processed before inbox syncs.
+
+**Options**:
+| Flag | Description |
+| :--- | :--- |
+| `-d, --debounce <ms>` | Quiet period before a manual edit is processed (default: `1500`). |
+| `--no-notebook-sync` | Do not push to Open Notebook. |
+| `--notebook <name>` / `--notebook-id <id>` | Target notebook (defaults to `notebook` in `config/config.yml`). |
+| `--notebook-url <url>` | Open Notebook API base URL (default: config, `OPEN_NOTEBOOK_URL`, or `http://localhost:5055`). |
+| `--api-key <key>` | Optional Open Notebook API key. |
+| `-v, --verbose` | Print assembled LLM prompts to standard output. |
+
+```bash
+# Watch the current vault
+mm watch
+
+# Watch without Open Notebook, with a longer edit debounce
+mm watch ~/vault --no-notebook-sync --debounce 3000
+```
+
+---
+
+### `contradictions [wiki-path]`
+
+Scans compiled wiki pages for internal contradictions, inconsistencies, or conflicting information across entity cards and summaries.
+
+```bash
+# Scan the wiki for contradictions
+mm contradictions
+```
+
+---
+
+### `serve [path]`
+
+Spawns a minimal static HTTP server to serve the compiled wiki site locally for preview.
+
+```bash
+# Serve the current directory
+mm serve
+
+# Serve a specific published site
+mm serve ./dist/site
+```
+
+---
+
+### `collection [name] [wiki-path] [options]`
+
+Lists available collection plugins from the built-in library, or installs one into the target wiki.
+
+**Options**:
+| Flag | Description |
+| :--- | :--- |
+| `-f, --force` | Overwrite existing files. |
+| `--from <path>` | Use a custom library path instead of the built-in library. |
+
+```bash
+# List all available collections
+mm collection
+
+# Install the 'concepts' collection
+mm collection concepts ./my-wiki
+
+# Force-overwrite an existing collection
+mm collection concepts ./my-wiki --force
+```
+
+---
+
+### `overview [name] [wiki-path] [options]`
+
+Lists available overview scripts from the built-in library, or installs one into the target wiki.
+
+**Options**:
+| Flag | Description |
+| :--- | :--- |
+| `-f, --force` | Overwrite existing files. |
+| `--from <path>` | Use a custom library path instead of the built-in library. |
+
+```bash
+# List all available overviews
+mm overview
+
+# Install the 'timeline' overview
+mm overview timeline ./my-wiki
+```
+
+---
+
 ### `rag [wiki-path] [options]`
 
 Starts the `knowledge-rag` MCP (Model Context Protocol) server to search your local wiki. The underlying engine is powered by [lyonzin/knowledge-rag](https://github.com/lyonzin/knowledge-rag). It reads the vault settings from `config/config.yml` (under the `rag:` key) and allows CLI flags to override configuration settings.
 
 **Options**:
-- `--transport <stdio|sse>`: MCP transport mode (defaults to `sse` or the config value).
-- `--port <number>`: Port to run the SSE server on (default: `8179`).
-- `--host <string>`: Host interface to bind (default: `127.0.0.1`).
-- `--rate-limit <rpm>`: Enable sliding-window rate limiting with the specified requests-per-minute.
-- `--prometheus-port <port>`: Enable Prometheus metrics scraping on the specified port.
-- `--chromadb-wal`: Force ChromaDB Write-Ahead Logging mode (automatically enabled in `sse` mode).
+| Flag | Description |
+| :--- | :--- |
+| `--transport <mode>` | MCP transport mode: `stdio` \| `sse` (defaults to `sse` or the config value). |
+| `--port <number>` | Port to run the SSE server on (default: `8179`). |
+| `--host <address>` | Host interface to bind (default: `127.0.0.1`). |
+| `--rate-limit <rpm>` | Enable sliding-window rate limiting with the specified requests-per-minute. |
+| `--prometheus-port <port>` | Enable Prometheus metrics scraping on the specified port. |
+| `--chromadb-wal` | Force ChromaDB Write-Ahead Logging mode (automatically enabled in `sse` mode). |
 
 ```bash
 # Start standard RAG server via SSE
@@ -155,11 +301,13 @@ First start the server via `mm rag` in the terminal, then configure the client:
 
 ---
 
-### `notebook [subcommand] [wiki-path] [options]`
+### `notebook <subcommand> [options]`
 
 Integrates Mycelium Mind with [Open Notebook](https://github.com/lfnovo/open-notebook), an open-source, self-hosted alternative to Google's NotebookLM.
 
 This provides an optional, interactive frontend for multi-document synthesis, source-cited chat, and AI-generated multi-speaker audio podcasts.
+
+The `notebook` command uses proper Commander.js subcommands. Run `mm notebook --help` to see all subcommands, or `mm notebook <subcommand> --help` for specific options.
 
 #### Data Flow & Delta Sync
 The integration is strictly **one-way (Mycelium Mind $\to$ Open Notebook)**. Mycelium Mind remains the single source of truth in Git. Open Notebook serves as an interactive projection and research workbench.
@@ -170,28 +318,43 @@ Pushes are **stateless, idempotent, and incremental**:
 - **Orphan Pruning:** If markdown files were deleted locally, passing `--prune` cleanly deletes the matching sources in Open Notebook.
 - **Forced Sync:** Passing `-f, --force` bypasses hash verification to re-upload all matching documents.
 
-#### Subcommands:
-- `push [wiki-path]` (default): Incrementally synchronizes compiled entity cards and summaries into Open Notebook.
-- `start [wiki-path]` / `up`: Starts Open Notebook Docker containers (and starts Colima automatically if Docker daemon is not active). Automatically configures AI models from `config/config.yml` once ready.
-- `stop [wiki-path]` / `down`: Stops Open Notebook Docker containers (and optionally stops Colima with `--colima`).
-- `configure [wiki-path]`: Re-synchronizes AI provider credentials and default model assignments from vault configuration without restarting containers.
-- `status [wiki-path]`: Displays full environment health (Colima status, Docker daemon, container states, and Open Notebook API).
-- `list [wiki-path]`: Lists all notebooks currently in Open Notebook with their IDs and source counts.
-- `create <name> [wiki-path]`: Creates a new notebook in Open Notebook.
-- `colima <start|stop|status>`: Direct controls for managing the Colima container runtime on macOS.
+#### Subcommands
 
-#### Options:
-- `--notebook <name>`: Target Open Notebook by name (defaults to `[MM] <vault-name>`). Automatically created if it doesn't exist.
-- `--notebook-id <id>`: Target an explicit Open Notebook ID (e.g. `notebook:01jf8...`).
-- `--notebook-url <url>`: Base URL of the Open Notebook backend (default: `http://localhost:5055`).
-- `--api-key <key>`: Optional API key if Open Notebook is running with authentication enabled.
-- `--filter <all|collections|summaries>`: Choose what content is pushed (default: `all`).
-- `--prune`: Delete remote sources in Open Notebook that were deleted or renamed in your vault.
-- `--dry-run`: Preview sync operations (added, updated, skipped, pruned) without making any mutations.
-- `-f, --force`: Re-upload all matching documents even if hashes are unchanged.
-- `--concurrency <num>`: Max concurrent upload requests (default: `1`, recommended to avoid database transaction conflicts).
-- `--colima`: Also start or stop the Colima container runtime when running `start` or `stop`.
-- `--no-configure`: Skip automatic model configuration upon container start.
+| Subcommand | Description |
+| :--- | :--- |
+| `push [wiki-path]` | Incrementally synchronize compiled entity cards and summaries into Open Notebook *(default subcommand)*. |
+| `start` \| `up [wiki-path]` | Start Open Notebook Docker containers (auto-configures models). |
+| `stop` \| `down` | Stop Open Notebook Docker containers. |
+| `configure [wiki-path]` | Re-synchronize AI provider credentials and model assignments without restarting containers. |
+| `status [wiki-path]` | Display full environment health (Colima, Docker, containers, API). |
+| `list [wiki-path]` | List all notebooks with their IDs and source counts. |
+| `create <name> [wiki-path]` | Create a new notebook in Open Notebook. |
+| `colima <action>` | Direct Colima runtime controls (`start` \| `stop` \| `status`). |
+
+#### Push Options
+| Flag | Description |
+| :--- | :--- |
+| `-f, --force` | Re-upload all matching documents even if hashes are unchanged. |
+| `--prune` | Delete remote sources that were deleted or renamed in your vault. |
+| `--dry-run` | Preview sync operations without making any mutations. |
+| `--filter <mode>` | Choose what content is pushed: `all` \| `collections` \| `summaries` (default: `all`). |
+| `--concurrency <num>` | Max concurrent upload requests (default: `1`). |
+
+#### Shared Notebook Options
+These options are available on all notebook subcommands (except `colima`):
+
+| Flag | Description |
+| :--- | :--- |
+| `--notebook <name>` | Target Open Notebook by name (defaults to `[MM] <vault-name>`). Auto-created if it doesn't exist. |
+| `--notebook-id <id>` | Target an explicit Open Notebook ID (e.g. `notebook:01jf8...`). |
+| `--notebook-url <url>` | Base URL of the Open Notebook backend (default: `http://localhost:5055`). |
+| `--api-key <key>` | Optional API key if Open Notebook is running with authentication enabled. |
+
+#### Start/Stop Options
+| Flag | Description |
+| :--- | :--- |
+| `--colima` | Also start or stop the Colima container runtime. |
+| `--no-configure` | Skip automatic model configuration upon container start. |
 
 #### Running Open Notebook with Colima on macOS
 
@@ -338,4 +501,3 @@ notebook:
     overviews: true               # Sync overview index pages (wiki/overviews/)
   concurrency: 1                  # Concurrency limit (1 recommended)
 ```
-

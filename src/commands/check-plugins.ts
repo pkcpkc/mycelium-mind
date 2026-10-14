@@ -114,16 +114,17 @@ export function checkSinglePlugin(pluginPath: string): void {
       '$SUMMARY_CONTENT',
     ];
 
+    // Placeholders are only substituted in the prompt body, so frontmatter mentions don't count
     const missingPlaceholders: string[] = [];
     for (const placeholder of expectedPlaceholders) {
-      if (!promptContentRaw.includes(placeholder)) {
+      if (!promptContent.includes(placeholder)) {
         missingPlaceholders.push(placeholder);
       }
     }
 
     if (missingPlaceholders.length > 0) {
       console.warn(`Warning: '${promptPath}' does not use the following placeholders: ${missingPlaceholders.join(', ')}`);
-      if (!promptContentRaw.includes('$VALUE')) {
+      if (!promptContent.includes('$VALUE')) {
         console.warn(`Warning: Critical placeholder '$VALUE' is missing from '${promptPath}'. This may prevent identifying the entity name.`);
       }
     }

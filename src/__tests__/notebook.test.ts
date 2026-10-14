@@ -12,8 +12,6 @@ import {
   buildOriginUrl,
   parseOriginUrl,
   extractCardTitle,
-  loadNotebookConfig,
-  resolveTargetNotebook,
   planNotebookSync,
   pushWikiToNotebook,
   listNotebooksCommand,
@@ -452,7 +450,6 @@ Summary text`;
       const {
         isColimaInstalled,
         getColimaStatus,
-        resolveDockerComposeCmd,
         getComposeFilePath,
         manageColimaCommand,
       } = await import('../commands/notebook.js');

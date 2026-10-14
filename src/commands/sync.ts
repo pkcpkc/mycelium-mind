@@ -4,7 +4,7 @@ import {
   toSafeFilename,
   getFormattedDateTime
 } from '../utils/fs-utils.js';
-import { gitCreatePR, gitCreateBranch, gitCommitAll, enableGitCommits, createGitCommitQueue, gitGetCurrentBranch, gitRollbackBranch } from '../utils/git.js';
+import { gitCreatePR, gitCreateBranch, gitCommitTracked, clearEngineWrites, enableGitCommits, createGitCommitQueue, gitGetCurrentBranch, gitRollbackBranch } from '../utils/git.js';
 import { validateAllPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
 import { overviewsWiki } from './overviews.js';
@@ -25,9 +25,12 @@ import { isNonRecoverableError, preflightModelCheck } from '../utils/openai-api.
 /**
  * Syncs the inbox folder with the wiki database.
  */
-export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbose?: boolean }): Promise<void> {
+export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbose?: boolean; commit?: boolean }): Promise<void> {
   const pr = options?.pr !== false;
-  enableGitCommits(pr);
+  // `commit` keeps git commits on the current branch without opening a PR (used by watch mode)
+  const commits = pr || !!options?.commit;
+  enableGitCommits(commits);
+  clearEngineWrites();
   const absolutePath = path.resolve(wikiPath);
 
   // Implicitly create folders/files for the wiki if missing
@@ -219,12 +222,16 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
 
   // 3. Compile Overviews and Rebuild Indexes
   await overviewsWiki(absolutePath, undefined, { verbose: options?.verbose });
-  enableGitCommits(pr);
+  enableGitCommits(commits);
 
   printCompilerStats(stats, activeSchemas, totalSummaries, 'Sync');
 
+  if (commits) {
+    // Stage only what this run wrote (plus engine-owned assets), so manual
+    // edits made while sync was running stay dirty for `overrides` to pick up.
+    gitCommitTracked(absolutePath, ['wiki/assets'], 'Sync: updated overviews and indexes');
+  }
   if (pr && branchName) {
-    gitCommitAll(absolutePath, 'wiki', 'Sync: removed stale pages, updated overviews and indexes');
     gitCreatePR(absolutePath, branchName);
   }
 } catch (err: any) {

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import matter from 'gray-matter';
 import YAML from 'yaml';
 import { config } from './config.js';
-import { gitCommit } from './git.js';
+import { gitCommit, trackEngineWrite } from './git.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -174,6 +174,7 @@ export async function rebuildFolderIndex(wikiDir: string, relativeFolderPath: st
         `---\ntitle: "${header} Index"\n---\n# ${header} Index\n\nNo items available.\n`,
         'utf8'
       );
+      trackEngineWrite(indexPath);
     }
     return;
   }
@@ -210,11 +211,13 @@ export async function rebuildFolderIndex(wikiDir: string, relativeFolderPath: st
       .replace(/\$FOLDER_NAME/g, folderName)
       .replace(/\$TIMESTAMP/g, timestampStr);
     fs.writeFileSync(cloudPath, cloudContent, 'utf8');
+    trackEngineWrite(cloudPath);
     gitCommit(cloudPath, `Updated ${folderName}-cloud overview page`);
 
     if (fs.existsSync(cloudFullscreenPath)) {
       try {
         fs.unlinkSync(cloudFullscreenPath);
+        trackEngineWrite(cloudFullscreenPath);
         gitCommit(cloudFullscreenPath, `Deleted obsolete ${folderName}-cloud-fullscreen overview page`);
       } catch (e: any) {
         console.warn(`Failed to clean up ${cloudFullscreenPath}:`, e.message);
@@ -242,6 +245,7 @@ export async function rebuildFolderIndex(wikiDir: string, relativeFolderPath: st
   }
   lines.push('');
   fs.writeFileSync(indexPath, lines.join('\n'), 'utf8');
+  trackEngineWrite(indexPath);
   gitCommit(indexPath, `Updated index for ${relativeFolderPath}`);
 }
 
@@ -261,6 +265,7 @@ Browse all tags used across the wiki:
 <!-- material/tags -->
 `;
   fs.writeFileSync(tagsPath, content, 'utf8');
+  trackEngineWrite(tagsPath);
   gitCommit(tagsPath, 'Updated tags overview page');
   console.log(`Created/updated tags page at ${tagsPath}`);
 }
@@ -316,6 +321,7 @@ ${listItems.join('\n')}
 `;
 
   fs.writeFileSync(indexPath, indexContent, 'utf8');
+  trackEngineWrite(indexPath);
   gitCommit(indexPath, 'Updated wiki index');
   console.log(`Created/updated base wiki index at ${indexPath}`);
 }
