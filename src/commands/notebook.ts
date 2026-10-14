@@ -1,12 +1,11 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import { getVaultDir } from '../utils/fs-utils.js';
 import { CliFlags } from '../core/types.js';
 import { OpenNotebookClient } from '../utils/open-notebook-client.js';
 import {
-  NotebookConfig,
-  SyncPlanItem,
-  SyncPlanResult,
+  type NotebookConfig,
+  type SyncPlanItem,
+  type SyncPlanResult,
   loadNotebookConfig,
   buildOriginUrl,
   parseOriginUrl,
@@ -30,15 +29,19 @@ import {
 import {
   configureNotebookModels,
   resolveNotebookModelSettings,
-  ResolvedNotebookModels,
-  ConfiguredNotebookModelsResult,
+  type ResolvedNotebookModels,
+  type ConfiguredNotebookModelsResult,
 } from '../core/notebook-config.js';
 
 // Re-export core sync and container utilities for full backward compatibility
-export {
+export type {
   NotebookConfig,
   SyncPlanItem,
   SyncPlanResult,
+  ResolvedNotebookModels,
+  ConfiguredNotebookModelsResult,
+};
+export {
   loadNotebookConfig,
   buildOriginUrl,
   parseOriginUrl,
@@ -58,8 +61,6 @@ export {
   getComposeContainersStatus,
   configureNotebookModels,
   resolveNotebookModelSettings,
-  ResolvedNotebookModels,
-  ConfiguredNotebookModelsResult,
 };
 
 /**

@@ -71,6 +71,7 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
     { src: 'publish/collections-cloud/collections-cloud.css', dest: path.join(assetsCssDir, 'collections-cloud.css') },
     { src: 'publish/collections-cloud/timeline-filter.js', dest: path.join(assetsJsDir, 'timeline-filter.js') },
     { src: 'publish/collections-cloud/timeline-filter.css', dest: path.join(assetsCssDir, 'timeline-filter.css') },
+    { src: 'publish/mermaid-zoom/mermaid-config.js', dest: path.join(assetsJsDir, 'mermaid-config.js') },
     { src: 'publish/mermaid-zoom/mermaid-zoom.js', dest: path.join(assetsJsDir, 'mermaid-zoom.js') },
     { src: 'publish/mermaid-zoom/mermaid-zoom.css', dest: path.join(assetsCssDir, 'mermaid-zoom.css') },
   ];
@@ -164,6 +165,9 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
     'https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.29.2/cytoscape.min.js',
     'assets/js/collections-cloud.js',
     'assets/js/timeline-filter.js',
+    // Load Mermaid ourselves (Material reuses the global) so mermaid-config.js can raise maxEdges
+    'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js',
+    'assets/js/mermaid-config.js',
     'assets/js/mermaid-zoom.js',
   ];
   for (const js of requiredJs) {

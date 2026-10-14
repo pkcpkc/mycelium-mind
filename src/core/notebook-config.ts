@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import YAML from 'yaml';
-import { CliFlags, NotebookModelEntryConfig, NotebookModelsConfig } from './types.js';
+import { CliFlags, NotebookModelEntryConfig } from './types.js';
 import { loadNotebookConfig } from './notebook-sync.js';
 import { OpenNotebookClient } from '../utils/open-notebook-client.js';
 import { config } from '../utils/config.js';

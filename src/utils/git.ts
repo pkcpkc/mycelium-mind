@@ -1,4 +1,5 @@
 import * as childProcess from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
 
 let commitsEnabled = false;
@@ -57,6 +58,104 @@ export function gitCommit(filePath: string, message: string): void {
     }
   } catch (e: any) {
     console.error(`Failed to create git commit for ${filePath}:`, e.message);
+  }
+}
+
+const engineWrites = new Set<string>();
+
+/**
+ * Records a file written (or deleted) by the engine, so gitCommitTracked can stage exactly
+ * the engine's output and leave concurrent manual edits untouched.
+ */
+export function trackEngineWrite(filePath: string): void {
+  engineWrites.add(path.resolve(filePath));
+}
+
+/**
+ * Forgets previously tracked writes; call at the start of a run so a later
+ * gitCommitTracked only covers that run's output.
+ */
+export function clearEngineWrites(): void {
+  engineWrites.clear();
+}
+
+/**
+ * Commits all tracked engine writes plus every change under `extraPathspecs`
+ * (for directories only the engine writes to), then clears the tracked set.
+ */
+export function gitCommitTracked(wikiPath: string, extraPathspecs: string[], message: string): void {
+  const tracked = [...engineWrites];
+  engineWrites.clear();
+  if (!commitsEnabled) {
+    return;
+  }
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
+    return;
+  }
+  try {
+    const absolutePath = path.resolve(wikiPath);
+    for (const spec of extraPathspecs) {
+      if (fs.existsSync(path.join(absolutePath, spec))) {
+        runGit(['add', '-A', '--', spec], absolutePath, 'ignore');
+      }
+    }
+    const existing = tracked.filter((f) => fs.existsSync(f));
+    for (let i = 0; i < existing.length; i += 100) {
+      runGit(['add', '--', ...existing.slice(i, i + 100)], absolutePath, 'ignore');
+    }
+    // Files the engine deleted: stage the removal (no-op if never committed)
+    const removed = tracked.filter((f) => !fs.existsSync(f));
+    for (let i = 0; i < removed.length; i += 100) {
+      runGit(['rm', '--cached', '--ignore-unmatch', '-q', '--', ...removed.slice(i, i + 100)], absolutePath, 'ignore');
+    }
+    const staged = runGit(['diff', '--cached', '--name-only'], absolutePath, 'pipe').trim();
+    if (staged) {
+      runGit(['commit', '-m', message], absolutePath, 'ignore');
+      console.log(`Git Commit: "${message}"`);
+    }
+  } catch (e: any) {
+    console.error(`Failed to create git commit for tracked engine writes:`, e.message);
+  }
+}
+
+/**
+ * Runs a read-only git command without a shell and returns its stdout.
+ */
+export function gitRead(repoPath: string, args: string[]): string {
+  return runGit(args, repoPath, ['ignore', 'pipe', 'ignore']);
+}
+
+/**
+ * Lists repo-relative paths of markdown files under `pathspec` that differ from HEAD.
+ * Uses NUL-delimited output so non-ASCII names are never quoted or escaped.
+ */
+export function gitListModifiedMarkdown(repoPath: string, pathspec: string): string[] {
+  return runGit(['diff', 'HEAD', '--name-only', '-z', '--', pathspec], repoPath, 'pipe')
+    .split('\0')
+    .filter((name) => name.endsWith('.md'));
+}
+
+/**
+ * Stages every change (including deletions) under the given pathspec and commits it.
+ * Catches files removed by folder wipes or written while per-file commits were disabled.
+ */
+export function gitCommitAll(wikiPath: string, pathspec: string, message: string): void {
+  if (!commitsEnabled) {
+    return;
+  }
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
+    return;
+  }
+  try {
+    const absolutePath = path.resolve(wikiPath);
+    runGit(['add', '-A', '--', pathspec], absolutePath, 'ignore');
+    const staged = runGit(['diff', '--cached', '--name-only'], absolutePath, 'pipe').trim();
+    if (staged) {
+      runGit(['commit', '-m', message], absolutePath, 'ignore');
+      console.log(`Git Commit: "${message}"`);
+    }
+  } catch (e: any) {
+    console.error(`Failed to create git commit for ${pathspec}:`, e.message);
   }
 }
 

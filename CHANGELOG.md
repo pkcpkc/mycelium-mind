@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`mm watch`**: Watch mode that keeps a vault processed continuously. Inbox drops are batched into `sync` runs, manual `wiki/` edits are debounced and re-created via `overrides`, and results are pushed incrementally to Open Notebook when it is reachable. A startup sweep catches up on offline edits and pending inbox files. Loop prevention is git-based: engine writes are committed to the current branch, and files whose re-creation fails are only retried after a new edit.
+- `syncWiki` / `overridesWiki` accept a `commit` option to commit on the current branch without creating a PR.
+
+### Fixed
+- **`overrides` ignored files with non-ASCII names**: git quotes such paths in `--name-only` output (e.g. `"Gr\303\266\303\237e.md"`), so edits to notes like `Größe.md` were silently skipped. Paths are now read NUL-delimited.
+- **`overrides` shell injection**: filenames were interpolated into shell commands (`git show HEAD:"<file>"`); LLM-derived entity names may contain `$(...)` or backticks. All git calls now run without a shell.
+- **`overrides` could discard newer edits**: a file edited again while its LLM re-creation was in flight was overwritten. Such files are now skipped and picked up on the next run.
+- **`overrides` recorded failed attempts**: `overrides.json` snapshots were written (and replayed by `resync`) even when re-creation failed. Only applied overrides are recorded now.
+- **`sync` committed unrelated manual edits**: the final commit staged all of `wiki/`, sweeping in edits made while sync ran. It now commits only files sync wrote, plus `wiki/assets/`.
+- **`check-plugins` accepted placeholders in prompt frontmatter**: placeholder checks scanned the whole `prompt.md`, but the compiler only substitutes them in the body (frontmatter is stripped). A `$VALUE` mentioned only in frontmatter passed validation while never reaching the LLM; checks now run against the body.
+- **`tsx` crash in `notebook` commands**: type-only re-exports in `commands/notebook.ts` broke `npm run cli -- notebook …`; `isolatedModules` is now enabled to catch this at compile time.
+
+### Changed
+- **CLI: Migrated to Commander.js**: Replaced the hand-rolled argument parser and switch-based dispatcher with [Commander.js](https://github.com/tj/commander.js/). This brings standard CLI conventions including `--help` / `-h` on every command and subcommand, `--version` / `-V`, proper option parsing with type coercion, and scoped options per command. The `notebook` command now uses first-class Commander subcommands (`mm notebook push`, `mm notebook start`, etc.) instead of manual positional argument routing. No behavioral changes — all existing flags and arguments work identically.
+
 ## [0.4.0] - 2026-09-06
 
 ### Breaking Changes

@@ -8,7 +8,7 @@ import {
 } from '../utils/fs-utils.js';
 import { buildSessionGraph, runOverviewScript } from '../utils/overview-runner.js';
 import { publishWiki } from './publish.js';
-import { gitCommit, gitCreateBranch, gitCreatePR, enableGitCommits } from '../utils/git.js';
+import { gitCreateBranch, gitCreatePR, enableGitCommits } from '../utils/git.js';
 
 /**
  * Re-compiles the overview markdown files and rebuilds folder/root indexes.

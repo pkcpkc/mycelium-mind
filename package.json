@@ -1,6 +1,6 @@
 {
   "name": "mycelium-mind",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "type": "module",
   "main": "./build/cli.js",
   "files": [
@@ -23,6 +23,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "chokidar": "^4.0.3",
+    "commander": "^15.0.0",
     "gray-matter": "^4.0.3",
     "headroom-ai": "^0.1.0",
     "openai": "^6.44.0",

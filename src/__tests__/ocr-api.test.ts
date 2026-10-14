@@ -163,7 +163,6 @@ describe('OpenAI API & OCR Pipeline Tests', () => {
 
   describe('Speech-to-Text (STT) Audio Transcription', () => {
     it('should transcribe an audio file using the configured STT model', async () => {
-      const { callSttModel } = await import('../utils/openai-api.js');
       const { transcribeAudio } = await import('../core/asset-extractor.js');
 
       const testAudioPath = path.join(__dirname, 'test-sample.mp3');

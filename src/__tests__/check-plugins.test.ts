@@ -194,6 +194,22 @@ test_key: string # String | Optional | Valid
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('completed successfully'));
   });
 
+  it('should warn when placeholders appear only in the prompt frontmatter, not the body', async () => {
+    fs.mkdirSync(pluginPath);
+    fs.writeFileSync(
+      path.join(pluginPath, 'prompt.md'),
+      `---
+description: Uses $VALUE, $EXISTING_CONTENT and $SUMMARY_CONTENT
+---
+Prompt body without any placeholders
+`
+    );
+
+    await checkPlugins(pluginPath);
+    expect(exitSpy).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Critical placeholder '$VALUE' is missing"));
+  });
+
   it('should successfully pass verification with no warnings when all placeholders and metadata are correct', async () => {
     fs.mkdirSync(pluginPath);
     fs.writeFileSync(

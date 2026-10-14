@@ -1,14 +1,19 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
-import YAML from 'yaml';
 import { callAgenticModel } from '../utils/openai-api.js';
 import {
   getFormattedDateTime,
   parseFrontmatterFromString,
   cleanMarkdownResponse
 } from '../utils/fs-utils.js';
-import { gitCommit, gitCreateBranch, gitCreatePR, enableGitCommits } from '../utils/git.js';
+import {
+  gitCommit,
+  gitCreateBranch,
+  gitCreatePR,
+  enableGitCommits,
+  gitRead,
+  gitListModifiedMarkdown
+} from '../utils/git.js';
 import { validateAllPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
 import {
@@ -66,9 +71,10 @@ export async function updateCollectionEntitiesForFile(
  */
 export async function overridesWiki(
   wikiPath: string,
-  options?: { pr?: boolean; verbose?: boolean }
+  options?: { pr?: boolean; verbose?: boolean; commit?: boolean }
 ): Promise<void> {
-  enableGitCommits(!!options?.pr);
+  // `commit` keeps git commits on the current branch without opening a PR (used by watch mode)
+  enableGitCommits(!!options?.pr || !!options?.commit);
   const absolutePath = path.resolve(wikiPath);
 
   // Ensure wiki is initialized
@@ -89,24 +95,19 @@ export async function overridesWiki(
   }
 
   // 1. Identify modified .md files in the wiki folder only using git diff HEAD
-  let diffOutput = '';
+  let modifiedFiles: string[] = [];
   try {
-    diffOutput = execSync('git diff HEAD --name-only -- wiki', { cwd: absolutePath }).toString();
+    modifiedFiles = gitListModifiedMarkdown(absolutePath, 'wiki').filter(file => file.startsWith('wiki/'));
   } catch (err: any) {
     console.error('Failed to run git diff:', err.message);
     return;
   }
 
-  const modifiedFiles = diffOutput
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.endsWith('.md') && line.startsWith('wiki/'));
-
   if (modifiedFiles.length === 0) {
     console.log('No modified markdown files found in the wiki folder.');
     try {
-      const untrackedOutput = execSync('git status --porcelain -- wiki', { cwd: absolutePath }).toString();
-      const hasUntracked = untrackedOutput.split('\n').some(line => line.startsWith('?? ') && line.endsWith('.md'));
+      const untrackedOutput = gitRead(absolutePath, ['ls-files', '--others', '--exclude-standard', '-z', '--', 'wiki']);
+      const hasUntracked = untrackedOutput.split('\0').some(file => file.endsWith('.md'));
       if (hasUntracked) {
         console.log('\nNotice: You have untracked markdown files in the wiki directory.');
         console.log('If you want to include them in overrides, please stage them first using:');
@@ -122,20 +123,18 @@ export async function overridesWiki(
   const overridesDir = path.join(absolutePath, 'wiki', 'assets', 'overrides', timestamp);
 
   for (const file of modifiedFiles) {
+    const fullFilePath = path.join(absolutePath, file);
     let originalContent = '';
     try {
-      originalContent = execSync(`git show HEAD:"${file}"`, { cwd: absolutePath, stdio: ['pipe', 'pipe', 'ignore'] }).toString();
+      originalContent = gitRead(absolutePath, ['show', `HEAD:${file}`]);
     } catch {
       console.warn(`Warning: Could not get HEAD content for ${file}. Assuming empty.`);
     }
 
-    const fileDiff = execSync(`git diff HEAD -- "${file}"`, { cwd: absolutePath }).toString();
+    // Snapshot the edited file alongside its diff, to detect edits made while the LLM runs
+    const editedContent = fs.existsSync(fullFilePath) ? fs.readFileSync(fullFilePath, 'utf8') : null;
+    const fileDiff = gitRead(absolutePath, ['diff', 'HEAD', '--', file]);
     if (!fileDiff.trim()) continue;
-
-    overridesList.push({
-      file,
-      diff: fileDiff,
-    });
 
     // 3. Re-create the edited document using the LLM with logical-apply prompt
     console.log(`Re-creating manually edited document via LLM: ${file}`);
@@ -154,9 +153,20 @@ export async function overridesWiki(
       continue;
     }
 
+    // Never clobber edits made after the diff was taken; the newer edit is picked up next run
+    const currentContent = fs.existsSync(fullFilePath) ? fs.readFileSync(fullFilePath, 'utf8') : null;
+    if (currentContent !== editedContent) {
+      console.warn(`Skipping ${file}: it changed while being re-created. It will be processed on the next run.`);
+      continue;
+    }
+
     // Write recreated content back to disk
-    const fullFilePath = path.join(absolutePath, file);
     fs.writeFileSync(fullFilePath, recreatedContent, 'utf8');
+    // Record only applied overrides, so failed or skipped attempts don't create snapshots
+    overridesList.push({
+      file,
+      diff: fileDiff,
+    });
 
     // 3.1 Check if frontmatter is changed and update concerned collection entities
     const originalFm = parseFrontmatterFromString(originalContent);
