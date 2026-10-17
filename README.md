@@ -492,6 +492,35 @@ When running Open Notebook in Docker/Colima alongside local inference on macOS:
 > To enable **AI-generated podcasts** and voice interactions using oMLX, configure your local oMLX endpoint under the **OpenAI** provider preset in Open Notebook (*Settings > Models & Credentials*) with Base URL `http://host.docker.internal:8000/v1`. This unlocks all 4 capability slots (Chat, Embedding, STT Whisper, and TTS Kokoro) simultaneously.
 
 
+## 🪝 Event Hooks (Webhooks & Scripts)
+
+Register URLs or local scripts in `config/config.yml` to receive a JSON event whenever the wiki changes. Use them for chat notifications, CI triggers, search re-indexing, or your own post-processing. Hooks only observe: a failing hook is logged and never aborts a run.
+
+```yaml
+hooks:
+  endpoints:
+    - name: notify
+      url: "https://hooks.example.com/mycelium"   # signed POST, retried on 5xx
+      events: ["run.*", "git.pr.created"]
+      secret_env: MM_HOOK_SECRET
+    - name: reindex
+      script: "./scripts/on-wiki-change.sh"       # event JSON on stdin
+      events: ["summary.*", "entity.*", "page.deleted"]
+```
+
+There are about 35 events, covering:
+- run start, end and failure, with every changed page
+- summaries and entity cards
+- manual-edit overrides
+- resync cleanup
+- overviews
+- git commits and PRs
+- site publishing and Open Notebook pushes
+- contradictions
+- watch mode
+
+Check your setup with `mm hooks list` and `mm hooks test`. See the [**Event Hooks guide**](docs/hooks.md) for configuration, delivery semantics, the full event catalog and recipes.
+
 ## 💡 Best Practices
 
 For the most efficient and robust workflow, follow these best practices when managing your wiki vault:
@@ -512,6 +541,7 @@ For in-depth guides, layout maps, scripting specifications, and references, see 
 *   [**Custom Overviews & Sandbox Scripting**](docs/overviews.md): Writing custom script plugins inside VM contexts to build reports, directories, and visual charts.
 *   [**Pipeline Architecture & Repository Layout**](docs/architecture.md): A guide to the compiler pipeline stages, directory layouts, runtimes, and testing environment.
 *   [**MCP & RAG Search Server**](docs/mcp.md): Connecting external AI clients (like Cursor, Claude Desktop, or OpenCode) to query your wiki semantically.
+*   [**Event Hooks (Webhooks & Scripts)**](docs/hooks.md): Notifying URLs and local scripts about wiki changes: configuration, signed delivery, event envelope, and the full event catalog.
 
 ---
 

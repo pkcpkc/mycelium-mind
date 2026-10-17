@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Event hooks**: register URLs (signed `POST` with retries) or local scripts (event JSON on stdin) under `hooks:` in `config/config.yml` to get notified about wiki changes. About 35 events cover the run lifecycle, ingestion (assets, summaries, entities), overrides, resync cleanup, overviews and indexes, git (commits, branches, PRs, rollbacks), publishing, Open Notebook pushes, contradictions and watch mode. Each endpoint subscribes with event globs. Hooks are notify-only and never abort a run.
+- `mm hooks list` / `mm hooks test`, plus a global `--no-hooks` flag (and `MM_HOOKS=off`).
 - **`mm watch`**: Watch mode that keeps a vault processed continuously. Inbox drops are batched into `sync` runs, manual `wiki/` edits are debounced and re-created via `overrides`, and results are pushed incrementally to Open Notebook when it is reachable. A startup sweep catches up on offline edits and pending inbox files. Loop prevention is git-based: engine writes are committed to the current branch, and files whose re-creation fails are only retried after a new edit.
 - `syncWiki` / `overridesWiki` accept a `commit` option to commit on the current branch without creating a PR.
 

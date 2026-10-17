@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { withRun, emitEvent, toVaultPath } from '../core/hooks.js';
 
 /**
  * Finds all markdown files recursively in a directory.
@@ -64,6 +65,10 @@ export function extractContradictions(content: string): string | null {
  */
 export async function contradictionsWiki(wikiPath: string): Promise<void> {
   const absolutePath = path.resolve(wikiPath);
+  return withRun(absolutePath, 'contradictions', {}, () => runContradictions(absolutePath));
+}
+
+async function runContradictions(absolutePath: string): Promise<void> {
   const wikiDir = path.join(absolutePath, 'wiki');
 
   if (!fs.existsSync(wikiDir)) {
@@ -73,6 +78,7 @@ export async function contradictionsWiki(wikiPath: string): Promise<void> {
 
   const files = findMarkdownFiles(wikiDir);
   let foundCount = 0;
+  const documents: { path: string; excerpt: string }[] = [];
 
   console.log(`Scanning wiki pages for contradictions...\n`);
 
@@ -81,6 +87,7 @@ export async function contradictionsWiki(wikiPath: string): Promise<void> {
     const contradictions = extractContradictions(content);
     if (contradictions) {
       foundCount++;
+      documents.push({ path: toVaultPath(filePath), excerpt: contradictions.slice(0, 1000) });
       const relativePath = path.relative(absolutePath, filePath);
       console.log(`Document: ${relativePath}`);
       console.log('--------------------------------------------------');
@@ -92,6 +99,7 @@ export async function contradictionsWiki(wikiPath: string): Promise<void> {
   if (foundCount === 0) {
     console.log('No contradictions found in the wiki folder.');
   } else {
+    emitEvent('contradictions.found', { count: foundCount, documents });
     console.log(`Found ${foundCount} document(s) with contradictions.`);
     console.log(`Please make the required edits manually, and preserve your changes by running:`);
     console.log(`  mm overrides [wiki-path]`);

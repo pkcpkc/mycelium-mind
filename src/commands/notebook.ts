@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { getVaultDir } from '../utils/fs-utils.js';
 import { CliFlags } from '../core/types.js';
+import { withRun, emitEvent } from '../core/hooks.js';
 import { OpenNotebookClient } from '../utils/open-notebook-client.js';
 import {
   type NotebookConfig,
@@ -70,6 +71,17 @@ export async function pushWikiToNotebook(
   wikiPath: string,
   flags: CliFlags
 ): Promise<void> {
+  const options = { force: !!flags.force, prune: !!flags.prune, dry_run: !!flags.dryRun, filter: flags.filter ?? null };
+  return withRun(getVaultDir(wikiPath), 'notebook.push', options, async (run) => {
+    run.setStage('notebook');
+    await runNotebookPush(wikiPath, flags);
+  });
+}
+
+async function runNotebookPush(
+  wikiPath: string,
+  flags: CliFlags
+): Promise<void> {
   const vaultRoot = getVaultDir(wikiPath);
   const vaultConfig = loadNotebookConfig(vaultRoot);
 
@@ -111,7 +123,19 @@ export async function pushWikiToNotebook(
   console.log(`  • To Update: ${plan.toUpdate.length}`);
   console.log(`  • Orphaned:  ${plan.toPrune.length} ${prune ? '(will prune)' : '(ignored, pass --prune to delete)'}`);
 
+  const pushedEvent = () => emitEvent('notebook.pushed', {
+    notebook: { id: targetNotebook.id, name: targetNotebook.name, url: baseUrl },
+    added: plan.toAdd.map((item) => item.relPath),
+    updated: plan.toUpdate.map((item) => item.relPath),
+    pruned: prune ? plan.toPrune.map((item) => item.relPath) : [],
+    orphaned_count: plan.toPrune.length,
+    unchanged_count: plan.unchanged.length,
+    dry_run: dryRun,
+    filter,
+  });
+
   if (dryRun) {
+    pushedEvent();
     console.log(`\n[DRY RUN] No changes were made.`);
     if (plan.toAdd.length > 0) {
       console.log(`\nFiles to add:`);
@@ -130,6 +154,7 @@ export async function pushWikiToNotebook(
 
   await executeSyncMutations(client, targetNotebook.id, plan, vaultRoot, { prune, concurrency });
   console.log(`\n✓ Sync completed successfully!`);
+  pushedEvent();
 }
 
 /**

@@ -1,9 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import { execFileSync } from 'child_process';
 import { callOcrModel, callSttModel } from '../utils/openai-api.js';
 import { config } from '../utils/config.js';
 import { ExtractedAssetContent } from './types.js';
+import { emitEvent, toVaultPath } from './hooks.js';
 
 export const AUDIO_EXTENSIONS = ['.mp3', '.wav', '.m4a', '.ogg', '.flac', '.aac', '.opus', '.webm', '.wma'];
 
@@ -68,6 +70,7 @@ export async function extractAsset(
   let rawTextContent = '';
   let companionMetadataContent = '';
   const referencedAssets: string[] = [];
+  let extractor = 'text';
 
   if (isMd || ext === '.txt') {
     rawTextContent = fs.readFileSync(filePath, 'utf8');
@@ -87,6 +90,7 @@ export async function extractAsset(
 
     let extractedText = '';
     if (['.png', '.jpg', '.jpeg'].includes(ext)) {
+      extractor = 'ocr';
       try {
         extractedText = await ocrImage(filePath);
       } catch (e: any) {
@@ -94,9 +98,11 @@ export async function extractAsset(
         extractedText = `[OCR failed for image ${fileName}]`;
       }
     } else if (ext === '.pdf') {
+      extractor = 'pdf-ocr';
       const tempPdfDir = path.join(destDirs.absoluteWikiRoot, 'inbox', `temp-pdf-${baseName}`);
       extractedText = await processPdf(filePath, tempPdfDir);
     } else if (AUDIO_EXTENSIONS.includes(ext)) {
+      extractor = 'stt';
       try {
         console.log(`Transcribing audio file: ${fileName} using STT model (${config.sttModelName})...`);
         extractedText = await transcribeAudio(filePath);
@@ -105,6 +111,7 @@ export async function extractAsset(
         extractedText = `[Transcription failed for audio ${fileName}]`;
       }
     } else {
+      extractor = 'placeholder';
       extractedText = `[Audio/Binary transcription placeholder for ${fileName}]`;
     }
 
@@ -125,6 +132,17 @@ export async function extractAsset(
       referencedAssets.push(`wiki/assets/${destDirs.dateToday}/sources/${companionFileName}`);
     }
   }
+
+  const fileBuffer = fs.readFileSync(filePath);
+  emitEvent('asset.archived', {
+    inbox_file: toVaultPath(filePath),
+    extension: ext,
+    size_bytes: fileBuffer.length,
+    sha256: crypto.createHash('sha256').update(fileBuffer).digest('hex'),
+    extractor,
+    companion_file: companionMdPath && !isMd ? toVaultPath(companionMdPath) : null,
+    archived: referencedAssets,
+  });
 
   return {
     rawText: rawTextContent,

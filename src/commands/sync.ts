@@ -15,17 +15,40 @@ import {
   loadCollectionSchemaTemplates,
   filterCompanionFiles,
   compileEntitiesFromSummaries,
-  printCompilerStats
+  printCompilerStats,
+  emitSummaryEvent
 } from '../core/compiler-engine.js';
+import { withRun, emitEvent, pageExisted, toVaultPath, RunHandle } from '../core/hooks.js';
 import { CompilerStats, SummaryFrontmatter } from '../core/types.js';
 import { asyncPool } from '../utils/async-pool.js';
 import { loadIngestionSettings } from '../utils/config.js';
 import { isNonRecoverableError, preflightModelCheck } from '../utils/openai-api.js';
 
+type SyncOptions = { pr?: boolean; verbose?: boolean; commit?: boolean };
+
 /**
  * Syncs the inbox folder with the wiki database.
  */
-export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbose?: boolean; commit?: boolean }): Promise<void> {
+export async function syncWiki(wikiPath: string, options?: SyncOptions): Promise<void> {
+  const absolutePath = path.resolve(wikiPath);
+  const inboxDir = path.join(absolutePath, 'inbox');
+  return withRun(
+    absolutePath,
+    'sync',
+    { pr: options?.pr !== false, commit: !!options?.commit, verbose: !!options?.verbose },
+    (run) => runSync(absolutePath, run, options),
+    { startData: () => ({ inbox_files: listInboxFiles(inboxDir).map(f => toVaultPath(path.join(inboxDir, f))) }) }
+  );
+}
+
+function listInboxFiles(inboxDir: string): string[] {
+  if (!fs.existsSync(inboxDir)) return [];
+  return fs.readdirSync(inboxDir).filter(file => {
+    return !file.startsWith('.') && fs.statSync(path.join(inboxDir, file)).isFile();
+  });
+}
+
+async function runSync(wikiPath: string, run: RunHandle, options?: SyncOptions): Promise<void> {
   const pr = options?.pr !== false;
   // `commit` keeps git commits on the current branch without opening a PR (used by watch mode)
   const commits = pr || !!options?.commit;
@@ -42,19 +65,20 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
   const inboxDir = path.join(absolutePath, 'inbox');
   if (!fs.existsSync(inboxDir)) {
     console.log('Inbox directory does not exist. Skipping sync.');
+    run.skip('inbox_missing');
     return;
   }
 
-  const inboxFiles = fs.readdirSync(inboxDir).filter(file => {
-    return !file.startsWith('.') && fs.statSync(path.join(inboxDir, file)).isFile();
-  });
+  const inboxFiles = listInboxFiles(inboxDir);
 
   if (inboxFiles.length === 0) {
     console.log('Inbox is empty. Nothing to sync.');
+    run.skip('inbox_empty');
     return;
   }
 
   // Preflight check model endpoint before touching git branches or files
+  run.setStage('preflight');
   await preflightModelCheck();
 
   const { concurrency, inboxChunkSize, maxSummariesPerEntity } = loadIngestionSettings(absolutePath);
@@ -87,6 +111,7 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
   const totalSummaries = filesToProcess.length;
   if (totalSummaries === 0) {
     console.log('No inbox files to process. Skipping sync.');
+    run.skip('inbox_empty');
     return;
   }
 
@@ -100,6 +125,7 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
     indexesSuccess: 0,
     indexesFailed: 0,
   };
+  run.setResult({ stats });
 
   const { summaryPrompt, activeSchemas } = loadSummaryPromptTemplate(absolutePath);
   const schemaTemplates = loadCollectionSchemaTemplates(absolutePath, activeSchemas);
@@ -132,6 +158,7 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
     }[] = [];
 
     // 1. Synthesize summaries for the chunk with bounded concurrency
+    run.setStage('summaries');
     await asyncPool(concurrency, chunkFiles, async (file) => {
       const ext = path.extname(file).toLowerCase();
       const baseName = path.basename(file, ext);
@@ -150,7 +177,7 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
       );
 
       try {
-        const { frontmatter, fullMarkdown } = await synthesizeSummary(
+        const { frontmatter, fullMarkdown, frontmatterRepaired } = await synthesizeSummary(
           extracted.rawText,
           extracted.companionMetadata,
           baseName,
@@ -160,10 +187,20 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
 
         const summaryFilename = toSafeFilename(frontmatter.title);
         const summaryPath = path.join(wikiDir, 'summaries', summaryFilename);
+        const existed = pageExisted(summaryPath);
         fs.writeFileSync(summaryPath, fullMarkdown, 'utf8');
         await queuedGitCommit(summaryPath, `Added summary for ${frontmatter.title}`);
 
         stats.summariesSuccess++;
+        emitSummaryEvent({
+          summaryPath,
+          frontmatter,
+          existed,
+          activeSchemas,
+          schemaTemplates,
+          frontmatterRepaired,
+          durationMs: Date.now() - summaryStartTime,
+        });
         const currentStep = ++completedSummariesCount;
         const duration = ((Date.now() - summaryStartTime) / 1000).toFixed(1);
         console.log(`[Step ${currentStep}] [Summaries ${currentStep}/${totalSummaries}] ${frontmatter.title} done in ${duration}s`);
@@ -179,11 +216,13 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
         }
         console.error(`LLM synthesis failed for ${file}:`, e.message);
         stats.summariesFailed++;
+        emitEvent('summary.failed', { inbox_file: toVaultPath(filePath), error: e.message });
       }
     });
 
     // 2. Extract, deduplicate, and compile entity pages for this chunk
     if (chunkProcessedSummaries.length > 0) {
+      run.setStage('entities');
       await compileEntitiesFromSummaries({
         summaries: chunkProcessedSummaries,
         activeSchemas,
@@ -202,14 +241,18 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
       });
 
       // Transactional cleanup: only unlink inbox files after both summary AND entity compilations for the chunk have finished
+      const consumed: string[] = [];
       for (const item of chunkProcessedSummaries) {
         if (fs.existsSync(item.originalInboxFile)) {
           fs.unlinkSync(item.originalInboxFile);
+          consumed.push(toVaultPath(item.originalInboxFile));
         }
         if (item.companionInboxFile && fs.existsSync(item.companionInboxFile)) {
           fs.unlinkSync(item.companionInboxFile);
+          consumed.push(toVaultPath(item.companionInboxFile));
         }
       }
+      emitEvent('inbox.consumed', { files: consumed });
     }
 
     // Await any remaining git commits for this chunk
@@ -221,11 +264,13 @@ export async function syncWiki(wikiPath: string, options?: { pr?: boolean; verbo
   }
 
   // 3. Compile Overviews and Rebuild Indexes
+  run.setStage('overviews');
   await overviewsWiki(absolutePath, undefined, { verbose: options?.verbose });
   enableGitCommits(commits);
 
   printCompilerStats(stats, activeSchemas, totalSummaries, 'Sync');
 
+  run.setStage('git');
   if (commits) {
     // Stage only what this run wrote (plus engine-owned assets), so manual
     // edits made while sync was running stay dirty for `overrides` to pick up.

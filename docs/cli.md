@@ -5,6 +5,7 @@ The `mycelium-mind` CLI tool can be executed using its binary alias `mm` or thro
 - **`--help` / `-h`** is available on every command and subcommand.
 - **`--version` / `-V`** prints the current package version.
 - Options are scoped to their respective command — run `mm <command> --help` for details.
+- **`--no-hooks`** is a global flag that suppresses [event hook](hooks.md) deliveries for a single invocation (e.g. `mm --no-hooks sync`). `MM_HOOKS=off` does the same via the environment.
 
 All commands that require a `<wiki-path>` parameter (e.g., `sync`, `resync`, `publish`, `check-plugins`) have it configured as **optional** and default to `.` (the current working directory) if omitted.
 
@@ -156,6 +157,8 @@ Results are committed to the **current branch** (no branch or PR is created). Ed
 
 Runs are serialized: events arriving during a run are queued and handled once it finishes, with pending edits processed before inbox syncs.
 
+If [event hooks](hooks.md) are configured, watch emits `watch.started` / `watch.stopped`, `watch.inbox.detected`, `watch.edit.detected` and `notebook.status.changed`. Each sync, overrides or push it triggers is reported as its own run with `trigger: "watch"`. Restart watch after you edit the `hooks:` config.
+
 **Options**:
 | Flag | Description |
 | :--- | :--- |
@@ -183,6 +186,34 @@ Scans compiled wiki pages for internal contradictions, inconsistencies, or confl
 ```bash
 # Scan the wiki for contradictions
 mm contradictions
+```
+
+---
+
+### `hooks <subcommand> [wiki-path] [options]`
+
+Inspects and tests the [event hooks](hooks.md) configured under `hooks:` in `config/config.yml`. Hooks deliver JSON events about wiki changes to URLs (signed `POST`) or local scripts (event on stdin). Delivery itself happens automatically during every command, so `mm hooks` is only for checking your setup.
+
+| Subcommand | Description |
+| :--- | :--- |
+| `list [wiki-path]` | *(default)* Lists every endpoint with its target, event subscriptions, and whether its signing secret env var is set. Query strings in URLs are masked. |
+| `test [wiki-path]` | Sends a test event to all endpoints (or one) and prints the result and latency per endpoint. Exits with code `1` if any delivery fails. Delivers even when hooks are disabled, so you can check an endpoint before you enable it. |
+
+**`test` options**:
+| Flag | Description |
+| :--- | :--- |
+| `--name <endpoint>` | Only test the endpoint with this `name`. |
+| `--event <type>` | Event type to send (default: `hook.test`). The payload is a sample, not real data. |
+
+```bash
+# Show configured hooks for the current vault
+mm hooks
+
+# Send hook.test to every endpoint
+mm hooks test
+
+# Check that the 'notify' endpoint accepts a run.completed event
+mm hooks test ~/vault --name notify --event run.completed
 ```
 
 ---
@@ -445,6 +476,10 @@ Each wiki vault has a configuration file located at `config/config.yml` that gov
 
 See the [`rag` command reference](#rag-wiki-path-options) above for details on configuring RAG settings (`rag.transport`, `rag.host`, `rag.port`, `rag.rate_limiting`, `rag.prometheus`) in `config.yml`.
 
+### Hooks Settings
+
+The `hooks:` block registers URLs and scripts that receive wiki change events. See the [Event Hooks guide](hooks.md) for every option, the delivery rules and the full event catalog.
+
 ### Full `config/config.yml` Reference
 
 ```yaml
@@ -500,4 +535,21 @@ notebook:
     summaries: true               # Sync document summaries (wiki/summaries/)
     overviews: true               # Sync overview index pages (wiki/overviews/)
   concurrency: 1                  # Concurrency limit (1 recommended)
+
+# Event hooks: notify URLs / scripts about wiki changes (see docs/hooks.md)
+hooks:
+  enabled: true                   # Master switch (MM_HOOKS=off or --no-hooks also disable)
+  timeout_ms: 10000               # Per delivery attempt
+  retries: 3                      # URL hooks only (5xx / 429 / network errors)
+  retry_backoff_ms: 1000          # First retry delay, doubled per attempt
+  endpoints:
+    - name: notify
+      url: "https://hooks.example.com/mycelium"
+      events: ["run.*", "git.pr.created"]   # Globs, default ["*"]
+      secret_env: MM_HOOK_SECRET            # Signs body → X-MM-Signature
+      headers:
+        Authorization: "Bearer ${env:MM_HOOK_TOKEN}"
+    - name: reindex
+      script: "./scripts/on-wiki-change.sh" # Relative to vault root; event JSON on stdin
+      events: ["summary.*", "entity.*", "page.deleted"]
 ```
