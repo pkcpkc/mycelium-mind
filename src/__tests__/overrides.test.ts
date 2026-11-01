@@ -6,6 +6,13 @@ import { initWiki } from '../commands/init.js';
 import { resyncWiki } from '../commands/resync.js';
 import { overridesWiki } from '../commands/overrides.js';
 import { callAgenticModel } from '../utils/openai-api.js';
+import { setHookSink, HookEvent } from '../core/hooks.js';
+
+function captureEvents(): HookEvent[] {
+  const events: HookEvent[] = [];
+  setHookSink((e) => events.push(e));
+  return events;
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -99,6 +106,7 @@ describe('Wiki Overrides and Chronological Replay Tests', () => {
   afterEach(() => {
     fs.rmSync(TEST_ROOT, { recursive: true, force: true });
     vi.clearAllMocks();
+    setHookSink(null);
   });
 
   it('should identify manual edits, write overrides.json, and recreate the document via LLM', async () => {
@@ -121,7 +129,19 @@ Pioneering AI engineer.
 `, 'utf8');
 
     // Run overrides
+    const events = captureEvents();
     await overridesWiki(wikiPath);
+
+    const detected = events.find(e => e.type === 'override.detected')!;
+    expect(detected.data.files).toEqual(['wiki/summaries/Andrej Karpathy.md']);
+    const applied = events.find(e => e.type === 'override.applied')!;
+    expect(applied.data.path).toBe('wiki/summaries/Andrej Karpathy.md');
+    expect(applied.data.additions).toBeGreaterThan(0);
+    expect(applied.data.replay).toBe(false);
+    expect(applied.data.snapshot).toMatch(/^wiki\/assets\/overrides\/\d{8}-\d{6}\/overrides\.json$/);
+    const completed = events.find(e => e.type === 'run.completed')!;
+    expect(completed.data.applied).toBe(1);
+    expect(completed.data.changes.updated).toContain('wiki/summaries/Andrej Karpathy.md');
 
     // 2. Verify overrides JSON was written to assets/overrides/YYYYMMDD-HHMMSS
     const overridesAssetsDir = path.join(wikiPath, 'wiki', 'assets', 'overrides');
@@ -157,7 +177,9 @@ Pioneering AI engineer.
     });
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
+    const events = captureEvents();
     await overridesWiki(wikiPath);
+    expect(events.find(e => e.type === 'override.skipped')?.data.reason).toBe('changed_during_recreate');
 
     expect(fs.readFileSync(summaryFile, 'utf8')).toBe('# Andrej Karpathy\nsecond edit\n');
     expect(warnSpy.mock.calls.flat().join('\n')).toContain('changed while being re-created');
@@ -175,7 +197,9 @@ Pioneering AI engineer.
     vi.mocked(callAgenticModel).mockRejectedValueOnce(new Error('Connection error.'));
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
+    const events = captureEvents();
     await overridesWiki(wikiPath);
+    expect(events.find(e => e.type === 'override.skipped')?.data.reason).toBe('llm_failed');
 
     expect(fs.readFileSync(summaryFile, 'utf8')).toBe('# Andrej Karpathy\nedit\n');
     expect(fs.existsSync(path.join(wikiPath, 'wiki', 'assets', 'overrides'))).toBe(false);

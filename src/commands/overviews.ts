@@ -9,12 +9,26 @@ import {
 import { buildSessionGraph, runOverviewScript } from '../utils/overview-runner.js';
 import { publishWiki } from './publish.js';
 import { gitCreateBranch, gitCreatePR, enableGitCommits } from '../utils/git.js';
+import { withRun, emitEvent, toVaultPath } from '../core/hooks.js';
 
 /**
  * Re-compiles the overview markdown files and rebuilds folder/root indexes.
  * If targetHtmlPath is provided, compiles the static HTML site using MkDocs at the end.
  */
 export async function overviewsWiki(
+  wikiPath: string,
+  targetHtmlPath?: string,
+  options?: { pr?: boolean; verbose?: boolean }
+): Promise<void> {
+  return withRun(
+    path.resolve(wikiPath),
+    'overviews',
+    { pr: !!options?.pr, target_html: targetHtmlPath ?? null },
+    () => runOverviews(wikiPath, targetHtmlPath, options)
+  );
+}
+
+async function runOverviews(
   wikiPath: string,
   targetHtmlPath?: string,
   options?: { pr?: boolean; verbose?: boolean }
@@ -52,6 +66,7 @@ export async function overviewsWiki(
       await runOverviewScript(scriptPath, wikiDir, sessionGraph);
     } catch (e: any) {
       console.error(`Overview script ${script} failed:`, e.message);
+      emitEvent('overview.failed', { script, path: toVaultPath(scriptPath), error: e.message });
     }
   }
 
@@ -64,6 +79,7 @@ export async function overviewsWiki(
   
   const totalIndexes = activeSchemas.length + 4;
   let indexStepIdx = 0;
+  const indexResults: { name: string; ok: boolean; duration_ms: number; error?: string }[] = [];
 
   const indexSteps = [
     { name: 'summaries', action: () => rebuildFolderIndex(wikiDir, 'summaries', 'Summaries') },
@@ -74,16 +90,19 @@ export async function overviewsWiki(
   ];
 
   for (const step of indexSteps) {
+    const indexStartTime = Date.now();
     try {
       indexStepIdx++;
       console.log(`[Indexes ${indexStepIdx}/${totalIndexes}] Rebuilding index for: ${step.name}`);
-      const indexStartTime = Date.now();
       await step.action();
       console.log(`[Indexes ${indexStepIdx}/${totalIndexes}] Done in ${((Date.now() - indexStartTime) / 1000).toFixed(1)}s`);
+      indexResults.push({ name: step.name, ok: true, duration_ms: Date.now() - indexStartTime });
     } catch (e: any) {
       console.error(`Failed to rebuild index for ${step.name}:`, e.message);
+      indexResults.push({ name: step.name, ok: false, duration_ms: Date.now() - indexStartTime, error: e.message });
     }
   }
+  emitEvent('indexes.rebuilt', { indexes: indexResults });
 
   // 3. Compile static site to HTML if targetHtmlPath is provided
   if (targetHtmlPath && targetHtmlPath.trim()) {

@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import YAML from 'yaml';
 import { readFrontmatter } from './fs-utils.js';
 import { gitCommit, trackEngineWrite } from './git.js';
+import { emitEvent, pageExisted, toVaultPath } from '../core/hooks.js';
 
 export interface EntityMetadata {
   name: string;
@@ -175,9 +176,17 @@ export async function runOverviewScript(
         };
 
         const content = `---\n${YAML.stringify(finalFrontmatter)}---\n${markdownBody}`;
+        const created = !pageExisted(targetPath);
         fs.writeFileSync(targetPath, content, 'utf8');
         trackEngineWrite(targetPath);
         gitCommit(targetPath, `Generated overview: ${pageName}`);
+        emitEvent('overview.generated', {
+          name: pageName,
+          path: toVaultPath(targetPath),
+          script: basename,
+          created,
+          frontmatter: { type: finalFrontmatter.type, title: frontmatter?.title ?? null, tags: frontmatter?.tags ?? [] },
+        });
         return true;
       } catch (e: any) {
         console.error(`Failed to write overview page ${pageName}:`, e.message);

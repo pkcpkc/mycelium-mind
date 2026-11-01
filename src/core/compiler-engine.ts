@@ -10,6 +10,8 @@ import {
 import { parseSchema, loadAndInjectSchemaProperties } from '../utils/schema-parser.js';
 import { asyncPool } from '../utils/async-pool.js';
 import { trackEngineWrite } from '../utils/git.js';
+import { emitEvent, pageExisted, toVaultPath } from './hooks.js';
+import { parseFrontmatterFromString } from '../utils/fs-utils.js';
 import { CompilerStats, SummaryFrontmatter } from './types.js';
 
 export interface SchemaTemplateInfo {
@@ -143,7 +145,7 @@ export async function synthesizeSummary(
   baseName: string,
   summaryPrompt: string,
   referencedAssets: string[]
-): Promise<{ frontmatter: SummaryFrontmatter; bodyContent: string; fullMarkdown: string }> {
+): Promise<{ frontmatter: SummaryFrontmatter; bodyContent: string; fullMarkdown: string; frontmatterRepaired: boolean }> {
   const combinedInput = companionMetadata
     ? `Companion Metadata Context:\n${companionMetadata}\n\nSource Content:\n${rawText}`
     : rawText;
@@ -158,6 +160,7 @@ export async function synthesizeSummary(
   let frontmatter: any = {};
   let bodyContent = summaryText;
   let frontmatterStr = '';
+  let frontmatterRepaired = false;
 
   const bodySplitIdx = summaryText.search(/\n#[ \t]/);
   if (bodySplitIdx !== -1) {
@@ -178,6 +181,7 @@ export async function synthesizeSummary(
     } catch (e: any) {
       console.warn(`[Frontmatter Syntax Error] Failed to parse frontmatter: ${e.message}`);
       frontmatter = await repairFrontmatterWithLLM(cleanFmStr, e.message);
+      frontmatterRepaired = true;
     }
   }
 
@@ -207,6 +211,7 @@ export async function synthesizeSummary(
     frontmatter: frontmatter as SummaryFrontmatter,
     bodyContent,
     fullMarkdown,
+    frontmatterRepaired,
   };
 }
 
@@ -267,16 +272,15 @@ export interface EntityCompileTask {
 }
 
 /**
- * Extracts entity compile tasks from a summary frontmatter and collection schemas.
+ * Lists the entity names a summary frontmatter references, per collection schema.
  */
-export function extractEntityTasksForSummary(
-  summary: { summaryPath: string; frontmatter: any },
+export function collectEntityNames(
+  frontmatter: any,
   activeSchemas: string[],
   schemaTemplates: Record<string, SchemaTemplateInfo | null>
-): EntityCompileTask[] {
-  const tasks: EntityCompileTask[] = [];
-  const summaryContent = fs.readFileSync(summary.summaryPath, 'utf8');
-  const entities = summary.frontmatter;
+): Record<string, string[]> {
+  const result: Record<string, string[]> = {};
+  const entities = frontmatter || {};
 
   for (const schemaName of activeSchemas) {
     const template = schemaTemplates[schemaName];
@@ -303,18 +307,86 @@ export function extractEntityTasksForSummary(
         }
 
         if (entityName) {
-          tasks.push({
-            schemaName,
-            entityName,
-            summaryContent,
-            summaryPath: summary.summaryPath,
-          });
+          (result[schemaName] ||= []).push(entityName);
         }
       }
     }
   }
 
+  return result;
+}
+
+/**
+ * Extracts entity compile tasks from a summary frontmatter and collection schemas.
+ */
+export function extractEntityTasksForSummary(
+  summary: { summaryPath: string; frontmatter: any },
+  activeSchemas: string[],
+  schemaTemplates: Record<string, SchemaTemplateInfo | null>
+): EntityCompileTask[] {
+  const summaryContent = fs.readFileSync(summary.summaryPath, 'utf8');
+  const names = collectEntityNames(summary.frontmatter, activeSchemas, schemaTemplates);
+  const tasks: EntityCompileTask[] = [];
+  for (const [schemaName, entityNames] of Object.entries(names)) {
+    for (const entityName of entityNames) {
+      tasks.push({ schemaName, entityName, summaryContent, summaryPath: summary.summaryPath });
+    }
+  }
   return tasks;
+}
+
+/**
+ * Emits summary.created / summary.updated for a summary page just written.
+ */
+export function emitSummaryEvent(options: {
+  summaryPath: string;
+  frontmatter: SummaryFrontmatter;
+  existed: boolean;
+  activeSchemas: string[];
+  schemaTemplates: Record<string, SchemaTemplateInfo | null>;
+  frontmatterRepaired?: boolean;
+  durationMs: number;
+}): void {
+  const { summaryPath, frontmatter, existed, activeSchemas, schemaTemplates } = options;
+  emitEvent(existed ? 'summary.updated' : 'summary.created', {
+    path: toVaultPath(summaryPath),
+    title: frontmatter.title,
+    status: frontmatter.status ?? null,
+    tags: frontmatter.tags ?? [],
+    sources: frontmatter.sources ?? [],
+    assets: frontmatter.assets ?? [],
+    generated: frontmatter.generated ?? null,
+    entities: collectEntityNames(frontmatter, activeSchemas, schemaTemplates),
+    frontmatter_repaired: !!options.frontmatterRepaired,
+    duration_ms: options.durationMs,
+  });
+}
+
+/**
+ * Emits entity.created / entity.updated for a compiled entity card.
+ */
+export function emitEntityEvent(options: {
+  schemaName: string;
+  entityName: string;
+  result: { entityPath: string; compiledText: string; created: boolean; batches: number };
+  sourceSummaries: string[];
+  durationMs: number;
+}): void {
+  const { schemaName, entityName, result } = options;
+  const fm = parseFrontmatterFromString(result.compiledText) || {};
+  emitEvent(result.created ? 'entity.created' : 'entity.updated', {
+    collection: schemaName,
+    name: entityName,
+    path: toVaultPath(result.entityPath),
+    title: fm.title || fm.name || entityName,
+    type: fm.type ?? null,
+    tags: Array.isArray(fm.tags) ? fm.tags : (fm.tags ? [fm.tags] : []),
+    status: fm.status ?? null,
+    source_summaries: options.sourceSummaries.map(toVaultPath),
+    sources_count: options.sourceSummaries.length,
+    llm_batches: result.batches,
+    duration_ms: options.durationMs,
+  });
 }
 
 export interface SummarySourceContext {
@@ -374,7 +446,7 @@ export async function compileEntityCard(options: {
   maxSummariesPerBatch?: number;
   template: SchemaTemplateInfo;
   verbose?: boolean;
-}): Promise<{ entityPath: string; compiledText: string }> {
+}): Promise<{ entityPath: string; compiledText: string; created: boolean; batches: number }> {
   const { absoluteWikiRoot, schemaName, entityName, summaryContent, sources, maxSummariesPerBatch = 5, template, verbose } = options;
   const wikiDir = path.join(absoluteWikiRoot, 'wiki');
   const collectionFolder = path.join(wikiDir, 'collections', schemaName);
@@ -382,6 +454,7 @@ export async function compileEntityCard(options: {
 
   const entityFilename = toSafeFilename(entityName);
   const entityPath = path.join(collectionFolder, entityFilename);
+  const created = !pageExisted(entityPath);
 
   // If sources array is provided and exceeds maxSummariesPerBatch, partition into sub-batches to process sequentially
   const sourceBatches: SummarySourceContext[][] = [];
@@ -446,7 +519,7 @@ Adhere strictly to the schema specification, link normalization rules, and targe
     trackEngineWrite(entityPath);
   }
 
-  return { entityPath, compiledText: finalCompiledText };
+  return { entityPath, compiledText: finalCompiledText, created, batches: sourceBatches.length };
 }
 
 /**
@@ -525,11 +598,12 @@ export async function compileEntitiesFromSummaries(options: BatchCompileEntities
 
     if (!template) {
       stats.entitiesFailed[schemaName]++;
+      emitEvent('entity.failed', { collection: schemaName, name: entityName, error: 'missing prompt/schema template' });
       return;
     }
 
     try {
-      const { entityPath } = await compileEntityCard({
+      const result = await compileEntityCard({
         absoluteWikiRoot,
         schemaName,
         entityName,
@@ -538,9 +612,17 @@ export async function compileEntitiesFromSummaries(options: BatchCompileEntities
         template,
         verbose,
       });
+      const { entityPath } = result;
 
       await queuedGitCommit(entityPath, `${commitPrefix} ${schemaName} entity card: ${entityName}`);
       stats.entitiesSuccess[schemaName]++;
+      emitEntityEvent({
+        schemaName,
+        entityName,
+        result,
+        sourceSummaries: sources.map(s => s.summaryPath),
+        durationMs: Date.now() - entityStartTime,
+      });
       const taskIdx = ++schemaTaskCounts[schemaName];
       const duration = ((Date.now() - entityStartTime) / 1000).toFixed(1);
       if (onEntityCompiled) {
@@ -552,6 +634,7 @@ export async function compileEntitiesFromSummaries(options: BatchCompileEntities
       }
       console.error(`Failed to compile entity ${entityName}:`, e.message);
       stats.entitiesFailed[schemaName]++;
+      emitEvent('entity.failed', { collection: schemaName, name: entityName, error: e.message });
     }
   });
 }

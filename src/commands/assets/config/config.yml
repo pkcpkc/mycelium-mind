@@ -45,3 +45,20 @@ notebook:
     summaries: true
     overviews: true
   concurrency: 1
+
+# Event hooks: POST JSON events to URLs or pipe them into local scripts when the wiki changes.
+# Hooks are notify-only; failures are logged and never abort a run. See README "Hooks".
+# hooks:
+#   enabled: true
+#   timeout_ms: 10000               # per delivery
+#   retries: 3                      # URL hooks only (5xx / 429 / network errors), exponential backoff
+#   endpoints:
+#     - name: notify
+#       url: "https://hooks.example.com/mycelium"
+#       events: ["run.*", "git.pr.created", "contradictions.found"]   # globs, default ["*"]
+#       secret_env: MM_HOOK_SECRET  # signs body → X-MM-Signature: sha256=<hmac>
+#       headers:
+#         Authorization: "Bearer ${env:MM_HOOK_TOKEN}"
+#     - name: reindex
+#       script: "./scripts/on-wiki-change.sh"   # relative to the vault root; event JSON on stdin
+#       events: ["summary.*", "entity.*", "page.deleted"]

@@ -12,6 +12,7 @@ import { WatchEngine } from '../core/watch-engine.js';
 import { OpenNotebookClient } from '../utils/open-notebook-client.js';
 import { CliFlags } from '../core/types.js';
 import { gitListModifiedMarkdown } from '../utils/git.js';
+import { withRun, emitEvent, flushHooks, toVaultPath, watchRunStats } from '../core/hooks.js';
 
 const HEALTH_TIMEOUT_MS = 1500;
 const INBOX_DEBOUNCE_MS = 2000;
@@ -66,6 +67,11 @@ function timestamp(): string {
  */
 export async function watchWiki(wikiPath: string, options: WatchOptions = {}): Promise<void> {
   const vaultRoot = path.resolve(wikiPath);
+  const runOptions = { debounce_ms: options.debounce ?? 1500, notebook_sync: options.notebookSync !== false };
+  return withRun(vaultRoot, 'watch', runOptions, () => runWatch(vaultRoot, options), { silent: true });
+}
+
+async function runWatch(vaultRoot: string, options: WatchOptions): Promise<void> {
   await initWiki(vaultRoot, { overwrite: false });
 
   const log = (message: string) => console.log(`[watch ${timestamp()}] ${message}`);
@@ -86,12 +92,30 @@ export async function watchWiki(wikiPath: string, options: WatchOptions = {}): P
   const apiKey = options.apiKey || vaultConfig.apiKey || vaultConfig.api_key || process.env.OPEN_NOTEBOOK_API_KEY;
   const client = new OpenNotebookClient({ baseUrl, apiKey });
 
+  // Last known Open Notebook health; status flips are reported to hooks
+  let notebookActive: boolean | null = null;
+  const updateNotebookStatus = (active: boolean) => {
+    if (notebookActive !== null && notebookActive !== active) {
+      emitEvent('notebook.status.changed', { url: baseUrl, status: active ? 'active' : 'unreachable' }, { scope: 'root' });
+    }
+    notebookActive = active;
+  };
+
   if (notebookEnabled) {
     const active = await client.checkHealth(HEALTH_TIMEOUT_MS);
+    updateNotebookStatus(active);
     log(`Open Notebook at ${baseUrl}: ${active ? 'Active' : 'Inactive (will retry before each push)'}`);
   } else {
     log('Open Notebook sync disabled');
   }
+
+  emitEvent('watch.started', {
+    debounce_ms: options.debounce ?? 1500,
+    git_available: gitAvailable,
+    notebook_sync: notebookEnabled,
+    notebook_url: notebookEnabled ? baseUrl : null,
+    notebook_active: notebookActive,
+  });
 
   const pushFlags: CliFlags = {
     pr: false,
@@ -109,7 +133,9 @@ export async function watchWiki(wikiPath: string, options: WatchOptions = {}): P
       runOverrides: () => overridesWiki(vaultRoot, { pr: false, commit: true, verbose: options.verbose }),
       pushToNotebook: async () => {
         if (!notebookEnabled) return;
-        if (!(await client.checkHealth(HEALTH_TIMEOUT_MS))) {
+        const active = await client.checkHealth(HEALTH_TIMEOUT_MS);
+        updateNotebookStatus(active);
+        if (!active) {
           log(`Open Notebook unreachable at ${baseUrl}; skipping push`);
           return;
         }
@@ -159,8 +185,14 @@ export async function watchWiki(wikiPath: string, options: WatchOptions = {}): P
     const kind = classifyWatchPath(vaultRoot, filePath);
     if (kind === 'inbox') {
       log(`Inbox: ${path.basename(filePath)}`);
+      let size: number | null = null;
+      try {
+        size = fs.statSync(filePath).size;
+      } catch {}
+      emitEvent('watch.inbox.detected', { file: toVaultPath(filePath), size_bytes: size }, { scope: 'root' });
       engine.onInboxEvent();
     } else if (kind === 'wiki' && gitAvailable) {
+      emitEvent('watch.edit.detected', { path: toVaultPath(filePath) }, { scope: 'root' });
       engine.onWikiChange(filePath);
     }
   };
@@ -175,6 +207,8 @@ export async function watchWiki(wikiPath: string, options: WatchOptions = {}): P
       log('Stopping — waiting for the current run to finish...');
       await watcher.close();
       await engine.stop();
+      emitEvent('watch.stopped', watchRunStats(), { scope: 'root' });
+      await flushHooks();
       resolve();
     };
     process.once('SIGINT', shutdown);

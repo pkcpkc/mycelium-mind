@@ -1,6 +1,7 @@
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { emitEvent, toVaultPath } from '../core/hooks.js';
 
 let commitsEnabled = false;
 
@@ -20,6 +21,30 @@ function runGit(args: string[], cwd: string, stdio: any = 'ignore'): string {
   const quotedArgs = args.map(a => `"${a.replace(/"/g, '\\"')}"`).join(' ');
   const res = childProcess.execSync(`git ${quotedArgs}`, { cwd, stdio });
   return res ? res.toString() : '';
+}
+
+/**
+ * Emits git.committed for the commit just created in `cwd`.
+ */
+function emitCommitted(cwd: string, message: string, files: string[]): void {
+  try {
+    const sha = runGit(['rev-parse', 'HEAD'], cwd, 'pipe').trim();
+    const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD'], cwd, 'pipe').trim();
+    emitEvent('git.committed', { sha, message, files, branch });
+  } catch {
+    // Hook metadata is best-effort; the commit itself already succeeded
+  }
+}
+
+/**
+ * Lists staged files as vault-relative paths.
+ */
+function stagedFiles(cwd: string): string[] {
+  const root = runGit(['rev-parse', '--show-toplevel'], cwd, 'pipe').trim();
+  return runGit(['diff', '--cached', '--name-only', '-z'], cwd, 'pipe')
+    .split('\0')
+    .filter(Boolean)
+    .map((f) => toVaultPath(path.join(root, f)));
 }
 
 /**
@@ -55,6 +80,7 @@ export function gitCommit(filePath: string, message: string): void {
     if (status) {
       runGit(['commit', '-m', message], fileDir, 'ignore');
       console.log(`Git Commit: "${message}"`);
+      emitCommitted(fileDir, message, [toVaultPath(absolutePath)]);
     }
   } catch (e: any) {
     console.error(`Failed to create git commit for ${filePath}:`, e.message);
@@ -108,10 +134,11 @@ export function gitCommitTracked(wikiPath: string, extraPathspecs: string[], mes
     for (let i = 0; i < removed.length; i += 100) {
       runGit(['rm', '--cached', '--ignore-unmatch', '-q', '--', ...removed.slice(i, i + 100)], absolutePath, 'ignore');
     }
-    const staged = runGit(['diff', '--cached', '--name-only'], absolutePath, 'pipe').trim();
-    if (staged) {
+    const staged = stagedFiles(absolutePath);
+    if (staged.length > 0) {
       runGit(['commit', '-m', message], absolutePath, 'ignore');
       console.log(`Git Commit: "${message}"`);
+      emitCommitted(absolutePath, message, staged);
     }
   } catch (e: any) {
     console.error(`Failed to create git commit for tracked engine writes:`, e.message);
@@ -149,10 +176,11 @@ export function gitCommitAll(wikiPath: string, pathspec: string, message: string
   try {
     const absolutePath = path.resolve(wikiPath);
     runGit(['add', '-A', '--', pathspec], absolutePath, 'ignore');
-    const staged = runGit(['diff', '--cached', '--name-only'], absolutePath, 'pipe').trim();
-    if (staged) {
+    const staged = stagedFiles(absolutePath);
+    if (staged.length > 0) {
       runGit(['commit', '-m', message], absolutePath, 'ignore');
       console.log(`Git Commit: "${message}"`);
+      emitCommitted(absolutePath, message, staged);
     }
   } catch (e: any) {
     console.error(`Failed to create git commit for ${pathspec}:`, e.message);
@@ -168,8 +196,10 @@ export function gitCreateBranch(wikiPath: string, branchName: string): void {
   }
   try {
     const absolutePath = path.resolve(wikiPath);
+    const baseBranch = gitGetCurrentBranch(absolutePath);
     runGit(['checkout', '-b', branchName], absolutePath, 'ignore');
     console.log(`Git Branch Created and checked out: "${branchName}"`);
+    emitEvent('git.branch.created', { branch: branchName, base_branch: baseBranch });
   } catch (e: any) {
     console.error(`Failed to create/checkout git branch ${branchName} in ${wikiPath}:`, e.message);
   }
@@ -189,25 +219,35 @@ export function gitCreatePR(wikiPath: string, branchName: string): void {
       runGit(['push', '-u', 'origin', branchName], absolutePath, 'inherit');
     } catch (e: any) {
       console.warn(`Failed to push branch to origin (is a remote configured?):`, e.message);
+      emitEvent('git.pr.failed', { branch: branchName, stage: 'push', error: e.message });
       return;
     }
 
     console.log(`Creating pull request via GitHub CLI...`);
+    const title = `Ingestion: ${branchName}`;
+    // stdout is captured (not inherited) so the PR URL gh prints can be reported to hooks
+    const stdio: childProcess.StdioOptions = ['ignore', 'pipe', 'inherit'];
+    let output: Buffer | string;
     if (typeof childProcess.execFileSync === 'function') {
-      childProcess.execFileSync(
+      output = childProcess.execFileSync(
         'gh',
-        ['pr', 'create', '--title', `Ingestion: ${branchName}`, '--body', 'Automated compilation of summaries and collections.'],
-        { stdio: 'inherit', cwd: absolutePath }
+        ['pr', 'create', '--title', title, '--body', 'Automated compilation of summaries and collections.'],
+        { stdio, cwd: absolutePath }
       );
     } else {
-      childProcess.execSync(
-        `gh pr create --title "Ingestion: ${branchName}" --body "Automated compilation of summaries and collections."`,
-        { stdio: 'inherit', cwd: absolutePath }
+      output = childProcess.execSync(
+        `gh pr create --title "${title}" --body "Automated compilation of summaries and collections."`,
+        { stdio, cwd: absolutePath }
       );
     }
+    const text = output ? output.toString().trim() : '';
+    if (text) console.log(text);
+    const url = text.match(/https?:\/\/\S+/g)?.pop() ?? null;
     console.log(`Successfully created Pull Request for branch ${branchName}`);
+    emitEvent('git.pr.created', { branch: branchName, url, title });
   } catch (e: any) {
     console.error(`Failed to automatically create Pull Request:`, e.message);
+    emitEvent('git.pr.failed', { branch: branchName, stage: 'gh', error: e.message });
   }
 }
 
@@ -262,10 +302,12 @@ export function gitRollbackBranch(wikiPath: string, targetBranch?: string, branc
     if (targetBranch) {
       runGit(['checkout', targetBranch], absolutePath, 'ignore');
     }
-    if (branchToDelete && branchToDelete !== targetBranch) {
-      runGit(['branch', '-D', branchToDelete], absolutePath, 'ignore');
+    const deleteBranch = !!branchToDelete && branchToDelete !== targetBranch;
+    if (deleteBranch) {
+      runGit(['branch', '-D', branchToDelete!], absolutePath, 'ignore');
       console.log(`Rolled back to branch '${targetBranch}' and deleted aborted branch '${branchToDelete}'.`);
     }
+    emitEvent('git.rolled_back', { restored_branch: targetBranch ?? null, branch_deleted: deleteBranch ? branchToDelete : null });
   } catch (e: any) {
     console.error(`Failed during git rollback:`, e.message);
   }

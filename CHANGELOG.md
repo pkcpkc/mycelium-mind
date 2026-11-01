@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-01
+
 ### Added
+- **Event hooks**: register URLs (signed `POST` with retries) or local scripts (event JSON on stdin) under `hooks:` in `config/config.yml` to get notified about wiki changes. About 35 events cover the run lifecycle, ingestion (assets, summaries, entities), overrides, resync cleanup, overviews and indexes, git (commits, branches, PRs, rollbacks), publishing, Open Notebook pushes, contradictions and watch mode. Each endpoint subscribes with event globs. Hooks are notify-only and never abort a run.
+- `mm hooks list` / `mm hooks test`, plus a global `--no-hooks` flag (and `MM_HOOKS=off`).
 - **`mm watch`**: Watch mode that keeps a vault processed continuously. Inbox drops are batched into `sync` runs, manual `wiki/` edits are debounced and re-created via `overrides`, and results are pushed incrementally to Open Notebook when it is reachable. A startup sweep catches up on offline edits and pending inbox files. Loop prevention is git-based: engine writes are committed to the current branch, and files whose re-creation fails are only retried after a new edit.
 - `syncWiki` / `overridesWiki` accept a `commit` option to commit on the current branch without creating a PR.
 
@@ -21,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`tsx` crash in `notebook` commands**: type-only re-exports in `commands/notebook.ts` broke `npm run cli -- notebook …`; `isolatedModules` is now enabled to catch this at compile time.
 
 ### Changed
+- **Open Notebook Docker port**: `scripts/docker/open-notebook.docker-compose.yml` now exposes the API on host port `8001` (was `8000`) to avoid clashing with oMLX and other local model servers on `8000`.
 - **CLI: Migrated to Commander.js**: Replaced the hand-rolled argument parser and switch-based dispatcher with [Commander.js](https://github.com/tj/commander.js/). This brings standard CLI conventions including `--help` / `-h` on every command and subcommand, `--version` / `-V`, proper option parsing with type coercion, and scoped options per command. The `notebook` command now uses first-class Commander subcommands (`mm notebook push`, `mm notebook start`, etc.) instead of manual positional argument routing. No behavioral changes — all existing flags and arguments work identically.
 
 ## [0.4.0] - 2026-09-06

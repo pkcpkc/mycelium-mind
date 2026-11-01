@@ -10,6 +10,7 @@ import { serveWiki } from './commands/serve.js';
 import { overviewsWiki } from './commands/overviews.js';
 import { overridesWiki } from './commands/overrides.js';
 import { contradictionsWiki } from './commands/contradictions.js';
+import { flushHooks } from './core/hooks.js';
 
 const require = createRequire(import.meta.url);
 const { version } = require('../package.json');
@@ -19,7 +20,13 @@ const program = new Command();
 program
   .name('mm')
   .description('Mycelium Mind — offline, schema-driven wiki compiler powered by local LLMs')
-  .version(version);
+  .version(version)
+  .option('--no-hooks', 'do not deliver events to configured hooks')
+  .hook('preAction', () => {
+    if (program.opts().hooks === false) process.env.MM_HOOKS = 'off';
+  })
+  // Deliver queued hook events before the process exits
+  .hook('postAction', () => flushHooks());
 
 // ─── init ────────────────────────────────────────────────────────────────────
 program
@@ -303,8 +310,34 @@ function buildNotebookFlags(opts: any): import('./core/types.js').CliFlags {
   };
 }
 
+// ─── hooks ───────────────────────────────────────────────────────────────────
+const hooksCmd = program
+  .command('hooks')
+  .description('Inspect and test event hooks (list|test)');
+
+hooksCmd
+  .command('list', { isDefault: true })
+  .description('List configured hook endpoints and their event subscriptions')
+  .argument('[wiki-path]', 'target wiki directory', '.')
+  .action(async (wikiPath: string) => {
+    const { listHooks } = await import('./commands/hooks.js');
+    await listHooks(wikiPath);
+  });
+
+hooksCmd
+  .command('test')
+  .description('Send a test event to configured hooks')
+  .argument('[wiki-path]', 'target wiki directory', '.')
+  .option('--name <endpoint>', 'only test the endpoint with this name')
+  .option('--event <type>', 'event type to send (default: hook.test)')
+  .action(async (wikiPath: string, opts: { name?: string; event?: string }) => {
+    const { testHooks } = await import('./commands/hooks.js');
+    await testHooks(wikiPath, opts);
+  });
+
 // ─── parse & run ─────────────────────────────────────────────────────────────
-program.parseAsync().catch((err: any) => {
+program.parseAsync().catch(async (err: any) => {
   console.error(err.stack || err.message);
+  await flushHooks();
   process.exit(1);
 });

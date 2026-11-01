@@ -143,6 +143,21 @@ export interface WikiConfig {
     modelProvider?: string;
     models?: NotebookModelsConfig;
   };
+  hooks?: {
+    enabled?: boolean;
+    timeout_ms?: number;
+    retries?: number;
+    retry_backoff_ms?: number;
+    endpoints?: {
+      name?: string;
+      url?: string;
+      script?: string;
+      args?: string[];
+      events?: string[];
+      headers?: Record<string, string>;
+      secret_env?: string;
+    }[];
+  };
   [key: string]: any;
 }
 

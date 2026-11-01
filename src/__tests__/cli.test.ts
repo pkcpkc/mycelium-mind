@@ -8,6 +8,7 @@ import { syncWiki } from '../commands/sync.js';
 import { publishWiki } from '../commands/publish.js';
 import { resyncWiki } from '../commands/resync.js';
 import { runOverviewScript } from '../utils/overview-runner.js';
+import { setHookSink, HookEvent } from '../core/hooks.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -568,6 +569,84 @@ describe('Unified Wiki Compiler CLI Tests', () => {
       spyLog.mockRestore();
       spyError.mockRestore();
       exitSpy.mockRestore();
+    });
+  });
+
+  describe('hook events', () => {
+    let events: HookEvent[];
+
+    beforeEach(() => {
+      events = [];
+      setHookSink((e) => events.push(e));
+    });
+
+    afterEach(() => setHookSink(null));
+
+    const types = () => events.map(e => e.type);
+
+    it('sync emits the full ingestion event sequence attributed to one run', async () => {
+      await initWiki(wikiPath, { includeDefaults: true });
+      fs.writeFileSync(path.join(wikiPath, 'inbox', 'Andrej Karpathy.md'), '# Andrej Karpathy\nDeep learning.', 'utf8');
+
+      await syncWiki(wikiPath, { pr: false });
+
+      const t = types();
+      expect(t[0]).toBe('run.started');
+      expect(t[t.length - 1]).toBe('run.completed');
+      const order = ['asset.archived', 'summary.created', 'entity.created'];
+      const positions = order.map(type => t.indexOf(type));
+      expect(positions.every(p => p > 0)).toBe(true);
+      expect(positions).toEqual([...positions].sort((a, b) => a - b));
+      expect(t.indexOf('inbox.consumed')).toBeGreaterThan(t.lastIndexOf('entity.created'));
+      expect(t.indexOf('overview.generated')).toBeGreaterThan(t.indexOf('inbox.consumed'));
+      expect(t).toContain('indexes.rebuilt');
+
+      const runId = events[0].run!.id;
+      expect(events.every(e => e.run?.id === runId)).toBe(true);
+      expect(events[0].data.inbox_files).toEqual(['inbox/Andrej Karpathy.md']);
+
+      const summary = events.find(e => e.type === 'summary.created')!.data;
+      expect(summary.path).toBe('wiki/summaries/Andrej Karpathy.md');
+      expect(summary.entities.persons).toEqual(['Andrej Karpathy']);
+      expect(summary.entities.concepts).toEqual(['Deep Learning']);
+
+      const person = events.find(e => e.type === 'entity.created' && e.data.collection === 'persons')!.data;
+      expect(person.path).toBe('wiki/collections/persons/Andrej Karpathy.md');
+      expect(person.source_summaries).toEqual(['wiki/summaries/Andrej Karpathy.md']);
+      expect(person.title).toBe('Andrej Karpathy');
+
+      const completed = events[events.length - 1].data;
+      expect(completed.stats.summariesSuccess).toBe(1);
+      expect(completed.changes.created).toContain('wiki/summaries/Andrej Karpathy.md');
+      expect(completed.changes.created).toContain('wiki/collections/concepts/Deep Learning.md');
+      expect(completed.changes.deleted).toEqual([]);
+    });
+
+    it('sync on an empty inbox emits run.skipped', async () => {
+      await initWiki(wikiPath, { includeDefaults: true });
+      await syncWiki(wikiPath, { pr: false });
+      expect(types()).toEqual(['run.started', 'run.skipped']);
+      expect(events[1].data.reason).toBe('inbox_empty');
+    });
+
+    it('resync reports regenerated pages as updated and stale pages as deleted', async () => {
+      await initWiki(wikiPath, { includeDefaults: true });
+      fs.writeFileSync(path.join(wikiPath, 'inbox', 'Andrej Karpathy.md'), '# Andrej Karpathy\nDeep learning.', 'utf8');
+      await syncWiki(wikiPath, { pr: false });
+      const stale = path.join(wikiPath, 'wiki', 'summaries', 'Orphan.md');
+      fs.writeFileSync(stale, '---\ntype: Summary\ntitle: Orphan\n---\n# Orphan\n', 'utf8');
+      events = [];
+
+      await resyncWiki(wikiPath, { pr: false });
+
+      expect(types()).toContain('wiki.cleared');
+      expect(types()).toContain('summary.updated');
+      expect(types()).not.toContain('summary.created');
+      const deleted = events.filter(e => e.type === 'page.deleted').map(e => e.data.path);
+      expect(deleted).toEqual(['wiki/summaries/Orphan.md']);
+      const completed = events.find(e => e.type === 'run.completed')!.data;
+      expect(completed.changes.deleted).toEqual(['wiki/summaries/Orphan.md']);
+      expect(completed.changes.updated).toContain('wiki/summaries/Andrej Karpathy.md');
     });
   });
 });

@@ -9,7 +9,7 @@ import { gitCreatePR, gitCreateBranch, gitCommitAll, enableGitCommits, createGit
 import { validateAllPlugins } from './check-plugins.js';
 import { initWiki } from './init.js';
 import { overviewsWiki } from './overviews.js';
-import { updateCollectionEntitiesForFile } from './overrides.js';
+import { updateCollectionEntitiesForFile, diffStats } from './overrides.js';
 import { callAgenticModel, isNonRecoverableError, preflightModelCheck } from '../utils/openai-api.js';
 import { asyncPool } from '../utils/async-pool.js';
 import { loadIngestionSettings } from '../utils/config.js';
@@ -20,15 +20,55 @@ import {
   loadCollectionSchemaTemplates,
   filterCompanionFiles,
   compileEntitiesFromSummaries,
-  printCompilerStats
+  printCompilerStats,
+  emitSummaryEvent
 } from '../core/compiler-engine.js';
 import { CompilerStats, SummaryFrontmatter } from '../core/types.js';
+import { withRun, emitEvent, pageExisted, setRunBaseline, toVaultPath, RunHandle } from '../core/hooks.js';
+
+const GENERATED_DIRS: { dir: string; kind: string }[] = [
+  { dir: 'summaries', kind: 'summary' },
+  { dir: 'collections', kind: 'entity' },
+  { dir: 'overviews', kind: 'overview' },
+];
+
+/**
+ * Lists vault-relative markdown pages under the generated wiki folders.
+ */
+function listGeneratedPages(wikiDir: string): Map<string, string> {
+  const pages = new Map<string, string>();
+  const walk = (dir: string, kind: string) => {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full, kind);
+      // index.md files are rebuilt by overviewsWiki and are not content pages
+      else if (entry.name.endsWith('.md') && entry.name !== 'index.md') pages.set(toVaultPath(full), kind);
+    }
+  };
+  for (const { dir, kind } of GENERATED_DIRS) walk(path.join(wikiDir, dir), kind);
+  return pages;
+}
 
 /**
  * Recreates the wiki by re-summarizing and re-compiling from existing assets.
  */
 export async function resyncWiki(
   wikiPath: string,
+  options?: { pr?: boolean; verbose?: boolean; collection?: string }
+): Promise<void> {
+  const absolutePath = path.resolve(wikiPath);
+  return withRun(
+    absolutePath,
+    'resync',
+    { pr: options?.pr !== false, verbose: !!options?.verbose, collection: options?.collection ?? null },
+    (run) => runResync(absolutePath, run, options)
+  );
+}
+
+async function runResync(
+  wikiPath: string,
+  run: RunHandle,
   options?: { pr?: boolean; verbose?: boolean; collection?: string }
 ): Promise<void> {
   const pr = options?.pr !== false;
@@ -42,6 +82,7 @@ export async function resyncWiki(
   await validateAllPlugins(absolutePath);
 
   // Preflight check model endpoint connectivity & credentials before modifying vault
+  run.setStage('preflight');
   await preflightModelCheck();
 
   const wikiDir = path.join(absolutePath, 'wiki');
@@ -64,6 +105,7 @@ export async function resyncWiki(
   try {
     if (!fs.existsSync(assetsDirParent)) {
       console.log('No assets folder found. Cannot resync.');
+      run.skip('no_assets');
       return;
     }
 
@@ -83,6 +125,11 @@ export async function resyncWiki(
 
   // 1. Clear generated folders
   console.log('Cleaning generated folders...');
+  const pagesBefore = listGeneratedPages(wikiDir);
+  setRunBaseline(pagesBefore.keys());
+  const clearedDirs = options?.collection
+    ? [`wiki/collections/${options.collection}`, 'wiki/overviews']
+    : ['wiki/summaries', 'wiki/collections', 'wiki/overviews'];
   const summariesDir = path.join(wikiDir, 'summaries');
   if (!options?.collection) {
     if (fs.existsSync(summariesDir)) {
@@ -114,6 +161,12 @@ export async function resyncWiki(
     fs.rmSync(overviewsDir, { recursive: true, force: true });
   }
   fs.mkdirSync(overviewsDir, { recursive: true });
+  emitEvent('wiki.cleared', {
+    scope: options?.collection ? 'collection' : 'all',
+    collection: options?.collection ?? null,
+    dirs: clearedDirs,
+    removed_count: [...pagesBefore.keys()].filter(p => clearedDirs.some(d => p.startsWith(`${d}/`))).length,
+  });
 
   // 2. Discover timeline events (daily ingestions and overrides)
   const timelineEvents: (
@@ -195,6 +248,7 @@ export async function resyncWiki(
     indexesSuccess: 0,
     indexesFailed: 0,
   };
+  run.setResult({ stats });
 
   for (const schemaName of schemasToCompile) {
     stats.entitiesSuccess[schemaName] = 0;
@@ -236,8 +290,9 @@ export async function resyncWiki(
           summaryItem = summaryMap.get(matchingKey)!;
           stats.summariesSuccess++;
         } else {
+          run.setStage('summaries');
           try {
-            const { frontmatter, fullMarkdown } = await synthesizeSummary(
+            const { frontmatter, fullMarkdown, frontmatterRepaired } = await synthesizeSummary(
               extracted.rawText,
               extracted.companionMetadata,
               baseName,
@@ -247,9 +302,19 @@ export async function resyncWiki(
 
             const summaryFilename = toSafeFilename(frontmatter.title);
             const summaryPath = path.join(summariesDir, summaryFilename);
+            const existed = pageExisted(summaryPath);
             fs.writeFileSync(summaryPath, fullMarkdown, 'utf8');
             await queuedGitCommit(summaryPath, `Added summary for ${frontmatter.title}`);
             stats.summariesSuccess++;
+            emitSummaryEvent({
+              summaryPath,
+              frontmatter,
+              existed,
+              activeSchemas: schemasToCompile,
+              schemaTemplates,
+              frontmatterRepaired,
+              durationMs: Date.now() - summaryStartTime,
+            });
             summaryItem = { summaryPath, frontmatter };
           } catch (e: any) {
             if (isNonRecoverableError(e)) {
@@ -257,6 +322,7 @@ export async function resyncWiki(
             }
             console.error(`LLM synthesis failed for asset ${file}:`, e.message);
             stats.summariesFailed++;
+            emitEvent('summary.failed', { asset: matchingKey, error: e.message });
           }
         }
 
@@ -270,6 +336,7 @@ export async function resyncWiki(
 
       // Extract, deduplicate, and compile entity pages for this ingestion event with bounded concurrency
       if (currentSummaries.length > 0) {
+        run.setStage('entities');
         await compileEntitiesFromSummaries({
           summaries: currentSummaries,
           activeSchemas: schemasToCompile,
@@ -318,15 +385,25 @@ export async function resyncWiki(
           const newFm = parseFrontmatterFromString(recreatedContent);
           const isFmChanged = JSON.stringify(originalFm) !== JSON.stringify(newFm);
 
+          let affectedEntities: Awaited<ReturnType<typeof updateCollectionEntitiesForFile>> = [];
           if (isFmChanged) {
             console.log(`Frontmatter changed for ${override.file} during override replay. Updating concerned collection entities...`);
-            await updateCollectionEntitiesForFile(absolutePath, override.file, newFm, recreatedContent, options?.verbose);
+            affectedEntities = await updateCollectionEntitiesForFile(absolutePath, override.file, newFm, recreatedContent, options?.verbose);
           }
+          emitEvent('override.applied', {
+            path: override.file,
+            ...diffStats(override.diff),
+            frontmatter_changed: isFmChanged,
+            affected_entities: affectedEntities,
+            snapshot: toVaultPath(overridesJsonPath),
+            replay: true,
+          });
         } catch (e: any) {
           if (isNonRecoverableError(e)) {
             throw e;
           }
           console.error(`Failed to replay override for ${override.file}:`, e.message);
+          emitEvent('override.skipped', { path: override.file, reason: 'llm_failed', replay: true });
         }
       }
     }
@@ -339,11 +416,19 @@ export async function resyncWiki(
   await awaitGitCommits();
 
   // 4. Overviews & Indexes
+  run.setStage('overviews');
   await overviewsWiki(absolutePath, undefined, { verbose: options?.verbose });
   enableGitCommits(pr);
 
+  // Pages that existed before the wipe but were not regenerated are gone for good
+  const pagesAfter = listGeneratedPages(wikiDir);
+  for (const [page, kind] of pagesBefore) {
+    if (!pagesAfter.has(page)) emitEvent('page.deleted', { path: page, kind });
+  }
+
   printCompilerStats(stats, schemasToCompile, totalSummaries, 'Resync');
 
+  run.setStage('git');
   if (pr && branchName) {
     gitCommitAll(absolutePath, 'wiki', 'Resync: removed stale pages, updated overviews and indexes');
     gitCreatePR(absolutePath, branchName);

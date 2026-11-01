@@ -5,6 +5,7 @@ import YAML from 'yaml';
 import { projectRootDir } from '../utils/config.js';
 import { getVaultDir } from '../utils/fs-utils.js';
 import { rewriteAllMarkdownLinks, extractTagsMapping } from '../core/link-rewriter.js';
+import { withRun, emitEvent } from '../core/hooks.js';
 
 const compiledAssetsPath = path.join(projectRootDir, 'build/commands/assets');
 const useCompiled = fs.existsSync(compiledAssetsPath);
@@ -14,6 +15,24 @@ const assetsBaseDir = useCompiled ? compiledAssetsPath : path.join(projectRootDi
  * Publishes the wiki to a static site using MkDocs.
  */
 export async function publishWiki(wikiPath: string, targetDirArg?: string): Promise<void> {
+  return withRun(getVaultDir(wikiPath), 'publish', { target_dir: targetDirArg ?? null }, async (run) => {
+    run.setStage('publish');
+    await runPublish(wikiPath, targetDirArg);
+  });
+}
+
+function countMarkdownFiles(dir: string): number {
+  let count = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) count += countMarkdownFiles(full);
+    else if (entry.name.endsWith('.md')) count++;
+  }
+  return count;
+}
+
+async function runPublish(wikiPath: string, targetDirArg?: string): Promise<void> {
+  const startTime = Date.now();
   const vaultRoot = getVaultDir(wikiPath);
   const vaultName = path.basename(vaultRoot);
   const wikiDir = path.join(vaultRoot, 'wiki');
@@ -315,8 +334,10 @@ export async function publishWiki(wikiPath: string, targetDirArg?: string): Prom
 
   console.log(`Building static site to: ${siteDir}`);
   try {
+    const pageCount = countMarkdownFiles(docsDir);
     execSync(`"${venvMkdocs}" build -f "${buildConfigPath}" -d "${siteDir}"`, { stdio: 'inherit' });
     console.log(`Success! Site published at ${siteDir}`);
+    emitEvent('site.published', { site_dir: siteDir, page_count: pageCount, duration_ms: Date.now() - startTime });
   } catch (e: any) {
     console.error('Error building MkDocs site:', e.message);
     throw e;
