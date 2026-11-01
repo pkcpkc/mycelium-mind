@@ -1,6 +1,7 @@
 {
   "name": "mycelium-mind",
-  "version": "0.5.2",
+  "version": "0.6.0",
+  "description": "Fully offline, schema-driven multi-vault wiki compiler for Obsidian and MkDocs, powered by local LLMs via an OpenAI-compatible API. Includes watch mode, event hooks, and Open Notebook sync.",
   "type": "module",
   "main": "./build/cli.js",
   "files": [
